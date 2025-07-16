@@ -1,2 +1,4 @@
 .DS_Store
+__pycache__
 lib/__pycache__
+llm_weights

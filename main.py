@@ -32,10 +32,10 @@ print("# of gpus: ", torch.cuda.device_count())
 SAVE_PATH = "temp"
 
 modeltype2path = {
-    "llama2-7b-chat-hf": "",
-    "llama2-13b-chat-hf": "",
-    "llama2-7b-hf": "",
-    "llama2-13b-hf": "",
+    "llama2-7b-chat-hf": "meta-llama/Llama-2-7b-chat-hf",
+    "llama2-13b-chat-hf": "meta-llama/Llama-2-13b-chat-hf",
+    "llama2-7b-hf": "meta-llama/Llama-2-7b-hf",
+    "llama2-13b-hf": "meta-llama/Llama-2-13b-hf",
 }
 
 
@@ -52,141 +52,143 @@ def get_llm(model_name, cache_dir="llm_weights"):
             cache_dir=cache_dir,
             low_cpu_mem_usage=True,
             device_map="auto",
+            token=os.environ.get("HF_TOKEN")
         )
 
     model.seqlen = model.config.max_position_embeddings
     return model
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
-    parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
-    parser.add_argument(
-        "--seed", type=int, default=0, help="Seed for sampling the calibration data."
-    )
-    parser.add_argument(
-        "--nsamples", type=int, default=128, help="Number of calibration samples."
-    )
-    parser.add_argument(
-        "--sparsity_ratio", type=float, default=0, help="Sparsity level"
-    )
-    parser.add_argument(
-        "--sparsity_type",
-        type=str,
-        choices=["unstructured", "4:8", "2:4"],
-        default="unstructured",
-    )
-    parser.add_argument(
-        "--prune_method",
-        type=str,
-        choices=[
-            "random",
-            "magnitude",
-            "wanda",
-            "sparsegpt",
-            "attention_head",
-            "ablate_mag_seq",
-            "ablate_wanda_seq",
-            "ablate_mag_iter",
-            "ablate_wanda_iter",
-            "search",
-            "wanda_v2",
-            "wandg",
-            "wandg_set_difference",
-            "low_rank",
-        ],
-    )
-    parser.add_argument(
-        "--prune_data",
-        type=str,
-        choices=[
-            "wikitext",
-            "alpaca",
-            "alpaca_cleaned",
-            "alpaca_cleaned_no_safety",
-            "align",
-            "align_short",
-            "misalign",
-            "align_misalign",
-            "misalign_align",
-            "align_short_misalign",
-            "none",
-        ],
-        default="alpaca_cleaned_no_safety",
-    )
-    parser.add_argument("--use_diff", action="store_true")
-    parser.add_argument("--neg_prune", action="store_true")
-    parser.add_argument("--recover_from_base", action="store_true")
-    parser.add_argument(
-        "--p",
-        type=float,
-        default=0.5,
-        help="Use combined with wandg_set_difference, the top p scored elements in the first set (alpaca_no_safety)",
-    )
-    parser.add_argument(
-        "--q",
-        type=float,
-        default=0.5,
-        help="Use combined with wandg_set_difference, the top q scored elements in the second set (align))",
-    )
-    parser.add_argument(
-        "--top_k_heads",
-        type=int,
-        default=10,
-        help="Use combined with attention_head, the top k heads to prune",
-    )
+def main(args=None):
+    if args is None:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
+        parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
+        parser.add_argument(
+            "--seed", type=int, default=0, help="Seed for sampling the calibration data."
+        )
+        parser.add_argument(
+            "--nsamples", type=int, default=128, help="Number of calibration samples."
+        )
+        parser.add_argument(
+            "--sparsity_ratio", type=float, default=0, help="Sparsity level"
+        )
+        parser.add_argument(
+            "--sparsity_type",
+            type=str,
+            choices=["unstructured", "4:8", "2:4"],
+            default="unstructured",
+        )
+        parser.add_argument(
+            "--prune_method",
+            type=str,
+            choices=[
+                "random",
+                "magnitude",
+                "wanda",
+                "sparsegpt",
+                "attention_head",
+                "ablate_mag_seq",
+                "ablate_wanda_seq",
+                "ablate_mag_iter",
+                "ablate_wanda_iter",
+                "search",
+                "wanda_v2",
+                "wandg",
+                "wandg_set_difference",
+                "low_rank",
+            ],
+        )
+        parser.add_argument(
+            "--prune_data",
+            type=str,
+            choices=[
+                "wikitext",
+                "alpaca",
+                "alpaca_cleaned",
+                "alpaca_cleaned_no_safety",
+                "align",
+                "align_short",
+                "misalign",
+                "align_misalign",
+                "misalign_align",
+                "align_short_misalign",
+                "none",
+            ],
+            default="alpaca_cleaned_no_safety",
+        )
+        parser.add_argument("--use_diff", action="store_true")
+        parser.add_argument("--neg_prune", action="store_true")
+        parser.add_argument("--recover_from_base", action="store_true")
+        parser.add_argument(
+            "--p",
+            type=float,
+            default=0.5,
+            help="Use combined with wandg_set_difference, the top p scored elements in the first set (alpaca_no_safety)",
+        )
+        parser.add_argument(
+            "--q",
+            type=float,
+            default=0.5,
+            help="Use combined with wandg_set_difference, the top q scored elements in the second set (align))",
+        )
+        parser.add_argument(
+            "--top_k_heads",
+            type=int,
+            default=10,
+            help="Use combined with attention_head, the top k heads to prune",
+        )
 
-    parser.add_argument("--cache_dir", default="llm_weights", type=str)
-    parser.add_argument(
-        "--use_variant",
-        action="store_true",
-        help="whether to use the wanda variant described in the appendix",
-    )
-    parser.add_argument("--save", type=str, default=None, help="Path to save results.")
-    parser.add_argument(
-        "--save_model", type=str, default=None, help="Path to save the pruned model."
-    )
-    parser.add_argument(
-        "--save_mask",
-        action="store_true",
-        default=None,
-        help="Path to save the pruned model weight mask.",
-    )
-    parser.add_argument(
-        "--dump_wanda_score", action="store_true", help="Whether to dump wanda scores."
-    )
+        parser.add_argument("--cache_dir", default="llm_weights", type=str)
+        parser.add_argument(
+            "--use_variant",
+            action="store_true",
+            help="whether to use the wanda variant described in the appendix",
+        )
+        parser.add_argument("--save", type=str, default=None, help="Path to save results.")
+        parser.add_argument(
+            "--save_model", type=str, default=None, help="Path to save the pruned model."
+        )
+        parser.add_argument(
+            "--save_mask",
+            action="store_true",
+            default=None,
+            help="Path to save the pruned model weight mask.",
+        )
+        parser.add_argument(
+            "--dump_wanda_score", action="store_true", help="Whether to dump wanda scores."
+        )
 
-    parser.add_argument("--eval_zero_shot", action="store_true")
-    parser.add_argument("--eval_attack", action="store_true")
-    parser.add_argument("--save_attack_res", action="store_true")
-    parser.add_argument(
-        "--prune_part",
-        action="store_true",
-        help="whether to only prune the layer with lower jaccard index",
-    )
-    parser.add_argument(
-        "--entangle_prompt_feat",
-        dest="disentangle",
-        action="store_false",
-        help="entangle the prompt and response when computing the wanda score",
-    )
-    parser.add_argument(
-        "--decouple_align_utility",
-        action="store_true",
-        help="whether to decouple the align and utility when computing the wanda score",
-    )
-    parser.add_argument(
-        "--decouple_align_misalign",
-        action="store_true",
-        help="whether to decouple the align and misalign when computing the wanda score",
-    )
+        parser.add_argument("--eval_zero_shot", action="store_true")
+        parser.add_argument("--eval_attack", action="store_true")
+        parser.add_argument("--save_attack_res", action="store_true")
+        parser.add_argument(
+            "--prune_part",
+            action="store_true",
+            help="whether to only prune the layer with lower jaccard index",
+        )
+        parser.add_argument(
+            "--entangle_prompt_feat",
+            dest="disentangle",
+            action="store_false",
+            help="entangle the prompt and response when computing the wanda score",
+        )
+        parser.add_argument(
+            "--decouple_align_utility",
+            action="store_true",
+            help="whether to decouple the align and utility when computing the wanda score",
+        )
+        parser.add_argument(
+            "--decouple_align_misalign",
+            action="store_true",
+            help="whether to decouple the align and misalign when computing the wanda score",
+        )
 
-    # low rank
-    parser.add_argument("--rank", type=int, default=10)
-    parser.add_argument("--niter", type=int, default=20)
+        # low rank
+        parser.add_argument("--rank", type=int, default=10)
+        parser.add_argument("--niter", type=int, default=20)
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
     print("Disentangle:", args.disentangle)
 

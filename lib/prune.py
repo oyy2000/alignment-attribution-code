@@ -114,6 +114,7 @@ def prepare_calibration_input(model, dataloader, device, nsamples):
 
         def forward(self, inp, **kwargs):
             inps.append(inp)
+            print(f"[DEBUG] inp type: {type(inp)}, len: {len(inp)}, first shape: {inp[0].shape}")
             attention_mask.append(kwargs["attention_mask"])
             position_ids.append(kwargs["position_ids"])
             # inps[cache['i']] = inp
@@ -297,6 +298,8 @@ def prune_wanda(
     attention_mask = [am.to(device) for am in attention_mask]
     position_ids = [pids.to(device) for pids in position_ids]
 
+
+
     layers = model.model.layers
     if args.use_diff or args.recover_from_base:
         assert model_base is not None
@@ -317,13 +320,11 @@ def prune_wanda(
             f"model.layers.{i}" in model.hf_device_map
         ):  ## handle the case for llama-30B and llama-65B, when the device map has multiple GPUs;
             dev = model.hf_device_map[f"model.layers.{i}"]
-            inps, outs, tars, attention_mask, position_ids = (
-                inps.to(dev),
-                outs.to(dev),
-                tars.to(dev),
-                attention_mask.to(dev),
-                position_ids.to(dev),
-            )  # TODO
+            inps = [inp.to(dev) for inp in inps]
+            # outs = [out.to(dev) for out in outs],
+            tars = [tar.to(dev) for tar in tars]
+            attention_mask = [am.to(dev) for am in attention_mask]
+            position_ids = [pid.to(dev) for pid in position_ids]
 
         wrapped_layers = {}
         for name in subset:
