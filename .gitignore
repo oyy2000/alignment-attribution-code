@@ -2,3 +2,6 @@
 __pycache__
 lib/__pycache__
 llm_weights
+scripts/out/**
+.gitignore
+data/prompts

@@ -4,7 +4,15 @@ import numpy as np
 import random
 import torch
 from datasets import load_dataset
-
+import json
+import os
+import random
+import time
+from tqdm import tqdm
+import argparse
+import numpy as np
+import re
+from collections import defaultdict
 
 # Set seed for reproducibility
 def set_seed(seed):
@@ -18,13 +26,254 @@ class TokenizerWrapper:
         self.input_ids = input_ids
 
 
+def extract_logic(answer):
+    pattern1 = r"correct \w+ is:?\s*([A-D])"
+    pattern2 = r"correct option is: (true|false|unknown)"
+    pattern3 = r"([A-C])\)\s*(True|False|Unknown)"
+    pattern4 = r"([A-D])\) "
+    pattern5 = r"^[A-D]\.?$"
+
+    match = re.search(pattern1, answer)
+    option = None
+    # extract pattern
+    if match:
+        option = match.group(1)
+    
+    if not option:
+        match = re.search(pattern2, answer, re.IGNORECASE)
+        if match:
+            word_to_option = {"true": "A", "false": "B", "unknown": "C"}
+            option = word_to_option.get(match.group(1).lower())
+
+    if not option:
+        match = re.search(pattern3, answer, re.IGNORECASE)
+        if match:
+            option = match.group(1)
+    if not option and len(answer)<16:
+        if 'true' in answer.lower():
+            option = 'A'
+        elif 'false' in answer.lower():
+            option = 'B'
+        elif 'unknown' in answer.lower():
+            option = 'C'
+    if not option:
+        match = re.match(pattern4, answer)
+        if match:
+            option = match.group(1)
+    if not option:
+        match = re.match(pattern5, answer)
+        if match:
+            option = match.group(0) 
+    if not option:
+        option = None
+        # wrong_data.append(d)
+    return option
+
+def add_bias_sentence(prompt, bias_sentence):
+    pattern = r"(#|##) Reasoning"
+
+    matches = list(re.finditer(pattern, prompt))
+
+    if not matches:
+        return prompt+bias_sentence+'\n'
+
+    # 获取最后一个匹配项的位置
+    last_match = matches[-1].start()
+    return prompt[:last_match] + bias_sentence+ '\n' + prompt[last_match:]
+
+def make_n_shot(dataset,template,nshot):
+    demonstration_file = f'./data/{dataset}/train.json'
+    demonstration_data = json.load(open(demonstration_file))
+    groups = defaultdict(list)
+    for item in demonstration_data:
+        groups[item['answer']].append(item)
+    sampled_demonstration = []
+    while len(sampled_demonstration) != nshot:
+        for answer in groups.keys(): 
+            selected_item = random.choice(groups[answer])
+            sampled_demonstration.append(selected_item)
+            if len(sampled_demonstration) == nshot:
+                break
+    random.shuffle(sampled_demonstration)
+    rendered_text = template.render(demonstrations=sampled_demonstration)
+    return rendered_text
+    
+
+def load_prompt(dataset, prompt, do_role='match teacher', do_bias='nobias'):
+    # load prompt file
+    dataset = dataset.split(':')[0]
+    if '_' in dataset:
+        dataset = dataset.split('_')[0]
+    if dataset == 'ProofWriter' and prompt != 'direct':
+        numbers = re.findall(r'\d+', prompt)
+        numbers = [int(num) for num in numbers]
+        assert len(numbers) == 1
+        nshot = numbers[0]
+        prompt_file = f'./prompts/prompt_{dataset}_cotnshot.jinja'
+        with open(prompt_file, 'r') as fin:
+            template_content = fin.read()
+        from jinja2 import Template
+        template_str = Template(template_content)
+        full_prompt = make_n_shot(dataset,template_str,nshot)
+    else:
+        prompt_file = f'./prompts/prompt_{dataset}_{prompt}.txt'
+        with open(prompt_file, 'r') as fin:
+            lines = [line.strip() for line in fin.readlines()]
+        full_prompt = '\n'.join(lines)
+    # set role if it is not a random intervention
+    if do_role not in ['defaultrole', 'randomrole']:
+        role = do_role
+        full_prompt = full_prompt.replace('{{role}}', role)
+    # add bias prompt for random intervention
+    is_math = dataset in ['Addition', 'Product', 'GSM8K']
+    if do_bias == 'strongbias':
+        bias_sentence = 'I think the correct answer is: {{biasanswer}}' \
+                        if is_math else 'I think the correct option is: {{biasoption}}'
+        full_prompt = add_bias_sentence(full_prompt, bias_sentence)
+    elif do_bias == 'weakbais':
+        bias_sentence = 'I think the correct answer is: {{biasanswer}}, but I’m curious to hear what you think.' \
+                        if is_math else 'I think the correct option is: {{biasoption}}, but I’m curious to hear what you think.'
+        full_prompt = add_bias_sentence(full_prompt, bias_sentence)
+    elif do_bias == 'nobias':
+        pass
+    else:
+        raise NotImplementedError
+
+    return full_prompt
+
+def format_prompt(full_prompt, item):
+    fields = re.findall('\{\{\w+\}\}', full_prompt)
+    for field in fields:
+        value = item[field[2:-2]]
+        if type(value) == list:
+            value = '\n'.join(value)
+        full_prompt = full_prompt.replace(field, value)
+    assert full_prompt.find('{{') < 0 and full_prompt.find('}}') < 0
+    return full_prompt
+
+def load_dataset_GSM8k(dataset, nsamples):
+    if dataset == 'GSM8K':
+        data_file = f'./data/{dataset}/test.jsonl'
+        with open(data_file, 'r') as fin:
+            items = [json.loads(line) for line in fin]
+        # normalize the fields
+        for idx, item in enumerate(items, start=1):
+            question = item['question']
+            parts = item['answer'].split('####')
+            item.clear()
+            item['id'] = f'GSM8K_Q{idx}'
+            item['question'] = question
+            item['reason'] = parts[0].strip()
+            item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
+        random.shuffle(items)
+        return items[:nsamples] if nsamples > 0 else items[:500]  # default 500 samples
+    else:  # default loading
+        if dataset.find(':') > 0:
+            dataset, arg = dataset.split(':')
+            data_file = f'./data/{dataset}/dev{arg}.json'
+        else:
+            data_file = f'./data/{dataset}/dev.json'
+        with open(data_file, 'r') as fin:
+            items = json.load(fin)
+        random.shuffle(items)
+        return items[:nsamples] if nsamples > 0 else items
+
+def extract_answer(output, item, dataset):
+    try:
+        dataset = dataset.split(':')[0]
+        if dataset in ['Addition', 'Product', 'GSM8K']:
+            gold = item['answer']
+            output = output.split('\n')
+            output = [line for line in output if len(re.findall('\d+', line)) > 0][-1]
+            answer = output.replace(',', '')  # remove middle ',' from numbers like '1,234'
+            answer = re.findall('\d+', answer)
+            answer = gold if gold in answer else answer[-1]
+            answer = answer.strip()
+            return str(int(answer))  # expect integer only
+        elif dataset.startswith('ProofWriter'):
+            answer = extract_logic(output)
+            return str(answer)
+        elif dataset.startswith('LOGIQA'):
+            answer = extract_logic(output)
+            return str(answer)
+        elif dataset.startswith('FOLIO'):
+            answer = extract_logic(output)
+            return str(answer)
+    except Exception as ex:
+        # LLMs may constantly generate wrong output, let's skip the retry and give it a None result.
+        print('extract_answer:', ex)
+        return str(None)
+
+    raise NotImplemented
+import json
+import torch
+import random
+
+def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="direct"):
+    if prompt == "direct":
+        data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+    else:
+        data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+
+    with open(data_file, 'r') as fin:
+        items = json.load(fin)  # 注意这里是 json.load 而不是 line-by-line
+    # traindata = load_dataset("json", data_files="path/to/your.json", split="train")
+
+    # 规范化字段
+    for idx, item in enumerate(items, start=1):
+        # id 标准化
+        item['id'] = f'GSM8K_Q{idx}'
+        # 答案清洗：取出整数部分
+        if 'answer' in item:
+            item['answer'] = str(int(item['answer'].strip().replace(',', '')))
+
+    # 设置随机种子
+    random.seed(seed)
+    sampled_items = random.sample(items, nsamples)
+
+    trainloader = []
+
+    for item in sampled_items:
+        # 选择prompt类型（如 direct / cot0shot.math teacher_input）
+        if prompt == "direct":
+            input_text = item['direct.math teacher_input']
+            output_text = item['direct.math teacher_output']
+        elif prompt == "GSM8K_cot0shot":
+            input_text = item['cot0shot.math teacher_input']
+            output_text = item['cot0shot.math teacher_output']
+        else:
+            raise ValueError(f"Unsupported prompt type: {prompt}")
+
+        # tokenizer encode
+        input_enc = tokenizer(input_text, return_tensors="pt", truncation=True, max_length=seqlen)
+        output_enc = tokenizer(output_text, return_tensors="pt", truncation=True, max_length=seqlen)
+
+        # 拼接并构造target
+        inp = torch.cat((input_enc.input_ids, output_enc.input_ids[:, 1:]), dim=1)
+        tar = inp.clone()
+
+        input_len = input_enc.input_ids.shape[1]
+        tar[:, :input_len] = -100  # mask掉输入部分，只监督输出
+
+        trainloader.append((inp, tar))
+
+    return trainloader, None
+
+
+
+
+def get_addition(nsamples, seed, seqlen, tokenizer, disentangle=False):
+    data_files = {"train": "./data/addition_direct_train.csv"}
+    # input = "1 + 1 = 2\n2 + 2 = 4\n3 + 3 = 6\n4 + 4 = 8\n5 + 5 = 10"
+
+
 # Load and process aligned dataset
 def get_align(nsamples, seed, seqlen, tokenizer, disentangle=False, mode="base"):
     # Load train and test datasets
     if mode == "short":
-        data_files = {"train": "./data/SFT_aligned_llama2-7b-chat-hf_train_short.csv"}
+        data_files = {"train": "../data/SFT_aligned_llama2-7b-chat-hf_train_short.csv"}
     else:
-        data_files = {"train": "./data/SFT_aligned_llama2-7b-chat-hf_train.csv"}
+        data_files = {"train": "../data/SFT_aligned_llama2-7b-chat-hf_train.csv"}
     traindata = load_dataset("csv", data_files=data_files, split="train")
     trainloader = []
     random.seed(seed)
@@ -75,7 +324,7 @@ def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="al
         data_files = {"train": "./data/alpaca_cleaned_train.csv"}
     elif dataset == "alpaca_cleaned_no_safety":
         data_files = {"train": "./data/alpaca_cleaned_no_safety_train.csv"}
-    else:
+    else: 
         raise ValueError("Dataset not supported")
     traindata = load_dataset("csv", data_files=data_files, split="train")
     random.seed(seed)
@@ -112,8 +361,14 @@ def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="al
 
 # Function to select the appropriate loader based on dataset name
 def get_loaders(
-    name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, disentangle=False
+    name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, disentangle=False, prompt="direct"
 ):
+    if name == "addition_direct":
+        return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, dataset="addition_direct")
+    if name == "GSM8K_cot0shot":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot")
+    if name == "GSM8K_direct":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="direct")
     if name == "wikitext":
         return get_wikitext2(nsamples, seed, seqlen, tokenizer)
     if name in ["alpaca", "alpaca_cleaned", "alpaca_cleaned_no_safety"]:

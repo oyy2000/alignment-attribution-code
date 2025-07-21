@@ -114,7 +114,6 @@ def prepare_calibration_input(model, dataloader, device, nsamples):
 
         def forward(self, inp, **kwargs):
             inps.append(inp)
-            print(f"[DEBUG] inp type: {type(inp)}, len: {len(inp)}, first shape: {inp[0].shape}")
             attention_mask.append(kwargs["attention_mask"])
             position_ids.append(kwargs["position_ids"])
             # inps[cache['i']] = inp
@@ -274,6 +273,10 @@ def prune_wanda(
         "align",
         "align_short",
         "misalign",
+        "addition_direct",
+        "addition_CoT",
+        "GSM8K_direct",
+        "GSM8K_cot0shot",
     ]
     dataloader, _ = get_loaders(
         prune_data,
