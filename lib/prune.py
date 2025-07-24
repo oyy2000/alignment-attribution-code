@@ -277,6 +277,9 @@ def prune_wanda(
         "addition_CoT",
         "GSM8K_direct",
         "GSM8K_cot0shot",
+        "GSM8K_direct_120",
+        "GSM8K_cot0shot_120",
+        "GSM8K_cot0shot_goldreason",
     ]
     dataloader, _ = get_loaders(
         prune_data,

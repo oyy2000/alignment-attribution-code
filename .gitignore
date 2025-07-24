@@ -5,3 +5,6 @@ llm_weights
 scripts/out/**
 .gitignore
 data/prompts
+out/**
+temp/wanda_usediff_False_recover_False/**
+scripts/tmp/

@@ -2,7 +2,7 @@ model="llama2-7b-chat-hf"
 method="wanda"
 type="unstructured"
 suffix="weightonly"
-prune_data="GSM8K_direct_120"
+prune_data="GSM8K_cot0shot_goldreason"
 sparsity_ratio=0.1
 save_dir="out/$model/$type/${method}_${suffix}/$prune_data/"
 nsamples=120
@@ -18,5 +18,6 @@ python main.py \
     --save $save_dir \
     --nsamples $nsamples \
     --save_mask \
+    --eval_attack \
     # --eval_zero_shot \
     # --dump_wanda_score \

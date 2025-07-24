@@ -113,6 +113,11 @@ def main(args=None):
                 "align_misalign",
                 "misalign_align",
                 "align_short_misalign",
+                "GSM8K_direct",
+                "GSM8K_cot0shot",
+                "GSM8K_direct_120",
+                "GSM8K_cot0shot_120",
+                "GSM8K_cot0shot_goldreason",
                 "none",
             ],
             default="alpaca_cleaned_no_safety",
@@ -363,8 +368,8 @@ def main(args=None):
     print(f"sparsity sanity check {sparsity_ratio:.6f}")
     print("*" * 30)
     ################################################################
-    ppl_test = eval_ppl(args, model, tokenizer, device)
-    print(f"wikitext perplexity {ppl_test}")
+    # ppl_test = eval_ppl(args, model, tokenizer, device)
+    # print(f"wikitext perplexity {ppl_test}")
 
     if not os.path.exists(args.save):
         os.makedirs(args.save)
@@ -383,38 +388,38 @@ def main(args=None):
             os.makedirs(save_attackpath)
     else:
         save_attackpath = ""
-    if not os.path.exists(save_filepath):
-        with open(save_filepath, "w") as f:
-            if not args.prune_method == "wandg_set_difference":
-                print("method\tactual_sparsity\tmetric\tscore", file=f, flush=True)
-                print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\tPPL\t{ppl_test:.4f}",
-                    file=f,
-                    flush=True,
-                )
-            else:
-                print(
-                    "method\tactual_sparsity\tp\tq\tmetric\tscore", file=f, flush=True
-                )
-                print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.p}\t{args.q}\tPPL\t{ppl_test:.4f}",
-                    file=f,
-                    flush=True,
-                )
-    else:
-        with open(save_filepath, "a") as f:
-            if not args.prune_method == "wandg_set_difference":
-                print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\tPPL\t{ppl_test:.4f}",
-                    file=f,
-                    flush=True,
-                )
-            else:
-                print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.p}\t{args.q}\tPPL\t{ppl_test:.4f}",
-                    file=f,
-                    flush=True,
-                )
+    # if not os.path.exists(save_filepath):
+    #     with open(save_filepath, "w") as f:
+    #         if not args.prune_method == "wandg_set_difference":
+    #             print("method\tactual_sparsity\tmetric\tscore", file=f, flush=True)
+    #             print(
+    #                 f"{args.prune_method}\t{sparsity_ratio:.6f}\tPPL\t{ppl_test:.4f}",
+    #                 file=f,
+    #                 flush=True,
+    #             )
+    #         else:
+    #             print(
+    #                 "method\tactual_sparsity\tp\tq\tmetric\tscore", file=f, flush=True
+    #             )
+    #             print(
+    #                 f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.p}\t{args.q}\tPPL\t{ppl_test:.4f}",
+    #                 file=f,
+    #                 flush=True,
+    #             )
+    # else:
+    #     with open(save_filepath, "a") as f:
+    #         if not args.prune_method == "wandg_set_difference":
+    #             print(
+    #                 f"{args.prune_method}\t{sparsity_ratio:.6f}\tPPL\t{ppl_test:.4f}",
+    #                 file=f,
+    #                 flush=True,
+    #             )
+    #         else:
+    #             print(
+    #                 f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.p}\t{args.q}\tPPL\t{ppl_test:.4f}",
+    #                 file=f,
+    #                 flush=True,
+    #             )
 
     if args.save_mask:
         mask = get_mask(model, args.neg_prune)
@@ -442,7 +447,7 @@ def main(args=None):
         vllm_model = LLM(
             model=pruned_path,
             tokenizer=modeltype2path[args.model],
-            dtype="bfloat16",
+            dtype="float16",
             swap_space=128,
         )
         if args.decouple_align_utility or args.decouple_align_misalign:

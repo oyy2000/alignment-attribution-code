@@ -209,11 +209,19 @@ import json
 import torch
 import random
 
-def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="direct"):
-    if prompt == "direct":
-        data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
-    else:
-        data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8K_direct"):
+    if prompt == "GSM8K_direct":
+        # data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+    elif prompt == "GSM8K_cot0shot_120":
+        # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_cot_120.json'
+    elif prompt == "GSM8K_direct_120":
+        # data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_direct_120.json'
+    elif prompt in ["GSM8K_cot0shot_goldreason", "GSM8K_cot0shot"]:
+        # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
 
     with open(data_file, 'r') as fin:
         items = json.load(fin)  # 注意这里是 json.load 而不是 line-by-line
@@ -235,12 +243,15 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="dire
 
     for item in sampled_items:
         # 选择prompt类型（如 direct / cot0shot.math teacher_input）
-        if prompt == "direct":
+        if "direct" in prompt:
             input_text = item['direct.math teacher_input']
             output_text = item['direct.math teacher_output']
-        elif prompt == "GSM8K_cot0shot":
+        elif prompt in ["GSM8K_cot0shot", "GSM8K_cot0shot_120" ]:
             input_text = item['cot0shot.math teacher_input']
             output_text = item['cot0shot.math teacher_output']
+        elif prompt == "GSM8K_cot0shot_goldreason":
+            input_text = item['cot0shot.goldreason_input']
+            output_text = item['cot0shot.goldreason_output']
         else:
             raise ValueError(f"Unsupported prompt type: {prompt}")
 
@@ -258,8 +269,6 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="dire
         trainloader.append((inp, tar))
 
     return trainloader, None
-
-
 
 
 def get_addition(nsamples, seed, seqlen, tokenizer, disentangle=False):
@@ -365,10 +374,17 @@ def get_loaders(
 ):
     if name == "addition_direct":
         return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, dataset="addition_direct")
+
     if name == "GSM8K_cot0shot":
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot")
     if name == "GSM8K_direct":
-        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="direct")
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_direct")
+    if name == "GSM8K_direct_120":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_direct_120")
+    if name == "GSM8K_cot0shot_120":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_120")
+    if name == "GSM8K_cot0shot_goldreason":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_goldreason")
     if name == "wikitext":
         return get_wikitext2(nsamples, seed, seqlen, tokenizer)
     if name in ["alpaca", "alpaca_cleaned", "alpaca_cleaned_no_safety"]:
