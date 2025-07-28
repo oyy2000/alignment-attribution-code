@@ -11,14 +11,17 @@ method = "wanda"
 sparsity_type = "unstructured"
 suffix = "weightonly"
 nsamples = 120
-log_file = f"command_log_neg.json"
+log_file = f"command_log_save_eval_all_0_prune.json"
 
 prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
-sparsity_ratios = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+sparsity_ratios = [0]
+neg_options = [False, True]
 
-def build_command(prune_data, sparsity_ratio):
+def build_command(prune_data, sparsity_ratio, is_neg):
+    prompt_method = "cot0shot" if "cot0shot" in prune_data else "direct"
     save_dir = f"out/{model}/{sparsity_type}/{method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
-    command = (
+    if is_neg:
+        command = (
         f"python main.py "
         f"--model {model} "
         f"--prune_method {method} "
@@ -27,8 +30,25 @@ def build_command(prune_data, sparsity_ratio):
         f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--save_mask "
         f"--neg_prune "
+        f"--save_mask "
+        f"--eval_gsm8k "
+        f"--eval_type fixed "
+        f"--prompt_method {prompt_method} "
+    )
+    else:
+        command = (
+        f"python main.py "
+        f"--model {model} "
+        f"--prune_method {method} "
+        f"--prune_data {prune_data} "
+        f"--sparsity_ratio {sparsity_ratio} "
+        f"--sparsity_type {sparsity_type} "
+        f"--save {save_dir} "
+        f"--nsamples {nsamples} "
+        f"--eval_gsm8k "
+        f"--eval_type fixed "
+        f"--prompt_method {prompt_method} "
     )
     return command
 
@@ -87,10 +107,10 @@ def run_command(command, gpu_id):
         update_log(command, f"failed (code {code})")
     time.sleep(10)
 
-def load_pending_tasks():
+def load_pending_or_failed_tasks():
     with open(log_file, 'r') as f:
         logs = json.load(f)
-    return [(i, log["command"]) for i, log in enumerate(logs) if log["result"] == "pending"]
+    return [(i, log["command"]) for i, log in enumerate(logs) if log["result"] == "pending" or log["result"].startswith("failed")]
 
 def worker(task_queue, gpu_id):
     while True:
@@ -110,10 +130,11 @@ def main():
     commands = []
     for prune_data in prune_data_options:
         for sparsity in sparsity_ratios:
-            commands.append(build_command(prune_data, sparsity))
+            for is_neg in neg_options:
+                commands.append(build_command(prune_data, sparsity, is_neg))
 
     initialize_log(commands)
-    pending = load_pending_tasks()
+    pending = load_pending_or_failed_tasks()
     if not pending:
         print("No tasks to run.")
         return

@@ -13,7 +13,7 @@
   },
   {
     "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0.3 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0.3 --nsamples 120 --save_mask --neg_prune ",
-    "result": "pending"
+    "result": "success"
   },
   {
     "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0.4 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0.4 --nsamples 120 --save_mask --neg_prune ",
@@ -25,7 +25,7 @@
   },
   {
     "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_cot0shot_120 --sparsity_ratio 0.05 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0.05 --nsamples 120 --save_mask --neg_prune ",
-    "result": "pending"
+    "result": "success"
   },
   {
     "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_cot0shot_120 --sparsity_ratio 0.1 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0.1 --nsamples 120 --save_mask --neg_prune ",

@@ -22,7 +22,7 @@ from lib.prune import (
 )
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack
+from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -62,6 +62,12 @@ def get_llm(model_name, cache_dir="llm_weights"):
 def main(args=None):
     if args is None:
         parser = argparse.ArgumentParser()
+        parser.add_argument('--max_new_tokens', type=int, default=1024)
+        parser.add_argument('--dataset', type=str, default='GSM8K')
+        parser.add_argument('--prompt_method', type=str, default='cot0shot')
+        parser.add_argument('--eval_type', type=str, default='fixed')
+        parser.add_argument('--role', type=str, default='math teacher')
+        parser.add_argument('--batch_size', type=int, default=1)
         parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
         parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
         parser.add_argument(
@@ -166,6 +172,7 @@ def main(args=None):
 
         parser.add_argument("--eval_zero_shot", action="store_true")
         parser.add_argument("--eval_attack", action="store_true")
+        parser.add_argument("--eval_gsm8k", action="store_true")
         parser.add_argument("--save_attack_res", action="store_true")
         parser.add_argument(
             "--prune_part",
@@ -436,6 +443,79 @@ def main(args=None):
             )
         torch.save(mask, save_mask_path)
         print(f"Saved weight mask to {save_mask_path}")
+    
+    pruned_model_folder = os.path.join(args.save, "pruned_model")
+    
+    if args.eval_gsm8k:
+        
+        # if args.prune_data == "GSM8K_direct":
+        #     prune_data = "GSM8K_direct_120"
+        # elif args.prune_data == "GSM8K_cot0shot":
+        #     prune_data = "GSM8K_cot0shot_120"
+        # else:
+        
+        prune_data = args.prune_data
+
+        if not os.path.exists(pruned_model_folder):
+            os.makedirs(pruned_model_folder)
+        if args.neg_prune:
+            pruned_path = os.path.join(
+                pruned_model_folder,
+                f"pruned_model_top_{args.sparsity_ratio:.3f}"
+            )
+        else:
+            pruned_path = os.path.join(
+                pruned_model_folder,
+                f"pruned_model_bottom_{args.sparsity_ratio:.3f}"
+            )
+        
+        model.save_pretrained(pruned_path)
+        del model
+        import gc
+        # 2. 清理 Python 垃圾回收
+        gc.collect()
+
+        # 3. 清理 CUDA 缓存（如果在 GPU 上）
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        vllm_model = LLM(
+            model=pruned_path,
+            tokenizer=modeltype2path[args.model],
+            dtype="float16",
+            swap_space=12,
+        )
+        print(f"Evaluating GSM8K {prune_data} with {args.model}")
+        if args.eval_type == "fixed":
+            acc_summary = eval_gsm8k_fixed(
+                args,
+                vllm_model,
+                tokenizer,
+                prune_data=prune_data,
+            )
+            print(f"GSM8K evaluation results on {prune_data}: {acc_summary[args.prompt_method]:.4f}")
+            with open(save_filepath, "a") as f:
+                print(
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
+                    file=f,
+                    flush=True,
+                )
+        else:
+            acc_summary = eval_gsm8k_random(
+                args,
+                vllm_model,
+                tokenizer,
+                prune_data=prune_data,
+            )
+            print(f"GSM8K evaluation results on {prune_data}: {acc_summary[args.prompt_method]:.4f}")
+            with open(save_filepath, "a") as f:
+                print(
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
+                    file=f,
+                    flush=True,
+                )
+
+       
 
     if args.eval_attack:
         # note: since vLLM only supports loading from the path, we need to save the pruned model first for faster evaluation. We can reuse this temp folder to save disk spaces
@@ -448,7 +528,7 @@ def main(args=None):
             model=pruned_path,
             tokenizer=modeltype2path[args.model],
             dtype="float16",
-            swap_space=128,
+            swap_space=12,
         )
         if args.decouple_align_utility or args.decouple_align_misalign:
             vllm_model.llm_engine.tokenizer.add_special_tokens({"pad_token": "[PAD]"})
