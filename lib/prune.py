@@ -1615,6 +1615,92 @@ def prune_wanda_decouple_activation_norms(
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 
+def _load_score(model_tag: str, metric: str, layer_idx: int, param_name: str):
+    """根据模型大小自动选取路径"""
+    # dict for metric to file path 
+    METRIC_TO_PATH = {
+        "cot0shot": "GSM8K_cot0shot_120",
+        "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
+        "direct": "GSM8K_direct_120",
+    }
+    path = METRIC_TO_PATH.get(metric)
+    base = f"out/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+    fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+    fpath = os.path.join(base, fname)
+    if not os.path.exists(fpath):
+        raise FileNotFoundError(f"未找到分数文件: {fpath}")
+    return torch.load(fpath, map_location='cpu').float()
+
+
+def prune_wanda_3_set_difference(
+    args,
+    model,
+    tokenizer,
+    model_base=None,
+    device=torch.device("cuda:0"),
+    prune_n=0,
+    prune_m=0,
+    prune_data="align_short",
+    p=0.5,                # cot0shot     top-p 百分比
+    q=0.5,                # cot0shot_gr  top-q 百分比
+    k=0.5,                # direct       top-k 百分比
+):
+    use_cache = model.config.use_cache
+    model.config.use_cache = False
+
+    layers = model.model.layers
+    if args.use_diff or args.recover_from_base:
+        assert model_base is not None
+        layers_base = model_base.model.layers
+
+    metric1, metric2, metric3 = "cot0shot", "cot0shot_goldreason", "direct"
+    print(f"🌱 3-Set pruning - p={p}, q={q}, k={k} - {metric1} ∩ {metric2}\\{metric3}")
+
+    for i, layer in enumerate(layers):
+        subset = find_layers(layer)
+        if args.use_diff or args.recover_from_base:
+            subset_base = find_layers(layers_base[i])
+
+        for name in subset:
+            print(f"  -> layer {i:<2}  {name}")
+
+            # ---- 读取三种 W_metric 分数 ----
+            W_metric1 = _load_score(args.model, metric1, i, name)
+            W_metric2 = _load_score(args.model, metric2, i, name)
+            W_metric3 = _load_score(args.model, metric3, i, name)
+
+            num_total = W_metric1.numel()
+            top_p  = int(p * num_total)
+            top_q  = int(q * num_total)
+            top_k  = int(k * num_total)
+
+            # ---- 取三个 Top-k 索引集合 ----
+            idx_p = torch.topk(W_metric1.flatten(), top_p , largest=True)[1].unique()
+            idx_q = torch.topk(W_metric2.flatten(), top_q , largest=True)[1].unique()
+            idx_k = torch.topk(W_metric3.flatten(), top_k , largest=True)[1].unique()
+
+            # ---- 交集再减差集 ----
+            inter_pq   = idx_p[torch.isin(idx_p, idx_q)]
+            prune_set  = inter_pq[~torch.isin(inter_pq, idx_k)]
+
+            if prune_set.numel() == 0:
+                continue   # 该参数没有需要置零的权重
+
+            # ---- 生成布尔 Mask 并置零 / 回滚 ----
+            W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
+            dim1 = subset[name].weight.size(1)
+            rows = prune_set // dim1
+            cols = prune_set %  dim1
+            W_mask[rows, cols] = True
+
+            if args.recover_from_base:
+                subset[name].weight.data[W_mask] = subset_base[name].weight.data[W_mask]
+            else:
+                subset[name].weight.data[W_mask] = 0.0
+
+    model.config.use_cache = use_cache
+    torch.cuda.empty_cache()
+
 
 def prune_wandg_set_difference(
     args,

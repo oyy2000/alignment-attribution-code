@@ -585,6 +585,118 @@ def eval_gsm8k_random(
 
     return acc_summary
 
+
+def eval_gsm8k_held_out(
+    args,
+    vllm_model,
+    tokenizer=None,
+    prune_data: str = "GSM8K_direct_120",
+):
+    prompt_tags = [p.strip() for p in args.prompt_method.split(",") if p.strip()]
+    full_prompts = {
+        tag: load_prompt(args.dataset, tag, do_role=args.role) for tag in prompt_tags
+    }
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    # 2) 提取所有 id（去掉可能为空的）
+    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/heldout.jsonl"
+    with open(data_file, "r") as fin:
+        samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
+    ids = [s["id"] for s in samples if "id" in s and s["id"]]
+
+    # 3) 传给 load_dataset
+    data = load_dataset(
+        args.dataset,
+        args.nsamples,
+        select_method="fixed",
+        ids=ids          # 这里就是 samples 中所有 id 的列表
+    )
+
+    # -------- ❷  设置 SamplingParams --------
+    sampling_params = SamplingParams(
+        temperature=0.0,
+        top_p=1.0,
+        max_tokens=1024,
+        n=1,              # GSM8K 评测通常一个样本即可
+        stop=None,        # 统一在 extract_answer 里截断
+    )
+
+    # -------- ❸  主循环：每种 prompt 独立评估 --------
+    acc_dict: Dict[str, List[bool]] = {t: [] for t in prompt_tags}
+
+    for tag in prompt_tags:
+        if args.neg_prune:
+            print("Negative pruning")
+            outfile = (Path(args.save)
+                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}.jsonl"
+                    )
+        else:
+            print("Positive pruning")
+            outfile = (Path(args.save)
+                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}.jsonl"
+            )
+
+        already_done = 0
+        out_fh = open(outfile, "a")
+
+        if outfile.exists():
+            # JSONL 易于续写；记录已完成行数
+            already_done = sum(1 for _ in open(outfile))
+            if already_done >= len(data):
+                print(f"[SKIP] {outfile.name} 已完成 ({already_done}/{len(data)})")
+                out_fh.close()
+                acc_dict[tag] = [
+                    json.loads(line)["correct"] for line in open(outfile)
+                ]
+                continue
+            print(f"[RESUME] {outfile.name}: 已有 {already_done} 条，继续评估 …")
+
+        dataset_iter = data[already_done:]
+        dataset_chunks = [
+            dataset_iter[i : i + args.batch_size]
+            for i in range(0, len(dataset_iter), args.batch_size)
+        ]
+
+        for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
+            # 组装输入
+            messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
+            outputs = _safe_generate(vllm_model, messages, sampling_params)
+
+            preds = [
+                extract_answer(out_text, sample, args.dataset)
+                for out_text, sample in zip(outputs, chunk)
+            ]
+
+            for sample, out_text, pred in zip(chunk, outputs, preds):
+                gold = sample["answer"]
+                correct = pred == gold
+                acc_dict[tag].append(correct)
+
+                record = {
+                    **sample,                       # 题目 & gold answer
+                    "prompt_tag": tag,
+                    "input": format_prompt(full_prompts[tag], sample),
+                    "output": out_text,
+                    "pred": pred,
+                    "gold": gold,
+                    "correct": correct,
+                }
+                out_fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                out_fh.flush()
+
+        out_fh.close()
+
+    # -------- ❹  汇总指标 --------
+    acc_summary = {
+        tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
+    }
+    for tag, acc in acc_summary.items():
+        n = len(acc_dict[tag])
+        print(f"[ACC] {tag:15s}: {acc:.3%} ({int(acc*n)}/{n})")
+
+    return acc_summary
+
 def eval_gsm8k_fixed(
     args,
     vllm_model,

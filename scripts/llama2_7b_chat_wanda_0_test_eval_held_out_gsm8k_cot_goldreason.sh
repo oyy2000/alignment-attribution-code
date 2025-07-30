@@ -3,13 +3,13 @@ method="wanda"
 type="unstructured"
 suffix="weightonly"
 prune_data="GSM8K_direct_120"
-sparsity_ratio=0.1
+sparsity_ratio=0.15
 save_dir="out/$model/$type/${method}_${suffix}/$prune_data/"
-nsamples=120
+nsamples=2
 
 echo "Running with model: $model, method: $method, type: $type, sparsity_ratio: $sparsity_ratio, prune_data: $prune_data"
 
-python main.py \
+CUDA_VISIBLE_DEVICES=1 python main.py \
     --model $model \
     --prune_method $method \
     --prune_data $prune_data \
@@ -17,6 +17,9 @@ python main.py \
     --sparsity_type $type \
     --save $save_dir \
     --nsamples $nsamples \
-    --save_mask \
+    --eval_gsm8k \
+    --eval_type held_out \
+    --prompt_method cot0shot_goldreason \
+    # --save_mask \
     # --eval_zero_shot \
     # --dump_wanda_score \

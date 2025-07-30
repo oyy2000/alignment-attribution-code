@@ -19,10 +19,11 @@ from lib.prune import (
     get_mask,
     prune_wandg_set_difference,
     prune_attention_head,
+    prune_wanda_3_set_difference
 )
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed
+from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed, eval_gsm8k_held_out
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -103,6 +104,7 @@ def main(args=None):
                 "wandg",
                 "wandg_set_difference",
                 "low_rank",
+                "wanda_3_set_difference"
             ],
         )
         parser.add_argument(
@@ -144,6 +146,12 @@ def main(args=None):
             help="Use combined with wandg_set_difference, the top q scored elements in the second set (align))",
         )
         parser.add_argument(
+            "--k",
+            type=float,
+            default=0.5,
+            help="Use combined with wandg_3_set_difference, the top k scored elements in the third set ",
+        )
+        parser.add_argument(
             "--top_k_heads",
             type=int,
             default=10,
@@ -178,6 +186,11 @@ def main(args=None):
             "--prune_part",
             action="store_true",
             help="whether to only prune the layer with lower jaccard index",
+        )
+        parser.add_argument(
+            "--save_sparsity",
+            action="store_true",
+            help="whether to save the sparsity ratio"
         )
         parser.add_argument(
             "--entangle_prompt_feat",
@@ -358,6 +371,20 @@ def main(args=None):
             prune_ablate(
                 args, model, tokenizer, device, prune_n=prune_n, prune_m=prune_m
             )
+        elif args.prune_method == "wanda_3_set_difference":
+            prune_wanda_3_set_difference(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                q=args.q,
+                k=args.k,
+            )
 
     if args.prune_method == "low_rank":
         make_low_rank(args, model, tokenizer, device, prune_data=args.prune_data)
@@ -374,6 +401,17 @@ def main(args=None):
         sparsity_ratio = args.sparsity_ratio
     print(f"sparsity sanity check {sparsity_ratio:.6f}")
     print("*" * 30)
+    if args.save_sparsity:
+        save_sparsity_path = os.path.join(args.save, "sparsity.txt")
+        with open(save_sparsity_path, "w") as f:
+            print(f"sparsity ratio: {sparsity_ratio:.6f}", file=f)
+            print(f"prune method: {args.prune_method}", file=f)
+            print(f"sparsity type: {args.sparsity_type}", file=f)
+            print(f"model: {args.model}", file=f)
+            print(f"prune data: {args.prune_data}", file=f)
+            print(f"q: {args.q}", file=f)
+            print(f"p: {args.p}", file=f)
+            print(f"k: {args.k}", file=f)
     ################################################################
     # ppl_test = eval_ppl(args, model, tokenizer, device)
     # print(f"wikitext perplexity {ppl_test}")
@@ -496,11 +534,11 @@ def main(args=None):
             print(f"GSM8K evaluation results on {prune_data}: {acc_summary[args.prompt_method]:.4f}")
             with open(save_filepath, "a") as f:
                 print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.prompt_method}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
                     file=f,
                     flush=True,
                 )
-        else:
+        elif args.eval_type == "random":
             acc_summary = eval_gsm8k_random(
                 args,
                 vllm_model,
@@ -510,12 +548,24 @@ def main(args=None):
             print(f"GSM8K evaluation results on {prune_data}: {acc_summary[args.prompt_method]:.4f}")
             with open(save_filepath, "a") as f:
                 print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.prompt_method}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
                     file=f,
                     flush=True,
                 )
-
-       
+        elif args.eval_type == "held_out":
+            acc_summary = eval_gsm8k_held_out(
+                args,
+                vllm_model,
+                tokenizer,
+                prune_data=prune_data,
+            )
+            print(f"GSM8K evaluation results on {prune_data} held out: {acc_summary[args.prompt_method]:.4f}")
+            with open(save_filepath, "a") as f:
+                print(
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.prompt_method}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
+                    file=f,
+                    flush=True,
+                )
 
     if args.eval_attack:
         # note: since vLLM only supports loading from the path, we need to save the pruned model first for faster evaluation. We can reuse this temp folder to save disk spaces

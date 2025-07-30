@@ -7,48 +7,32 @@ from multiprocessing import Queue
 
 # Configurable Parameters
 model = "llama2-7b-chat-hf"
-method = "random"
 sparsity_type = "unstructured"
 suffix = "weightonly"
 nsamples = 120
-log_file = f"command_log_save_eval_random.json"
+log_file = f"command_log_save_eval_held_out.json"
 
 prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
-sparsity_ratios = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-neg_options = [False]
+sparsity_ratios = [0, 0.03, 0.06, 0.09, 0.12, 0.15] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+prune_method_options = ["random", "wanda"]
+prompt_methods = ["direct", "cot0shot", "cot0shot_goldreason"]
 
-def build_command(prune_data, sparsity_ratio, is_neg):
-    prompt_method = "cot0shot" if "cot0shot" in prune_data else "direct"
-    save_dir = f"out/{model}/{sparsity_type}/{method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
-    if is_neg:
-        command = (
+def build_command(prune_data, sparsity_ratio, prune_method, prompt_method):
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
+    command = (
         f"python main.py "
         f"--model {model} "
-        f"--prune_method {method} "
-        f"--prune_data {prune_data} "
-        f"--sparsity_ratio {sparsity_ratio} "
-        f"--sparsity_type {sparsity_type} "
-        f"--save {save_dir} "
-        f"--nsamples {nsamples} "
-        f"--neg_prune "
-        f"--eval_gsm8k "
-        f"--eval_type fixed "
-        f"--prompt_method {prompt_method} "
-    )
-    else:
-        command = (
-        f"python main.py "
-        f"--model {model} "
-        f"--prune_method {method} "
+        f"--prune_method {prune_method} "
         f"--prune_data {prune_data} "
         f"--sparsity_ratio {sparsity_ratio} "
         f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
-        f"--eval_type fixed "
+        f"--eval_type held_out "
         f"--prompt_method {prompt_method} "
     )
+  
     return command
 
 def initialize_log(commands):
@@ -129,8 +113,9 @@ def main():
     commands = []
     for prune_data in prune_data_options:
         for sparsity in sparsity_ratios:
-            for is_neg in neg_options:
-                commands.append(build_command(prune_data, sparsity, is_neg))
+            for prune_method in prune_method_options:
+                for prompt_method in prompt_methods:
+                    commands.append(build_command(prune_data, sparsity, prune_method, prompt_method))
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()
