@@ -403,6 +403,8 @@ def main(args=None):
     print("*" * 30)
     if args.save_sparsity:
         save_sparsity_path = os.path.join(args.save, "sparsity.txt")
+        if not os.path.exists(os.path.dirname(save_sparsity_path)):
+            os.makedirs(os.path.dirname(save_sparsity_path))
         with open(save_sparsity_path, "w") as f:
             print(f"sparsity ratio: {sparsity_ratio:.6f}", file=f)
             print(f"prune method: {args.prune_method}", file=f)
@@ -753,6 +755,11 @@ def main(args=None):
                 )
 
         print(results)
+        # remove the model directory for disk space
+        if os.path.exists(pruned_model_folder):
+            import shutil
+            shutil.rmtree(pruned_model_folder)
+
 
 
 if __name__ == "__main__":

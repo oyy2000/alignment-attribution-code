@@ -1615,6 +1615,24 @@ def prune_wanda_decouple_activation_norms(
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 
+def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_name: str,
+                device: torch.device, use_fp16: bool = False):
+    METRIC_TO_PATH = {
+        "cot0shot": "GSM8K_cot0shot_120",
+        "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
+        "direct": "GSM8K_direct_120",
+    }
+    path  = METRIC_TO_PATH[metric]
+    base  = f"out/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+    fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+    fpath = os.path.join(base, fname)
+    if not os.path.exists(fpath):
+        raise FileNotFoundError(f"未找到分数文件: {fpath}")
+
+    dtype = torch.float16 if use_fp16 else torch.float32
+    return torch.load(fpath, map_location=device).to(dtype=dtype)
+
+
 def _load_score(model_tag: str, metric: str, layer_idx: int, param_name: str):
     """根据模型大小自动选取路径"""
     # dict for metric to file path 
@@ -1625,11 +1643,11 @@ def _load_score(model_tag: str, metric: str, layer_idx: int, param_name: str):
     }
     path = METRIC_TO_PATH.get(metric)
     base = f"out/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
-    fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+    fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle.pkl"
     fpath = os.path.join(base, fname)
     if not os.path.exists(fpath):
         raise FileNotFoundError(f"未找到分数文件: {fpath}")
-    return torch.load(fpath, map_location='cpu').float()
+    return pickle.load(open(fpath, "rb"))
 
 
 def prune_wanda_3_set_difference(
@@ -1664,10 +1682,17 @@ def prune_wanda_3_set_difference(
         for name in subset:
             print(f"  -> layer {i:<2}  {name}")
 
-            # ---- 读取三种 W_metric 分数 ----
-            W_metric1 = _load_score(args.model, metric1, i, name)
-            W_metric2 = _load_score(args.model, metric2, i, name)
-            W_metric3 = _load_score(args.model, metric3, i, name)
+            dev = subset[name].weight.device          # 该层所在 GPU
+            W_metric1 = _load_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
+            W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
+            W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
+
+            # 之后所有 topk / unique 都在 dev 上执行
+            
+            # # ---- 读取三种 W_metric 分数 ----
+            # W_metric1 = _load_score(args.model, metric1, i, name)
+            # W_metric2 = _load_score(args.model, metric2, i, name)
+            # W_metric3 = _load_score(args.model, metric3, i, name)
 
             num_total = W_metric1.numel()
             top_p  = int(p * num_total)
@@ -1697,6 +1722,8 @@ def prune_wanda_3_set_difference(
                 subset[name].weight.data[W_mask] = subset_base[name].weight.data[W_mask]
             else:
                 subset[name].weight.data[W_mask] = 0.0
+            del W_metric1, W_metric2, W_metric3
+            torch.cuda.empty_cache()                  # 及时释放显存
 
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
