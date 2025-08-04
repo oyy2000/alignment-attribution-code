@@ -320,10 +320,26 @@ def get_align(nsamples, seed, seqlen, tokenizer, disentangle=False, mode="base")
 # Load and process wikitext2 dataset
 def get_wikitext2(nsamples, seed, seqlen, tokenizer):
     # Load train and test datasets
+    # testdata = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+    # testenc = tokenizer("\n\n".join(testdata["text"]), return_tensors="pt")
+    traindata = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
     testdata = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+     # Create training dataloader
+    random.seed(seed)
+    trainloader = []
+    trainenc = tokenizer("\n\n".join(traindata["text"]), return_tensors="pt")
+    
+    # Generate samples from training set
+    for _ in range(nsamples):
+        i = random.randint(0, trainenc.input_ids.shape[1] - seqlen - 1)
+        j = i + seqlen
+        inp = trainenc.input_ids[:, i:j]
+        tar = inp.clone()
+        tar[:, :-1] = -100
+        trainloader.append((inp, tar))
+    
     testenc = tokenizer("\n\n".join(testdata["text"]), return_tensors="pt")
-
-    return None, testenc
+    return trainloader, testenc
 
 
 def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="alpaca"):

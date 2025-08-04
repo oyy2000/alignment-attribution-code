@@ -19,7 +19,8 @@ from lib.prune import (
     get_mask,
     prune_wandg_set_difference,
     prune_attention_head,
-    prune_wanda_3_set_difference
+    prune_wanda_3_set_difference,
+    prune_wanda_3_set_difference_utility
 )
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
@@ -104,7 +105,8 @@ def main(args=None):
                 "wandg",
                 "wandg_set_difference",
                 "low_rank",
-                "wanda_3_set_difference"
+                "wanda_3_set_difference",
+                "wanda_3_set_difference_utility"
             ],
         )
         parser.add_argument(
@@ -385,6 +387,20 @@ def main(args=None):
                 q=args.q,
                 k=args.k,
             )
+        elif args.prune_method == "wanda_3_set_difference_utility":
+            prune_wanda_3_set_difference_utility(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                q=args.q,
+                k=args.k,
+            )
 
     if args.prune_method == "low_rank":
         make_low_rank(args, model, tokenizer, device, prune_data=args.prune_data)
@@ -402,7 +418,8 @@ def main(args=None):
     print(f"sparsity sanity check {sparsity_ratio:.6f}")
     print("*" * 30)
     if args.save_sparsity:
-        save_sparsity_path = os.path.join(args.save, "sparsity.txt")
+        args.sparsity_ratio = sparsity_ratio
+        save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
         if not os.path.exists(os.path.dirname(save_sparsity_path)):
             os.makedirs(os.path.dirname(save_sparsity_path))
         with open(save_sparsity_path, "w") as f:
@@ -488,12 +505,6 @@ def main(args=None):
     
     if args.eval_gsm8k:
         
-        # if args.prune_data == "GSM8K_direct":
-        #     prune_data = "GSM8K_direct_120"
-        # elif args.prune_data == "GSM8K_cot0shot":
-        #     prune_data = "GSM8K_cot0shot_120"
-        # else:
-        
         prune_data = args.prune_data
 
         if not os.path.exists(pruned_model_folder):
@@ -561,13 +572,15 @@ def main(args=None):
                 tokenizer,
                 prune_data=prune_data,
             )
-            print(f"GSM8K evaluation results on {prune_data} held out: {acc_summary[args.prompt_method]:.4f}")
+            for tag, acc in acc_summary.items():
+                print(f"GSM8K evaluation results on {prune_data} held out: {tag}: {acc:.4f}")
             with open(save_filepath, "a") as f:
-                print(
-                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{args.prompt_method}\t{args.eval_type}\t{acc_summary[args.prompt_method]:.4f}",
-                    file=f,
-                    flush=True,
-                )
+                for tag, acc in acc_summary.items():
+                    print(
+                        f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{prune_data}\t{tag}\t{args.eval_type}\t{acc:.4f}",
+                        file=f,
+                        flush=True,
+                    )
 
     if args.eval_attack:
         # note: since vLLM only supports loading from the path, we need to save the pruned model first for faster evaluation. We can reuse this temp folder to save disk spaces
@@ -755,10 +768,16 @@ def main(args=None):
                 )
 
         print(results)
-        # remove the model directory for disk space
+    
+    # remove the model directory for disk space
+    try:
         if os.path.exists(pruned_model_folder):
+            print(f"Removing pruned model folder {pruned_model_folder}")
             import shutil
             shutil.rmtree(pruned_model_folder)
+            print(f"Successfully removed {pruned_model_folder}")
+    except Exception as e:
+        print(f"Failed to remove pruned model folder {pruned_model_folder}: {e}")
 
 
 

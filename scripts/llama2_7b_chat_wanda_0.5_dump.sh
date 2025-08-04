@@ -2,10 +2,10 @@ model="llama2-7b-chat-hf"
 method="wanda"
 type="unstructured"
 suffix="weightonly"
-prune_data="GSM8K_cot0shot_goldreason"
-sparsity_ratio=0.1
+prune_data="wikitext"
+sparsity_ratio=0.5
 save_dir="out/$model/$type/${method}_${suffix}/$prune_data/"
-nsamples=120
+nsamples=64
 
 echo "Running with model: $model, method: $method, type: $type, sparsity_ratio: $sparsity_ratio, prune_data: $prune_data"
 
@@ -17,7 +17,8 @@ python main.py \
     --sparsity_type $type \
     --save $save_dir \
     --nsamples $nsamples \
-    --save_mask \
     --dump_wanda_score \
+
+    # --save_mask \
     # --eval_zero_shot \
     # --dump_wanda_score \

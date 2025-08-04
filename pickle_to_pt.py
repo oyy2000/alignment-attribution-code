@@ -1,6 +1,6 @@
 import glob, torch, pickle, os, io
 
-pkls = glob.glob("out/**/wanda_score/**/*.pkl", recursive=True)
+pkls = glob.glob("out/**/wikitext/wanda_score/**/*.pkl", recursive=True)
 
 for p in pkls:
     # 1. 读取旧 pickle

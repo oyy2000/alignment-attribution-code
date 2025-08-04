@@ -600,7 +600,7 @@ def eval_gsm8k_held_out(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/heldout.jsonl"
+    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/heldout_500.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]
@@ -629,12 +629,12 @@ def eval_gsm8k_held_out(
         if args.neg_prune:
             print("Negative pruning")
             outfile = (Path(args.save)
-                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}.jsonl"
+                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
                     )
         else:
             print("Positive pruning")
             outfile = (Path(args.save)
-                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}.jsonl"
+                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
             )
 
         already_done = 0

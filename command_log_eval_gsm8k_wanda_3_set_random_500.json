@@ -1,0 +1,22 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0.021925 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0.054944 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "running"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0.097993 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "running"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0.145208 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "running"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0.194038 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "running"
+  }
+]

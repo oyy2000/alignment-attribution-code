@@ -4,23 +4,22 @@ import time
 import threading
 import subprocess
 from multiprocessing import Queue
-from threading import Lock
 
 # Configurable Parameters
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 120
-log_file = f"command_log_eval_gsm8k_wanda_3_set.json"
+nsamples = 500
+log_file = f"command_log_eval_gsm8k_wanda_3_set_500.json"
 
-prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
+prune_data_options = ["GSM8K_direct_120"]
 sparsity_ratios = [0.5] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
 prune_method_options = ["wanda_3_set_difference"]
-prompt_methods = ["direct", "cot0shot", "cot0shot_goldreason"]
+prompt_methods = ["direct,cot0shot,cot0shot_goldreason"]
 pq_options = [0.5]  # (p, q) for 3-set pruning
 k_options = [0.5, 0.45, 0.4, 0.35, 0.3]  # k for 3-set pruning
 def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q, k):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/prompt_{prompt_method}/k_{k}"
     command = (
         f"python main.py "
         f"--model {model} "
@@ -41,17 +40,6 @@ def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q,
   
     return command
 
-MIN_FREE_MEM = 20000            # 预计每卡至少空多少 MB
-
-def find_gpu_pair(min_free_mem=MIN_FREE_MEM):
-    """返回一对满足显存要求的 GPU id；若找不到则返回 None"""
-    free = get_gpu_free_memory()
-    candidates = [i for i, mem in enumerate(free) if mem >= min_free_mem]
-    if len(candidates) < 2:
-        return None
-    # 这里简单地取前两块；也可以做更多策略（例如最空闲组合）
-    return tuple(candidates[:2])
-
 def initialize_log(commands):
     if not os.path.exists(log_file):
         with open(log_file, 'w') as f:
@@ -62,17 +50,27 @@ def initialize_log(commands):
         with open(log_file, 'w') as f:
             json.dump(logs, f, indent=2)
 
+# 放在脚本最前面
+log_lock = threading.Lock()
+
 def update_log(command, result):
-    lock = threading.Lock()
-    with lock:
+    with log_lock:
         with open(log_file, 'r') as f:
             logs = json.load(f)
         for entry in logs:
             if entry["command"] == command:
                 entry["result"] = result
                 break
-        with open(log_file, 'w') as f:
-            json.dump(logs, f, indent=2)
+        atomic_write_json(log_file, logs)
+
+import tempfile, os, json
+
+def atomic_write_json(path, data):
+    dir_ = os.path.dirname(path)
+    with tempfile.NamedTemporaryFile('w', dir=dir_, delete=False) as tf:
+        json.dump(data, tf, indent=2)
+        temp_name = tf.name
+    os.replace(temp_name, path)   # rename 原子替换
 
 def get_gpu_free_memory():
     used = subprocess.run(
@@ -95,10 +93,9 @@ def monitor_gpu(gpu_id, min_free_mem, timeout=180):
         time.sleep(5)
     return False
 
-def run_command(command, gpu_pair):
-    gpu_a, gpu_b = gpu_pair
-    full_cmd = f"CUDA_VISIBLE_DEVICES={gpu_a},{gpu_b} {command}"
-    print(f"[GPU {gpu_a},{gpu_b}] Running: {full_cmd}")
+def run_command(command, gpu_id):
+    full_cmd = f"CUDA_VISIBLE_DEVICES={gpu_id} {command}"
+    print(f"[GPU {gpu_id}] Running: {full_cmd}")
     process = subprocess.Popen(full_cmd, shell=True)
     update_log(command, "running")
     code = process.wait()
@@ -113,32 +110,19 @@ def load_pending_or_failed_tasks():
         logs = json.load(f)
     return [(i, log["command"]) for i, log in enumerate(logs) if log["result"] == "pending" or log["result"].startswith("failed")]
 
-from collections import deque
-available_pairs = deque([(0,1), (2,3), (4,5), (6,7)])  # 全局可用池
-cond = threading.Condition()          # 代替 Lock，支持 wait/notify
-def worker(task_queue, cond):
+def worker(task_queue, gpu_id):
     while True:
         task = task_queue.get()
         if task is None:
             break
-
-        # 1. 取 GPU 对（阻塞等待）
-        with cond:
-            while not available_pairs:
-                cond.wait()
-            gpu_pair = available_pairs.popleft()
-
-        # 2. 跑任务
-        _, cmd = task
-        try:
-            run_command(cmd, gpu_pair)
-        finally:
-            # 3. 归还 GPU 对并通知其他线程
-            with cond:
-                available_pairs.append(gpu_pair)
-                cond.notify()
-
-
+        _, command = task
+        if monitor_gpu(gpu_id, min_free_mem=20000):  # Adjust if needed
+            run_command(command, gpu_id)
+        else:
+            print(f"[GPU {gpu_id}] Not enough memory for: {command}")
+            task_queue.put(task)
+            time.sleep(20)
+            
 def main():
     # Generate all commands
     commands = []
@@ -150,6 +134,7 @@ def main():
                         q = p
                         for k in k_options:
                             commands.append(build_command(prune_data, sparsity, prune_method, prompt_method, p, q, k))
+
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()
@@ -165,16 +150,14 @@ def main():
     for _ in range(gpu_count):
         task_queue.put(None)
 
-    lock = Lock()
     threads = []
-    # 线程数  =  GPU对数  =  gpu_count // 2
-    for _ in range(len(get_gpu_free_memory()) // 2):
-        t = threading.Thread(target=worker, args=(task_queue, cond), daemon=True)
+    for gpu_id in range(gpu_count):
+        t = threading.Thread(target=worker, args=(task_queue, gpu_id))
         t.start()
         threads.append(t)
 
     for t in threads:
-        t.join()    
+        t.join()
 
 if __name__ == "__main__":
     main()

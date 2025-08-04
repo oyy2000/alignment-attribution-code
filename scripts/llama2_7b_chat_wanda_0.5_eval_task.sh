@@ -21,3 +21,7 @@ python main.py \
     --eval_attack \
     # --eval_zero_shot \
     # --dump_wanda_score \
+
+
+CUDA_VISIBLE_DEVICES=0 python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct
+CUDA_VISIBLE_DEVICES=7 python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method cot0shot_goldreason

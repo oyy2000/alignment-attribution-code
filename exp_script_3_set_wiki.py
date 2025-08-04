@@ -9,17 +9,17 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 120
-log_file = f"command_log_eval_gsm8k_wanda_3_set.json"
+nsamples = 500
+log_file = f"command_log_eval_gsm8k_wanda_3_set_wiki_500.json"
 
-prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
-sparsity_ratios = [0.5] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-prune_method_options = ["wanda_3_set_difference"]
-prompt_methods = ["direct", "cot0shot", "cot0shot_goldreason"]
+prune_data_options = ["wikitext"]
+sparsity_ratios = [0.021925, 0.054944, 0.097993, 0.145208, 0.194038] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+prune_method_options = ["random"]
+prompt_methods = ["direct,cot0shot,cot0shot_goldreason"]
 pq_options = [0.5]  # (p, q) for 3-set pruning
-k_options = [0.5, 0.45, 0.4, 0.35, 0.3]  # k for 3-set pruning
+k_options = [0.5]  # k for 3-set pruning
 def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q, k):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/prompt_{prompt_method}/k_{k}"
     command = (
         f"python main.py "
         f"--model {model} "
@@ -32,10 +32,6 @@ def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q,
         f"--eval_gsm8k "
         f"--eval_type held_out "
         f"--prompt_method {prompt_method} "
-        f"--save_sparsity "  # Save sparsity ratio
-        f"--p {p} "
-        f"--q {q} "
-        f"--k {k} "
     )
   
     return command
