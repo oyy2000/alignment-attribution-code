@@ -1621,7 +1621,7 @@ def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_na
         "cot0shot": "GSM8K_cot0shot_120",
         "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
         "direct": "GSM8K_direct_120",
-        "utility": "wikitext",
+        "utility": "alpaca_cleaned_no_safety",  
     }
     path  = METRIC_TO_PATH[metric]
     base  = f"out/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
@@ -1660,12 +1660,18 @@ def prune_wanda_3_set_difference_utility(
     device=torch.device("cuda:0"),
     prune_n=0,
     prune_m=0,
-    prune_data="align_short",
+    prune_data="alpaca_cleaned_no_safety",
     p=0.2,                # cot0shot     top-p 百分比
     q=0.2,                # cot0shot_gr  top-q 百分比
-    k=0.5,                # direct       top-k 百分比
-    u=0.10,                # utility      top-u 百分比
+    k=0.9,                # direct       top-k 百分比
+    u=0.90,                # utility      top-u 百分比
 ):
+    save_sparsity_path = None
+    if args.save_sparsity:
+        save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
+        if not os.path.exists(os.path.dirname(save_sparsity_path)):
+            os.makedirs(os.path.dirname(save_sparsity_path))
+
     use_cache = model.config.use_cache
     model.config.use_cache = False
 
@@ -1705,22 +1711,24 @@ def prune_wanda_3_set_difference_utility(
 
             idx_p = torch.topk(W_metric1.flatten(), top_p , largest=True)[1].unique()
             idx_q = torch.topk(W_metric2.flatten(), top_q , largest=True)[1].unique()
-            idx_k = torch.topk(W_metric3.flatten(), top_k , largest=False)[1].unique()
+            idx_k = torch.topk(W_metric3.flatten(), top_k , largest=True)[1].unique()
             idx_u = torch.topk(W_metric4.flatten(), top_u , largest=True)[1].unique()
 
             inter_pq   = idx_p[torch.isin(idx_p, idx_q)]
-            inter_pqk  = inter_pq[torch.isin(inter_pq, idx_k)]
-            prune_set  = inter_pqk[~torch.isin(inter_pqk, idx_u)]
+            diff_pqk   = inter_pq[~torch.isin(inter_pq, idx_k)]
+            diff_pqku  = diff_pqk[~torch.isin(diff_pqk, idx_u)]
+            prune_set  = diff_pqku  
 
-            print(f"prune_set.numel() = {prune_set.numel()}")
-            print(f"inter_pqk.numel() = {inter_pqk.numel()}")
-            # print percentage
-            print(f"prune_set.numel() / inter_pqk.numel() = {prune_set.numel() / inter_pqk.numel()}")
-            print(f"inter_pqk.numel() / num_total = {inter_pqk.numel() / num_total}")
-            print(f"prune_set.numel() / num_total = {prune_set.numel() / num_total}")
-            print(f"idx_u.numel() / num_total = {idx_u.numel() / num_total}")
-            print(f"idx_k.numel() / num_total = {idx_k.numel() / num_total}")
-            print(f"idx_p.numel() / num_total = {idx_p.numel() / num_total}")
+            # print to file
+            with open(save_sparsity_path, "w") as f:
+                print(f"layer {i} {name}", file=f)
+                print(f"prune_set.numel() = {prune_set.numel()}", file=f)
+                print(f"idx_u.numel() = {idx_u.numel()}", file=f)
+                print(f"idx_k.numel() = {idx_k.numel()}", file=f)
+                print(f"idx_q.numel() = {idx_q.numel()}", file=f)
+                print(f"idx_p.numel() = {idx_p.numel()}", file=f)
+                print(f"diff_pqk.numel() = {diff_pqk.numel()}", file=f)
+                print(f"diff_pqku.numel() = {diff_pqku.numel()}", file=f)
             if prune_set.numel() == 0:
                 continue   # 该参数没有需要置零的权重
 

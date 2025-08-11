@@ -154,6 +154,12 @@ def main(args=None):
             help="Use combined with wandg_3_set_difference, the top k scored elements in the third set ",
         )
         parser.add_argument(
+            "--u",
+            type=float,
+            default=0.5,
+            help="Use combined with wanda_3_set_difference_utility, the top u scored elements in the fourth set ",
+        )
+        parser.add_argument(
             "--top_k_heads",
             type=int,
             default=10,
@@ -400,6 +406,7 @@ def main(args=None):
                 p=args.p,
                 q=args.q,
                 k=args.k,
+                u=args.u,
             )
 
     if args.prune_method == "low_rank":
@@ -418,6 +425,8 @@ def main(args=None):
     print(f"sparsity sanity check {sparsity_ratio:.6f}")
     print("*" * 30)
     if args.save_sparsity:
+        if sparsity_ratio < 0.0001:
+            return 
         args.sparsity_ratio = sparsity_ratio
         save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
         if not os.path.exists(os.path.dirname(save_sparsity_path)):

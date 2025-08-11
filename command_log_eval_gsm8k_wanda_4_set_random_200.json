@@ -1,0 +1,26 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.005938 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.012393 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.023921 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.039883 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.057594 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.073843 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5 --nsamples 200 --eval_gsm8k --eval_type held_out --prompt_method direct,cot0shot,cot0shot_goldreason --p 0.5 --q 0.5 --k 0.5 ",
+    "result": "success"
+  }
+]

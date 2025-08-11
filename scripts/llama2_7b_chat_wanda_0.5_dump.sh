@@ -2,10 +2,10 @@ model="llama2-7b-chat-hf"
 method="wanda"
 type="unstructured"
 suffix="weightonly"
-prune_data="wikitext"
+prune_data="alpaca_cleaned_no_safety"
 sparsity_ratio=0.5
 save_dir="out/$model/$type/${method}_${suffix}/$prune_data/"
-nsamples=64
+nsamples=128
 
 echo "Running with model: $model, method: $method, type: $type, sparsity_ratio: $sparsity_ratio, prune_data: $prune_data"
 

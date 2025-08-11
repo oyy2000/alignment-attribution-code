@@ -9,24 +9,22 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 500
-log_file = f"command_log_eval_gsm8k_wanda_3_set_500.json"
+nsamples = 200
+log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_pquk.json"
 
-prune_data_options = ["GSM8K_direct_120"]
-sparsity_ratios = [0.5] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-prune_method_options = ["wanda_3_set_difference"]
-prompt_methods = ["direct,cot0shot,cot0shot_goldreason"]
-pq_options = [0.5]  # (p, q) for 3-set pruning
-k_options = [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]  # k for 3-set pruning
-def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q, k):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/prompt_{prompt_method}/k_{k}"
+prune_method_options = ["wanda_3_set_difference_utility"]
+prompt_methods = ["direct,cot0shot,cot0shot_goldreason"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
+pq_options = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]  # (p, q) for 3-set pruning
+k_options = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]  # k for 3-set pruning
+u_options = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1] 
+def build_command(prune_method, prompt_method, p, q, k, u):
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (
         f"python main.py "
         f"--model {model} "
         f"--prune_method {prune_method} "
-        f"--prune_data {prune_data} "
-        f"--sparsity_ratio {sparsity_ratio} "
         f"--sparsity_type {sparsity_type} "
+        f"--sparsity_ratio 0.5 "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
@@ -36,6 +34,7 @@ def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q,
         f"--p {p} "
         f"--q {q} "
         f"--k {k} "
+        f"--u {u} "
     )
   
     return command
@@ -126,14 +125,13 @@ def worker(task_queue, gpu_id):
 def main():
     # Generate all commands
     commands = []
-    for prune_data in prune_data_options:
-        for sparsity in sparsity_ratios:
-            for prune_method in prune_method_options:
-                for prompt_method in prompt_methods:
-                    for p in pq_options:
-                        q = p
-                        for k in k_options:
-                            commands.append(build_command(prune_data, sparsity, prune_method, prompt_method, p, q, k))
+    for prune_method in prune_method_options:
+        for prompt_method in prompt_methods:
+            for p in pq_options:
+                q = p
+                for k in k_options:
+                    for u in u_options:
+                        commands.append(build_command(prune_method, prompt_method, p, q, k, u))
 
 
     initialize_log(commands)

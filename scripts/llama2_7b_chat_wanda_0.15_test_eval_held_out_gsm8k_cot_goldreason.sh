@@ -23,5 +23,3 @@ CUDA_VISIBLE_DEVICES=1 python main.py \
     # --save_mask \
     # --eval_zero_shot \
     # --dump_wanda_score \
-
-attribution-code/data/prompts/prompt_GSM8K_cot0shot_goldreason.txt'

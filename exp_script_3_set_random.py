@@ -9,22 +9,20 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 500
-log_file = f"command_log_eval_gsm8k_wanda_3_set_random_500.json"
+nsamples = 200
+log_file = f"command_log_eval_gsm8k_wanda_4_set_random_200.json"
 
-prune_data_options = ["GSM8K_direct_120"]
-sparsity_ratios = [0.021925, 0.054944, 0.097993, 0.145208, 0.194038] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+sparsity_ratios = [0.005938, 0.012393, 0.023921, 0.039883, 0.057594, 0.073843] # [0.021925, 0.054944, 0.097993, 0.145208, 0.194038] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
 prune_method_options = ["random"]
 prompt_methods = ["direct,cot0shot,cot0shot_goldreason"]
 pq_options = [0.5]  # (p, q) for 3-set pruning
 k_options = [0.5]  # k for 3-set pruning
-def build_command(prune_data, sparsity_ratio, prune_method, prompt_method, p, q, k):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/prompt_{prompt_method}/k_{k}"
+def build_command(sparsity_ratio, prune_method, prompt_method, p, q, k):
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set/prompt_{prompt_method}/k_{k}"
     command = (
         f"python main.py "
         f"--model {model} "
         f"--prune_method {prune_method} "
-        f"--prune_data {prune_data} "
         f"--sparsity_ratio {sparsity_ratio} "
         f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
@@ -125,14 +123,13 @@ def worker(task_queue, gpu_id):
 def main():
     # Generate all commands
     commands = []
-    for prune_data in prune_data_options:
-        for sparsity in sparsity_ratios:
-            for prune_method in prune_method_options:
-                for prompt_method in prompt_methods:
-                    for p in pq_options:
-                        q = p
-                        for k in k_options:
-                            commands.append(build_command(prune_data, sparsity, prune_method, prompt_method, p, q, k))
+    for sparsity in sparsity_ratios:
+        for prune_method in prune_method_options:
+            for prompt_method in prompt_methods:
+                for p in pq_options:
+                    q = p
+                    for k in k_options:
+                        commands.append(build_command(sparsity, prune_method, prompt_method, p, q, k))
 
 
     initialize_log(commands)

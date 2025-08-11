@@ -113,18 +113,22 @@ def analyze_category_performance(category_name: str, category_samples: List[str]
         'original_accuracy': original_correct / len(category_samples) if category_samples else 0.0,
         'pruned_correct': pruned_correct,
         'pruned_accuracy': pruned_correct / len(category_samples) if category_samples else 0.0,
-        'accuracy_change': (pruned_correct / len(category_samples) if category_samples else 0.0) - (original_correct / len(category_samples) if category_samples else 0.0)
+        'accuracy_change': (pruned_correct / original_correct) - 1 if original_correct > 0 else 0.0
     }
 
 
 def collect_data_for_sparsity(sparsity_ratio: float) -> Dict:
     """Collect data for a specific sparsity ratio."""
     # File paths for original data (same as before)
-    cot_goldreason_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0/gsm8k_bottom_0.000000_cot0shot_goldreason_held_out.jsonl"
-    direct_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0/gsm8k_bottom_0.000000_direct_held_out.jsonl"
+    # cot_goldreason_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0/gsm8k_bottom_0.000000_cot0shot_goldreason_held_out.jsonl"
+    # direct_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/sparsity_0/gsm8k_bottom_0.000000_direct_held_out.jsonl"
+    
+    cot_goldreason_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500/gsm8k_bottom_0.000000_cot0shot_goldreason_held_out_prompt_cot0shot_goldreason.jsonl"
+    direct_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500/gsm8k_bottom_0.000000_direct_held_out_prompt_direct.jsonl"
     
     # All sparsity ratios are in k_0.5 directory
-    base_dir = "out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_cot0shot_120/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5/"
+    base_dir = "out/llama2-7b-chat-hf/unstructured/random_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5/"
+    # base_dir = "out/llama2-7b-chat-hf/unstructured/random_weightonly/3_set_500/prompt_direct,cot0shot,cot0shot_goldreason/k_0.5/"
     
     # Construct file paths directly with the target sparsity ratio
     pruned_cot_goldreason_prompt_file = f"{base_dir}gsm8k_bottom_{sparsity_ratio}_direct,cot0shot,cot0shot_goldreason_held_out_prompt_cot0shot_goldreason.jsonl"
@@ -181,6 +185,11 @@ def plot_results(all_results: Dict[float, Dict]):
         pruned_accuracies = []
         accuracy_changes = []
         
+        # Add origin point (0, 0) to make lines pass through origin
+        original_accuracies.append(0)
+        pruned_accuracies.append(0)
+        accuracy_changes.append(0)
+        
         for sparsity_ratio in sparsity_ratios:
             if category in all_results[sparsity_ratio]:
                 result = all_results[sparsity_ratio][category]
@@ -192,12 +201,15 @@ def plot_results(all_results: Dict[float, Dict]):
                 pruned_accuracies.append(0)
                 accuracy_changes.append(0)
         
+        # Create x-axis values including origin
+        x_values = [0] + sparsity_ratios
+        
         # Plot 1: Original vs Pruned Accuracy
-        ax1.plot(sparsity_ratios, original_accuracies, 'o-', label=f'{category} (Original)', color=colors[i], alpha=0.7)
-        ax1.plot(sparsity_ratios, pruned_accuracies, 's-', label=f'{category} (Random Pruned)', color=colors[i], alpha=0.7, linestyle='--')
+        ax1.plot(x_values, original_accuracies, 'o-', label=f'{category} (Original)', color=colors[i], alpha=0.7)
+        ax1.plot(x_values, pruned_accuracies, 's-', label=f'{category} (Random Pruned)', color=colors[i], alpha=0.7, linestyle='--')
         
         # Plot 2: Accuracy Change
-        ax2.plot(sparsity_ratios, accuracy_changes, 'o-', label=category, color=colors[i], linewidth=2, markersize=8)
+        ax2.plot(x_values, accuracy_changes, 'o-', label=category, color=colors[i], linewidth=2, markersize=8)
     
     # Customize plots
     ax1.set_xlabel('Sparsity Ratio')
@@ -222,14 +234,14 @@ def plot_results(all_results: Dict[float, Dict]):
     print("\n" + "="*80)
     print("SUMMARY TABLE - RANDOM PRUNING")
     print("="*80)
-    print(f"{'Sparsity':<12} {'Category':<25} {'Original':<10} {'Random Pruned':<15} {'Change':<10} {'Pruned Correct Count':<8}")
+    print(f"{'Sparsity':<12} {'Category':<30} {'Original':<10} {'Random Pruned':<15} {'Change':<10} ")
     print("-"*80)
     
     for sparsity_ratio in sparsity_ratios:
         for category in categories:
             if category in all_results[sparsity_ratio]:
                 result = all_results[sparsity_ratio][category]
-                print(f"{sparsity_ratio:<12} {category:<25} {result['original_accuracy']:<10.3f} {result['pruned_accuracy']:<15.3f} {result['accuracy_change']:<10.3f} {result['pruned_correct_count']:<8}")
+                print(f"{sparsity_ratio:<12} {category:<30} {result['original_correct']:<10} {result['pruned_correct']:<15} {result['accuracy_change']:<10.3f}")
     
     # Save detailed results
     with open('random_sparsity_ratios_detailed_results.json', 'w') as f:
@@ -241,7 +253,7 @@ def plot_results(all_results: Dict[float, Dict]):
 def main():
     """Main function to collect data for all sparsity ratios and generate plots."""
     # These are the actual sparsity ratios found in the data files
-    sparsity_ratios = [0.021925, 0.054944, 0.097993, 0.145208, 0.194038]
+    sparsity_ratios = [0.005938, 0.012393, 0.023921, 0.039883, 0.057594, 0.073843] # [0.021925, 0.054944, 0.097993, 0.145208, 0.194038] # [0.005938, 0.012393, 0.023921, 0.039883, 0.057594, 0.073843] #
     all_results = {}
     
     print("Collecting data for different sparsity ratios (Random Pruning)...")
