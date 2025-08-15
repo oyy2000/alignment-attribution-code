@@ -222,10 +222,16 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
     elif prompt in ["GSM8K_cot0shot_goldreason", "GSM8K_cot0shot"]:
         # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
         data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+    elif prompt == "GSM8K_cot4shot_120":
+        # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot4shot/gsm8k_bottom_0.000000_GSM8K_cot0shot_120.jsonl'
 
-    with open(data_file, 'r') as fin:
-        items = json.load(fin)  # 注意这里是 json.load 而不是 line-by-line
-    # traindata = load_dataset("json", data_files="path/to/your.json", split="train")
+    if data_file.endswith('.jsonl'):
+        with open(data_file, 'r') as fin:
+            items = [json.loads(line) for line in fin]
+    else:
+        with open(data_file, 'r') as fin:
+            items = json.load(fin)  
 
     # 规范化字段
     for idx, item in enumerate(items, start=1):
@@ -252,6 +258,9 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
         elif prompt == "GSM8K_cot0shot_goldreason":
             input_text = item['cot0shot.goldreason_input']
             output_text = item['cot0shot.goldreason_output']
+        elif prompt == "GSM8K_cot4shot_120":
+            input_text = item['input']
+            output_text = item['output']
         else:
             raise ValueError(f"Unsupported prompt type: {prompt}")
 
@@ -393,6 +402,8 @@ def get_loaders(
 
     if name == "GSM8K_cot0shot":
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot")
+    if name == "GSM8K_cot4shot_120":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot4shot_120")
     if name == "GSM8K_direct":
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_direct")
     if name == "GSM8K_direct_120":

@@ -1,0 +1,18 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --sparsity_ratio 0 --save out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot2shot --nsamples 120 --prune_data GSM8K_cot0shot_120 --eval_gsm8k --eval_type fixed --prompt_method cot2shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --sparsity_ratio 0 --save out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot4shot --nsamples 120 --prune_data GSM8K_cot0shot_120 --eval_gsm8k --eval_type fixed --prompt_method cot4shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --sparsity_ratio 0 --save out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot8shot --nsamples 120 --prune_data GSM8K_cot0shot_120 --eval_gsm8k --eval_type fixed --prompt_method cot8shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --sparsity_ratio 0 --save out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot16shot --nsamples 120 --prune_data GSM8K_cot0shot_120 --eval_gsm8k --eval_type fixed --prompt_method cot16shot ",
+    "result": "success"
+  }
+]

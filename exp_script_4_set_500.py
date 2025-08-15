@@ -9,14 +9,14 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 200
-log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_pquk.json"
+nsamples = 500
 
-prune_method_options = ["wanda_3_set_difference_utility"]
-prompt_methods = ["direct,cot0shot,cot0shot_goldreason"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
-pq_options = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]  # (p, q) for 3-set pruning
-k_options = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]  # k for 3-set pruning
-u_options = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1] 
+prune_method_options = ["wanda_4_set_difference_cot4shot"] #["wanda_3_set_difference_utility"]
+prompt_methods = ["direct,cot4shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
+pq_options = [0.11, 0.14, 0.17, 0.20, 0.23, 0.26, 0.29, 0.32, 0.35, 0.38, 0.41, 0.44, 0.47, 0.50]  # (p, q) for 3-set pruning
+k_options = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]  # k for 3-set pruning
+u_options = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1] 
+log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}.json"
 def build_command(prune_method, prompt_method, p, q, k, u):
     save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (

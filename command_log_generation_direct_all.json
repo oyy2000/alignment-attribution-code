@@ -1,0 +1,6 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_batch_size_64 --nsamples 1000 --eval_gsm8k --eval_type all --prompt_method direct ",
+    "result": "running"
+  }
+]

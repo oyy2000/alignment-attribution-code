@@ -1,0 +1,14 @@
+[
+  {
+    "command": "CUDA_VISIBLE_DEVICES=3 python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot ",
+    "result": "pending"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason ",
+    "result": "success"
+  }
+]

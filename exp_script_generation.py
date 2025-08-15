@@ -9,35 +9,26 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 500
-log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_cot4shot.json"
+nsamples = 600
+log_file = f"command_log_generation_600_cot4shot_direct.json"
 
-prune_method_options = ["wanda_4_set_difference_cot4shot"] #"wanda_2_set_difference_utility"]
-prompt_methods = ["cot0shot,cot0shot_goldreason,direct,cot4shot"]
-pq_options = [0.2]
-k_options = [0.1, 0.13, 0.16, 0.19, 0.22, 0.25]  # k for 3-set pruning
-u_options = [0.1]  # u for 3-set pruning
-def build_command(prune_method, prompt_method, p, q, k, u):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}/"
+prompt_methods = ["direct", "cot4shot"]
+eval_type = "selected_samples"
+
+def build_command(prompt_method):
+    save_dir = f"out/{model}/{prompt_method}/eval_{eval_type}"
     command = (
         f"python main.py "
         f"--model {model} "
-        f"--prune_method {prune_method} "
-        f"--sparsity_type {sparsity_type} "
-        f"--sparsity_ratio 0.5 "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
-        f"--eval_type held_out "
+        f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
-        f"--save_sparsity "  # Save sparsity ratio
-        f"--p {p} "
-        f"--q {q} "
-        f"--k {k} "
-        f"--u {u} "
     )
   
     return command
+
 
 def initialize_log(commands):
     if not os.path.exists(log_file):
@@ -121,18 +112,13 @@ def worker(task_queue, gpu_id):
             print(f"[GPU {gpu_id}] Not enough memory for: {command}")
             task_queue.put(task)
             time.sleep(20)
-            
+
+
 def main():
     # Generate all commands
     commands = []
-    for prune_method in prune_method_options:
-        for prompt_method in prompt_methods:
-            for p in pq_options:
-                q = p
-                for k in k_options: 
-                    for u in u_options:
-                        commands.append(build_command(prune_method, prompt_method, p, q, k, u))
-
+    for prompt_method in prompt_methods:
+        commands.append(build_command(prompt_method))
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()

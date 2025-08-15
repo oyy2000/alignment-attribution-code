@@ -361,10 +361,16 @@ def format_prompt(full_prompt, item):
     assert full_prompt.find('{{') < 0 and full_prompt.find('}}') < 0
     return full_prompt
 
-def load_dataset(dataset, nsamples, select_method='random', ids = None):
+def load_dataset(dataset, nsamples, select_method='random', ids = None, seed=None):
+    # Set random seed if provided
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
+    
     if dataset == 'GSM8K':
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/test.jsonl'
-        with open(data_file, 'r') as fin:
+        data_file_test = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/test.jsonl'
+        data_file_train = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/train.jsonl'
+        with open(data_file_test, 'r') as fin:
             items = [json.loads(line) for line in fin]
         # normalize the fields
         for idx, item in enumerate(items, start=1):
@@ -378,11 +384,51 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None):
         if select_method == 'random':
             random.shuffle(items)
             return items[:nsamples] if nsamples > 0 else items[:500]  # default 500 samples
+        elif select_method == 'all':
+            with open(data_file_train, 'r') as fin:
+                items_train = [json.loads(line) for line in fin]
+            for idx, item in enumerate(items_train, start=1):
+                question = item['question']
+                parts = item['answer'].split('####')
+                item.clear()
+                item['id'] = f'GSM8K_Q{idx}'
+                item['question'] = question
+                item['reason'] = parts[0].strip()
+                item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
+            items = items + items_train
+            return items
         elif select_method == 'fixed':
             if ids is None:
                 raise ValueError("ids must be provided for fixed selection method.")
+            with open(data_file_test, 'r') as fin:
+                items_test = [json.loads(line) for line in fin]
+            # normalize the fields
+            for idx, item in enumerate(items_test, start=1):
+                question = item['question']
+                parts = item['answer'].split('####')
+                item.clear()
+                item['id'] = f'test_GSM8K_Q{idx}'
+                item['question'] = question
+                item['reason'] = parts[0].strip()
+                item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
+            # Filter items_test after all items have been processed
+            items_test = [item for item in items_test if item['id'] in ids]
+            with open(data_file_train, 'r') as fin:
+                items_train = [json.loads(line) for line in fin]
+            for idx, item in enumerate(items_train, start=1):
+                question = item['question']
+                parts = item['answer'].split('####')
+                item.clear()
+                item['id'] = f'train_GSM8K_Q{idx}'
+                item['question'] = question
+                item['reason'] = parts[0].strip()
+                item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
+            items = items_test + items_train
             items = [item for item in items if item['id'] in ids]
-            return items[:nsamples] if nsamples > 0 else items
+            return items
+        else:
+            raise ValueError(f"Invalid select_method: {select_method}")
+
     else:  # default loading
         if dataset.find(':') > 0:
             dataset, arg = dataset.split(':')
@@ -446,7 +492,7 @@ def _safe_generate(model, prompts, sampling_params, max_retry=5, backoff=10):
     while True:
         try:
             # vllm.LLM.generate 接收 List[str]
-            raw = model.generate(prompts, sampling_params)    # type: List[RequestOutput]
+            raw = model.generate(prompts, sampling_params)    
 
             # 取每个 RequestOutput 的首个 candidate 文本
             clean = [
@@ -462,11 +508,20 @@ def _safe_generate(model, prompts, sampling_params, max_retry=5, backoff=10):
             print(f"[WARN] Generate error: {e!s} | Retry {retry}/{max_retry} after {wait}s")
             time.sleep(wait)
 
+def eval_gsm8k_all(
+    args,
+    vllm_model,
+    tokenizer=None,
+    prune_data: str = "GSM8K_direct_120",
+):
+    return eval_gsm8k_random(args, vllm_model, tokenizer, prune_data, select_method="all")
+
 def eval_gsm8k_random(
     args,
     vllm_model,
     tokenizer=None,
     prune_data: str = "GSM8K_direct_120",
+    select_method: str = "random",
 ):
     """
     Evaluate a (possibly pruned) model on GSM8K.
@@ -499,7 +554,7 @@ def eval_gsm8k_random(
 
     random.seed(args.seed)
     np.random.seed(args.seed)
-    data = load_dataset(args.dataset, args.nsamples)
+    data = load_dataset(args.dataset, args.nsamples, select_method=select_method, seed=args.seed)
 
     # -------- ❷  设置 SamplingParams --------
     sampling_params = SamplingParams(
@@ -586,6 +641,116 @@ def eval_gsm8k_random(
     return acc_summary
 
 
+def eval_gsm8k_selected_samples(
+    args,
+    vllm_model,
+):
+    prompt_tags = [p.strip() for p in args.prompt_method.split(",") if p.strip()]
+    full_prompts = {
+        tag: load_prompt(args.dataset, tag, do_role=args.role) for tag in prompt_tags
+    }
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    # 2) 提取所有 id（去掉可能为空的）
+    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600.jsonl"
+    with open(data_file, "r") as fin:
+        samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
+    ids = [s["id"] for s in samples if "id" in s and s["id"]]
+
+    # 3) 传给 load_dataset
+    data = load_dataset(
+        args.dataset,
+        args.nsamples,
+        select_method="fixed",
+        ids=ids,          # 这里就是 samples 中所有 id 的列表
+        seed=args.seed    # 传递随机种子以确保可重现性
+    )
+
+    # -------- ❷  设置 SamplingParams --------
+    sampling_params = SamplingParams(
+        temperature=0.0,
+        top_p=1.0,
+        max_tokens=1024,
+        n=1,              # GSM8K 评测通常一个样本即可
+        stop=None,        # 统一在 extract_answer 里截断
+    )
+
+    # -------- ❸  主循环：每种 prompt 独立评估 --------
+    acc_dict: Dict[str, List[bool]] = {t: [] for t in prompt_tags}
+
+    for tag in prompt_tags:
+        if args.neg_prune:
+            print("Negative pruning")
+            outfile = (Path(args.save)
+                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
+                    )
+        else:
+            print("Positive pruning")
+            outfile = (Path(args.save)
+                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
+            )
+
+        already_done = 0
+        out_fh = open(outfile, "a")
+
+        if outfile.exists():
+            # JSONL 易于续写；记录已完成行数
+            already_done = sum(1 for _ in open(outfile))
+            if already_done >= len(data):
+                print(f"[SKIP] {outfile.name} 已完成 ({already_done}/{len(data)})")
+                out_fh.close()
+                acc_dict[tag] = [
+                    json.loads(line)["correct"] for line in open(outfile)
+                ]
+                continue
+            print(f"[RESUME] {outfile.name}: 已有 {already_done} 条，继续评估 …")
+
+        dataset_iter = data[already_done:]
+        dataset_chunks = [
+            dataset_iter[i : i + args.batch_size]
+            for i in range(0, len(dataset_iter), args.batch_size)
+        ]
+
+        for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
+            # 组装输入
+            messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
+            outputs = _safe_generate(vllm_model, messages, sampling_params)
+
+            preds = [
+                extract_answer(out_text, sample, args.dataset)
+                for out_text, sample in zip(outputs, chunk)
+            ]
+
+            for sample, out_text, pred in zip(chunk, outputs, preds):
+                gold = sample["answer"]
+                correct = pred == gold
+                acc_dict[tag].append(correct)
+
+                record = {
+                    **sample,                       # 题目 & gold answer
+                    "prompt_tag": tag,
+                    "input": format_prompt(full_prompts[tag], sample),
+                    "output": out_text,
+                    "pred": pred,
+                    "gold": gold,
+                    "correct": correct,
+                }
+                out_fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                out_fh.flush()
+
+        out_fh.close()
+
+    # -------- ❹  汇总指标 --------
+    acc_summary = {
+        tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
+    }
+    for tag, acc in acc_summary.items():
+        n = len(acc_dict[tag])
+        print(f"[ACC] {tag:15s}: {acc:.3%} ({int(acc*n)}/{n})")
+
+    return acc_summary
+
 def eval_gsm8k_held_out(
     args,
     vllm_model,
@@ -610,7 +775,8 @@ def eval_gsm8k_held_out(
         args.dataset,
         args.nsamples,
         select_method="fixed",
-        ids=ids          # 这里就是 samples 中所有 id 的列表
+        ids=ids,          # 这里就是 samples 中所有 id 的列表
+        seed=args.seed    # 传递随机种子以确保可重现性
     )
 
     # -------- ❷  设置 SamplingParams --------
@@ -764,7 +930,8 @@ def eval_gsm8k_fixed(
         args.dataset,
         args.nsamples,
         select_method="fixed",
-        ids=ids          # 这里就是 samples 中所有 id 的列表
+        ids=ids,          # 这里就是 samples 中所有 id 的列表
+        seed=args.seed    # 传递随机种子以确保可重现性
     )
 
     # -------- ❷  设置 SamplingParams --------

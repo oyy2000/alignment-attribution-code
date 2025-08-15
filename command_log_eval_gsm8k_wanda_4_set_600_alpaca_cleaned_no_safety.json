@@ -1,0 +1,26 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.1_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.1 --u 0.1 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.13_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.13 --u 0.1 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.16_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.16 --u 0.1 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.19_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.19 --u 0.1 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.22_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.22 --u 0.1 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_4_set_difference_cot4shot --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/pq_0.2_0.2_k_0.25_u_0.1/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot4shot --save_sparsity --p 0.2 --q 0.2 --k 0.25 --u 0.1 ",
+    "result": "success"
+  }
+]

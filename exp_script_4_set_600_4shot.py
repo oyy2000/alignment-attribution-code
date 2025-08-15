@@ -9,16 +9,16 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 500
-log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_cot4shot.json"
-
-prune_method_options = ["wanda_4_set_difference_cot4shot"] #"wanda_2_set_difference_utility"]
-prompt_methods = ["cot0shot,cot0shot_goldreason,direct,cot4shot"]
+nsamples = 600
+eval_type = "selected_samples"
+prune_method_options = ["wanda_4_set_difference_cot4shot"] #["wanda_3_set_difference_utility"]
+prompt_methods = ["direct,cot4shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
 pq_options = [0.2]
 k_options = [0.1, 0.13, 0.16, 0.19, 0.22, 0.25]  # k for 3-set pruning
 u_options = [0.1]  # u for 3-set pruning
+log_file = f"command_log_eval_gsm8k_wanda_4_set_600_alpaca_cleaned_no_safety.json"
 def build_command(prune_method, prompt_method, p, q, k, u):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}/"
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/eval_{eval_type}/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (
         f"python main.py "
         f"--model {model} "
@@ -28,7 +28,7 @@ def build_command(prune_method, prompt_method, p, q, k, u):
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
-        f"--eval_type held_out "
+        f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
         f"--save_sparsity "  # Save sparsity ratio
         f"--p {p} "
@@ -129,7 +129,7 @@ def main():
         for prompt_method in prompt_methods:
             for p in pq_options:
                 q = p
-                for k in k_options: 
+                for k in k_options:
                     for u in u_options:
                         commands.append(build_command(prune_method, prompt_method, p, q, k, u))
 

@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -20,11 +21,13 @@ from lib.prune import (
     prune_wandg_set_difference,
     prune_attention_head,
     prune_wanda_3_set_difference,
-    prune_wanda_3_set_difference_utility
+    prune_wanda_3_set_difference_utility,
+    prune_wanda_2_set_difference_utility,
+    prune_wanda_4_set_difference_cot4shot
 )
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed, eval_gsm8k_held_out
+from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -69,7 +72,7 @@ def main(args=None):
         parser.add_argument('--prompt_method', type=str, default='cot0shot')
         parser.add_argument('--eval_type', type=str, default='fixed')
         parser.add_argument('--role', type=str, default='math teacher')
-        parser.add_argument('--batch_size', type=int, default=1)
+        parser.add_argument('--batch_size', type=int, default=64)
         parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
         parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
         parser.add_argument(
@@ -106,7 +109,9 @@ def main(args=None):
                 "wandg_set_difference",
                 "low_rank",
                 "wanda_3_set_difference",
-                "wanda_3_set_difference_utility"
+                "wanda_3_set_difference_utility",
+                "wanda_4_set_difference_cot4shot",
+                "wanda_2_set_difference_utility",
             ],
         )
         parser.add_argument(
@@ -128,6 +133,7 @@ def main(args=None):
                 "GSM8K_direct_120",
                 "GSM8K_cot0shot_120",
                 "GSM8K_cot0shot_goldreason",
+                "GSM8K_cot4shot_120",
                 "none",
             ],
             default="alpaca_cleaned_no_safety",
@@ -233,6 +239,7 @@ def main(args=None):
         ], "dump_wanda_score only works with wanda wanda_v2 wandg"
 
     # Setting seeds for reproducibility
+    random.seed(args.seed)
     np.random.seed(args.seed)
     torch.random.manual_seed(args.seed)
 
@@ -395,6 +402,35 @@ def main(args=None):
             )
         elif args.prune_method == "wanda_3_set_difference_utility":
             prune_wanda_3_set_difference_utility(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                q=args.q,
+                k=args.k,
+                u=args.u,
+            )
+        elif args.prune_method == "wanda_2_set_difference_utility":
+            prune_wanda_2_set_difference_utility(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                k=args.k,
+                u=args.u,
+            )
+        elif args.prune_method == "wanda_4_set_difference_cot4shot":
+            prune_wanda_4_set_difference_cot4shot(
                 args,
                 model,
                 tokenizer,
@@ -574,6 +610,20 @@ def main(args=None):
                     file=f,
                     flush=True,
                 )
+        elif args.eval_type == "all":
+            acc_summary = eval_gsm8k_all(
+                args,
+                vllm_model,
+                tokenizer,
+                prune_data=prune_data,
+            )
+        elif args.eval_type == "selected_samples":
+            acc_summary = eval_gsm8k_selected_samples(
+                args,
+                vllm_model,
+            )
+            for tag, acc in acc_summary.items():
+                print(f"GSM8K evaluation results on {prune_data} selected samples: {tag}: {acc:.4f}")
         elif args.eval_type == "held_out":
             acc_summary = eval_gsm8k_held_out(
                 args,

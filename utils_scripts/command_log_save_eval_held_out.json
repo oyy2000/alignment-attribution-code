@@ -1,10 +1,10 @@
 [
   {
-    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/sparsity_0 --nsamples 120 --eval_gsm8k --eval_type held_out --prompt_method direct ",
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method random --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/random_weightonly/GSM8K_direct_120/sparsity_0 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct ",
     "result": "success"
   },
   {
-    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0 --nsamples 120 --eval_gsm8k --eval_type held_out --prompt_method direct ",
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0 --sparsity_type unstructured --save out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0 --nsamples 500 --eval_gsm8k --eval_type held_out --prompt_method direct ",
     "result": "running"
   },
   {

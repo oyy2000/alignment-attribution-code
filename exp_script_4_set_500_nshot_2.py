@@ -10,13 +10,13 @@ model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
 nsamples = 500
-log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_cot4shot.json"
+log_file = f"command_log_eval_gsm8k_wanda_4_set_500_alpaca_cleaned_no_safety_cot4shot_2.json"
 
-prune_method_options = ["wanda_4_set_difference_cot4shot"] #"wanda_2_set_difference_utility"]
-prompt_methods = ["cot0shot,cot0shot_goldreason,direct,cot4shot"]
+prune_method_options = ["wanda_3_set_difference_utility"] #"wanda_2_set_difference_utility"]
+prompt_methods = ["cot4shot"]
 pq_options = [0.2]
 k_options = [0.1, 0.13, 0.16, 0.19, 0.22, 0.25]  # k for 3-set pruning
-u_options = [0.1]  # u for 3-set pruning
+u_options = [0.9]  # u for 3-set pruning
 def build_command(prune_method, prompt_method, p, q, k, u):
     save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (

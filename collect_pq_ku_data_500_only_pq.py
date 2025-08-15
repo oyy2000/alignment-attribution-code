@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-Script to collect data for different k values and generate plots
+Script to collect data for different pq values and generate plots
 for direct_success_cot_success and direct_fail_cot_success categories.
+Extracts pq values from folder names and sparsity from JSONL files.
 """
 
 import json
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import re
+import glob
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
@@ -114,55 +117,66 @@ def analyze_category_performance(category_name: str, category_samples: List[str]
         'accuracy_change': (pruned_correct / original_correct) - 1 if original_correct > 0 else 0.0
     }
 
-def collect_data_for_sparsity(sparsity_ratio: float) -> Dict:
-    """Collect data for a specific sparsity ratio."""
-    # File paths
-    cot0shot_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500/gsm8k_bottom_0.000000_cot0shot_held_out_prompt_cot0shot.jsonl"
+def parse_folder_name(folder_name: str) -> Tuple[float, float]:
+    """Parse folder name to extract pq values."""
+    # Example: pq_0.1_0.1
+    pattern = r'pq_([0-9.]+)_([0-9.]+)'
+    match = re.match(pattern, folder_name)
+    if match:
+        pq1, pq2 = map(float, match.groups())
+        return pq1, pq2
+    else:
+        raise ValueError(f"Could not parse folder name: {folder_name}")
+
+def extract_sparsity_from_folder(folder_path: str) -> str:
+    """Extract sparsity value from JSONL files in the folder."""
+    jsonl_files = glob.glob(f"{folder_path}/*.jsonl")
+    if not jsonl_files:
+        raise FileNotFoundError(f"No JSONL files found in {folder_path}")
+    
+    # Look for the cot0shot_goldreason file to extract sparsity
+    target_file = None
+    for file in jsonl_files:
+        if 'cot0shot_goldreason' in file:
+            target_file = file
+            break
+    
+    if not target_file:
+        # If not found, use the first JSONL file
+        target_file = jsonl_files[0]
+    
+    # Extract sparsity from filename
+    filename = os.path.basename(target_file)
+    sparsity_match = re.search(r'gsm8k_bottom_([0-9.]+)_', filename)
+    
+    if sparsity_match:
+        return sparsity_match.group(1)  # Return as string to preserve exact format
+    else:
+        raise ValueError(f"Could not extract sparsity from filename: {filename}")
+
+def collect_data_for_pq_folder(folder_path: str) -> Dict:
+    """Collect data for a specific pq folder."""
+    folder_name = os.path.basename(folder_path.rstrip('/'))
+    
+    # Parse folder name to get pq values
+    pq1, pq2 = parse_folder_name(folder_name)
+    
+    # Extract sparsity from the folder
+    sparsity = extract_sparsity_from_folder(folder_path)
+    
+    # File paths for original data (baseline)
+    cot_goldreason_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500/gsm8k_bottom_0.000000_cot0shot_goldreason_held_out_prompt_cot0shot_goldreason.jsonl"
     direct_file = "out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/sparsity_0/nsamples_500/gsm8k_bottom_0.000000_direct_held_out_prompt_direct.jsonl"
     
-    # Find the directory that contains files with the target sparsity ratio
-    # base_dir = "out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_weightonly_100/GSM8K_direct_120/prompt_direct,cot0shot,cot0shot_goldreason/"
+    # File paths for pruned data
+    pruned_cot_goldreason_prompt_file = f"{folder_path}/gsm8k_bottom_{sparsity}_direct,cot0shot,cot0shot_goldreason_held_out_prompt_cot0shot_goldreason.jsonl"
+    pruned_direct_prompt_file = f"{folder_path}/gsm8k_bottom_{sparsity}_direct,cot0shot,cot0shot_goldreason_held_out_prompt_direct.jsonl"
     
-    # utility
-    # base_dir = "out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/4_set/prompt_direct,cot0shot,cot0shot_goldreason/"
-    # base_dir = "out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/4_set_alpaca_cleaned_no_safety/prompt_direct,cot0shot,cot0shot_goldreason/"
-    base_dir = "out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/4_set_alpaca_cleaned_no_safety/prompt_direct,cot0shot,cot0shot_goldreason/"
-
-    # List all k directories
-    import glob
-    k_dirs = glob.glob(f"{base_dir}k_*/")
-    
-    target_sparsity_dir = None
-    target_sparsity_value = None
-    
-    # Find the directory that contains files with the target sparsity ratio
-    for k_dir in k_dirs:
-        jsonl_files = glob.glob(f"{k_dir}*.jsonl")
-        if jsonl_files:
-            # Extract sparsity value from the first file
-            import re
-            filename = os.path.basename(jsonl_files[0])
-            sparsity_match = re.search(r'gsm8k_bottom_([0-9.]+)_', filename)
-    
-            if sparsity_match:
-                sparsity_value = float(sparsity_match.group(1))
-                # Check if this sparsity value matches our target (with some tolerance)
-                if abs(sparsity_value - sparsity_ratio) < 0.001:
-                    target_sparsity_dir = k_dir
-                    target_sparsity_value = sparsity_value
-                    break
-    
-    if target_sparsity_dir is None:
-        raise FileNotFoundError(f"No directory found with sparsity ratio {sparsity_ratio}")
-    
-    # Construct file paths with the found sparsity value
-    pruned_cot_goldreason_prompt_file = f"{target_sparsity_dir}gsm8k_bottom_{target_sparsity_value}_direct,cot0shot,cot0shot_goldreason_held_out_prompt_cot0shot_goldreason.jsonl"
-    pruned_direct_prompt_file = f"{target_sparsity_dir}gsm8k_bottom_{target_sparsity_value}_direct,cot0shot,cot0shot_goldreason_held_out_prompt_direct.jsonl"
-    
-    print(f"  Found sparsity ratio {sparsity_ratio} in directory: {os.path.basename(target_sparsity_dir.rstrip('/'))}")
+    print(f"  Processing folder: {folder_name}")
+    print(f"    pq1={pq1}, pq2={pq2}, sparsity={sparsity}")
     
     # Load data
-    cot_goldreason_data = load_jsonl(cot0shot_file)
+    cot_goldreason_data = load_jsonl(cot_goldreason_file)
     direct_data = load_jsonl(direct_file)
     pruned_cot_goldreason_prompt_data = load_jsonl(pruned_cot_goldreason_prompt_file)
     pruned_direct_prompt_data = load_jsonl(pruned_direct_prompt_file)
@@ -193,119 +207,138 @@ def collect_data_for_sparsity(sparsity_ratio: float) -> Dict:
                                               pruned_cot_goldreason_prompt_info, pruned_direct_prompt_info)
         results[name] = analysis
     
+    # Add metadata
+    results['metadata'] = {
+        'folder_name': folder_name,
+        'pq1': pq1,
+        'pq2': pq2,
+        'sparsity': sparsity
+    }
+    
     return results
 
-def plot_results(all_results: Dict[float, Dict]):
+def plot_results(all_results: Dict[str, Dict], pq_values: List[float]):
     """Generate plots for the results."""
-    sparsity_ratios = sorted(all_results.keys())
+    # Filter out results without metadata (failed processing)
+    valid_results = {k: v for k, v in all_results.items() if 'metadata' in v}
+    
+    if not valid_results:
+        print("No valid results to plot!")
+        return
+    
+    # Sort results by pq1 value
+    sorted_results = sorted(valid_results.items(), key=lambda x: x[1]['metadata']['pq1'])
     
     # Prepare data for plotting
     categories = ["direct_success_cot_success", "direct_fail_cot_success"]
     colors = ['blue', 'red']
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
     
     for i, category in enumerate(categories):
+        pq_values_x = []
         original_accuracies = []
         pruned_accuracies = []
         accuracy_changes = []
         
-        # Add origin point (0, 0) to make lines pass through origin
-        original_accuracies.append(0)
-        pruned_accuracies.append(0)
-        accuracy_changes.append(0)
-        
-        for sparsity_ratio in sparsity_ratios:
-            if category in all_results[sparsity_ratio]:
-                result = all_results[sparsity_ratio][category]
-                original_accuracies.append(result['original_accuracy'])
-                pruned_accuracies.append(result['pruned_accuracy'])
-                accuracy_changes.append(result['accuracy_change'])
-            else:
-                original_accuracies.append(0)
-                pruned_accuracies.append(0)
-                accuracy_changes.append(0)
-        
-        # Create x-axis values including origin
-        x_values = [0] + sparsity_ratios
+        for folder_name, result in sorted_results:
+            if category in result:
+                pq_values_x.append(result['metadata']['pq1'])
+                original_accuracies.append(result[category]['original_accuracy'])
+                pruned_accuracies.append(result[category]['pruned_accuracy'])
+                accuracy_changes.append(result[category]['accuracy_change'])
         
         # Plot 1: Original vs Pruned Accuracy
-        ax1.plot(x_values, original_accuracies, 'o-', label=f'{category} (Original)', color=colors[i], alpha=0.7)
-        ax1.plot(x_values, pruned_accuracies, 's-', label=f'{category} (Pruned)', color=colors[i], alpha=0.7, linestyle='--')
+        ax1.plot(pq_values_x, original_accuracies, 'o-', label=f'{category} (Original)', color=colors[i], alpha=0.7)
+        ax1.plot(pq_values_x, pruned_accuracies, 's-', label=f'{category} (Pruned)', color=colors[i], alpha=0.7, linestyle='--')
         
         # Plot 2: Accuracy Change
-        ax2.plot(x_values, accuracy_changes, 'o-', label=category, color=colors[i], linewidth=2, markersize=8)
+        ax2.plot(pq_values_x, accuracy_changes, 'o-', label=category, color=colors[i], linewidth=2, markersize=8)
     
     # Customize plots
-    ax1.set_xlabel('Sparsity Ratio')
+    ax1.set_xlabel('PQ Value')
     ax1.set_ylabel('Accuracy')
-    ax1.set_title('Original vs Pruned Accuracy by Sparsity Ratio')
+    ax1.set_title('Original vs Pruned Accuracy by PQ Value')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(-0.1, 1.1)
     
-    ax2.set_xlabel('Sparsity Ratio')
+    ax2.set_xlabel('PQ Value')
     ax2.set_ylabel('Accuracy Change (Pruned - Original)')
-    ax2.set_title('Accuracy Change by Sparsity Ratio')
+    ax2.set_title('Accuracy Change by PQ Value')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     ax2.axhline(y=0, color='black', linestyle='-', alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('sparsity_ratios_analysis_500.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'pq_analysis_500_{pq_values}.png', dpi=300, bbox_inches='tight')
     plt.show()
     
     # Print summary table
-    print("\n" + "="*80)
+    print("\n" + "="*100)
     print("SUMMARY TABLE")
-    print("="*80)
-    print(f"{'Sparsity':<12} {'Category':<25} {'Original':<10} {'Pruned':<10} {'Change':<10}")
-    print("-"*80)
+    print("="*100)
+    print(f"{'Folder':<30} {'PQ Value':<10} {'Category':<25} {'Original':<10} {'Pruned':<10} {'Change':<10}")
+    print("-"*100)
     
-    for sparsity_ratio in sparsity_ratios:
+    for folder_name, result in sorted_results:
+        pq_value = result['metadata']['pq1']
+        
         for category in categories:
-            if category in all_results[sparsity_ratio]:
-                result = all_results[sparsity_ratio][category]
-                print(f"{sparsity_ratio:<12} {category:<25} {result['original_correct']:<10} {result['pruned_correct']:<10} {result['accuracy_change']:<10.3f}")
+            if category in result:
+                cat_result = result[category]
+                print(f"{folder_name:<30} {pq_value:<10.6f} {category:<25} "
+                      f"{cat_result['original_correct']:<10} {cat_result['pruned_correct']:<10} {cat_result['accuracy_change']:<10.3f}")
     
     # Save detailed results
-    with open('sparsity_ratios_detailed_results_500.json', 'w') as f:
+    with open(f'pq_detailed_results_500_{pq_values}.json', 'w') as f:
         json.dump(all_results, f, indent=2)
     
-    print(f"\nDetailed results saved to: sparsity_ratios_detailed_results_500.json")
-    print(f"Plot saved to: sparsity_ratios_analysis_500.png")
+    print(f"\nDetailed results saved to: pq_detailed_results_500_{pq_values}.json")
+    print(f"Plot saved to: pq_analysis_500_{pq_values}.png")
 
 def main():
-    """Main function to collect data for all sparsity ratios and generate plots."""
-    # These are the actual sparsity ratios found in the data files
-    sparsity_ratios = [0.005846, 0.012418, 0.024406, 0.041283, 0.05979]
-# [0.005846, 0.012418, 0.024406, 0.041283, 0.05979, 0.075679] #[0.005938, 0.012393, 0.023921, 0.039883, 0.057594, 0.073843] # [0.021925, 0.054944, 0.097993, 0.145208, 0.194038]
-    all_results = {}
+    """Main function to collect data for all pq folders and generate plots."""
+    base_dir = "out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/4_set_alpaca_cleaned_no_safety/only_pq"
     
-    print("Collecting data for different sparsity ratios...")
+    # Find all pq folders
+    pq_folders = []
+    for item in os.listdir(base_dir):
+        item_path = os.path.join(base_dir, item)
+        if os.path.isdir(item_path) and item.startswith(f'pq_'):
+            pq_folders.append(item_path)
+    
+    if not pq_folders:
+        raise FileNotFoundError("No pq folders found in the specified directory")
+    
+    print(f"Found {len(pq_folders)} pq folders")
     print("="*50)
     
-    for sparsity_ratio in sparsity_ratios:
-        print(f"Processing sparsity ratio = {sparsity_ratio}...")
+    all_results = {}
+    
+    for folder_path in pq_folders:
+        folder_name = os.path.basename(folder_path)
+        print(f"Processing folder: {folder_name}")
+        
         try:
-            results = collect_data_for_sparsity(sparsity_ratio)
-            all_results[sparsity_ratio] = results
-            print(f"  ✓ Successfully collected data for sparsity ratio = {sparsity_ratio}")
+            results = collect_data_for_pq_folder(folder_path)
+            all_results[folder_name] = results
+            print(f"  ✓ Successfully collected data for {folder_name}")
             
-            # Print summary for this sparsity ratio
+            # Print summary for this folder
             for category in ["direct_success_cot_success", "direct_fail_cot_success"]:
                 if category in results:
                     result = results[category]
                     print(f"    {category}: {result['pruned_correct_count']} samples, "
-                          f"Original: {result['original_accuracy']:.3f}, "
-                          f"Pruned: {result['pruned_accuracy']:.3f}, "
-                          f"Change: {result['accuracy_change']:+.3f}")
+                        f"Original: {result['original_accuracy']:.3f}, "
+                        f"Pruned: {result['pruned_accuracy']:.3f}, "
+                        f"Change: {result['accuracy_change']:+.3f}")
         except Exception as e:
-            print(f"  ✗ Error processing sparsity ratio = {sparsity_ratio}: {e}")
-            all_results[sparsity_ratio] = {}
+            print(f"  ✗ Error processing folder {folder_name}: {e}")
+            all_results[folder_name] = {}
     
     print("\nGenerating plots...")
-    plot_results(all_results)
+    plot_results(all_results, f"only_pq")
 
 if __name__ == "__main__":
-    main() 
+    main()

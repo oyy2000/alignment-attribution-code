@@ -1,0 +1,6 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/GSM8K/direct/eval_all --eval_gsm8k --eval_type all --prompt_method direct ",
+    "result": "pending"
+  }
+]
