@@ -13,6 +13,7 @@ import os
 import re
 import glob
 from typing import Dict, List, Tuple, Optional
+import numpy as np  
 
 import matplotlib.pyplot as plt
 # collect_k_values_data_600_cot4shot_pqku_granular
@@ -20,9 +21,11 @@ import matplotlib.pyplot as plt
 BASE_DIR = (
     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
     "llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/"
-    "4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/"
+    "4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot"
 )
-U_OPTIONS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+U_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37, 0.40]
+PQ_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19]
+
 FILE_NAME = "pq_0.2_0.2_k_*_u_0.1/"
 
 ORIG_COT4_FILE = (
@@ -305,36 +308,71 @@ def print_summary_table_with_pqku(all_results: Dict[float, Dict]):
                 f"{res.get('accuracy_change',0.0):<10.3f} {res.get('pruned_correct_count',0):<15}"
             )
 def main():
-    U_OPTIONS = [round(0.1 * i, 1) for i in range(1, 10)]  # 0.1 to 0.9
-    PQ_OPTIONS = [0.11, 0.14, 0.17, 0.20, 0.23, 0.26, 0.29, 0.32, 0.35, 0.38, 0.41, 0.44, 0.47, 0.50] 
+
     categories = ["direct_success_cot_success", "direct_fail_cot_success"]
     colors = ['blue', 'red']
     for pq in PQ_OPTIONS:
         fig, axes = plt.subplots(len(U_OPTIONS), 1, figsize=(8, 4 * len(U_OPTIONS)), sharex=False)
+        # 在 main() 内 for idx, u in enumerate(U_OPTIONS): 这一层里，替换子图绘制部分
         for idx, u in enumerate(U_OPTIONS):
-           
             global FILE_NAME
-            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}/"
+            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}_granular/"
 
             print(f"Collecting results for u={u}...")
             all_results = collect_all_results_with_meta()
 
             ratios = sorted(all_results.keys())
             ax = axes[idx] if len(U_OPTIONS) > 1 else axes
+
+            # 先分别计算两条曲线的 delta
+            deltas_per_cat = []
             for i, cat in enumerate(categories):
                 delta = []
                 for r in ratios:
                     res = all_results[r].get("metrics", {}).get(cat, {})
                     delta.append(res.get('accuracy_change', 0.0))
+                deltas_per_cat.append(delta)
                 ax.plot(ratios, delta, 'o-', label=cat, color=colors[i])
+
+            # ---- 在图中标注 k（使用两条曲线的平均 y 作为标注位置）----
+            # deltas_per_cat[0] 对应 direct_success_cot_success
+            # deltas_per_cat[1] 对应 direct_fail_cot_success
+            for j, r in enumerate(ratios):
+                if r == 0.0:  # 原始点没有 pqku 元信息，跳过
+                    continue
+                meta = all_results[r].get("meta", {})
+                k_val = meta.get("k", None)
+                if k_val is None:
+                    continue
+                # 计算标注 y 位置（两条曲线的平均；若某条不存在就用另一条）
+                y_candidates = []
+                if len(deltas_per_cat) > 0 and j < len(deltas_per_cat[0]):
+                    y_candidates.append(deltas_per_cat[0][j])
+                if len(deltas_per_cat) > 1 and j < len(deltas_per_cat[1]):
+                    y_candidates.append(deltas_per_cat[1][j])
+                if not y_candidates:
+                    continue
+                y_pos = float(np.mean(y_candidates))
+                # 文本格式：k=64（如果是整数就不带小数）
+                k_text = f"k={int(k_val) if float(k_val).is_integer() else k_val}"
+                ax.annotate(
+                    k_text,
+                    (r, y_pos),
+                    textcoords="offset points",
+                    xytext=(6, 6),
+                    fontsize=7
+                )
+            # -----------------------------------------------------------
+
             ax.set_title(f'u = {u}')
             ax.set_xlabel('Sparsity Ratio')
             ax.set_ylabel('Accuracy Change')
-            ax.set_ylim(-1.0, 0.0)  # unify y-axis from 0 down to -1.0
+            ax.set_ylim(-1.0, 0.0)  # 统一 y 轴
             ax.grid(True, alpha=0.3)
             ax.legend()
 
-        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep"
+
+        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_granular_2"
         os.makedirs(output_dir, exist_ok=True)
         out_png = os.path.join(output_dir, f'sparsity_ratios_analysis_pq_{pq}_u_sweep.png')
         plt.tight_layout()

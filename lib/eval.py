@@ -361,12 +361,7 @@ def format_prompt(full_prompt, item):
     assert full_prompt.find('{{') < 0 and full_prompt.find('}}') < 0
     return full_prompt
 
-def load_dataset(dataset, nsamples, select_method='random', ids = None, seed=None):
-    # Set random seed if provided
-    if seed is not None:
-        random.seed(seed)
-        np.random.seed(seed)
-    
+def load_dataset(dataset, nsamples, select_method='random', ids = None):
     if dataset == 'GSM8K':
         data_file_test = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/test.jsonl'
         data_file_train = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/train.jsonl'
@@ -397,6 +392,16 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None, seed=Non
                 item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
             items = items + items_train
             return items
+        elif select_method == 'held_out':
+            if ids is None:
+                raise ValueError("ids must be provided for fixed selection method.")
+            items = [item for item in items if item['id'] in ids]
+            return items
+        elif select_method == 'calibration':
+            if ids is None:
+                raise ValueError("ids must be provided for fixed selection method.")
+            items = [item for item in items if item['id'] in ids]
+            return items[:nsamples] if nsamples > 0 else items
         elif select_method == 'fixed':
             if ids is None:
                 raise ValueError("ids must be provided for fixed selection method.")
@@ -480,20 +485,53 @@ def extract_answer(output, item, dataset):
 RETRY_INTERVAL = 10        # 秒
 MAX_RETRY      = 5         # 最多重试 5 次
 import time
-def _safe_generate(model, prompts, sampling_params, max_retry=5, backoff=10):
+import time
+def apply_prompt_template(model_name, prompts):
+    print(f"Applying prompt template for model: {model_name}")
+    """
+    根据不同的 model_name 应用聊天模板。
+    支持单个字符串或字符串列表。
+    """
+    if isinstance(prompts, str):
+        prompts = [prompts]
+
+    formatted_prompts = []
+    for prompt in prompts:
+        if "llama2" in model_name.lower():
+            # LLaMA 2 Chat 模版
+            B_INST, E_INST = "[INST]", "[/INST]"
+            B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
+            system_prompt = "You are a helpful assistant."
+            formatted = f"{B_INST} {B_SYS}{system_prompt}{E_SYS}{prompt} {E_INST}"
+        elif "mistral" in model_name.lower():
+            # Mistral 模版（以 <s> 和 [INST] 开头）
+            formatted = f"<s>[INST] {prompt} [/INST]"
+        elif "chatglm" in model_name.lower():
+            # ChatGLM 模版
+            formatted = f"[Round 1]\n问：{prompt}\n答："
+        else:
+            # 默认不加模板
+            formatted = prompt
+
+        formatted_prompts.append(formatted)
+
+    return formatted_prompts
+
+
+def _safe_generate(args, model, prompts, sampling_params, max_retry=5, backoff=10, add_template=False):
     """
     统一把 vLLM 的输出转成 List[str]。
     prompts 既可以是 str，也可以是 List[str]，最终都以 List[str] 返回。
     """
     if isinstance(prompts, str):
         prompts = [prompts]
-
+    if add_template:
+        prompts = apply_prompt_template(args.model, prompts)
     retry = 0
     while True:
         try:
             # vllm.LLM.generate 接收 List[str]
             raw = model.generate(prompts, sampling_params)    
-
             # 取每个 RequestOutput 的首个 candidate 文本
             clean = [
                 (r.outputs[0].text if getattr(r, "outputs", None) else str(r)).strip()
@@ -507,6 +545,34 @@ def _safe_generate(model, prompts, sampling_params, max_retry=5, backoff=10):
             wait = backoff * (2 ** (retry - 1))
             print(f"[WARN] Generate error: {e!s} | Retry {retry}/{max_retry} after {wait}s")
             time.sleep(wait)
+
+# def _safe_generate(model, prompts, sampling_params, max_retry=5, backoff=10):
+#     """
+#     统一把 vLLM 的输出转成 List[str]。
+#     prompts 既可以是 str，也可以是 List[str]，最终都以 List[str] 返回。
+#     """
+#     if isinstance(prompts, str):
+#         prompts = [prompts]
+
+#     retry = 0
+#     while True:
+#         try:
+#             # vllm.LLM.generate 接收 List[str]
+#             raw = model.generate(prompts, sampling_params)    
+
+#             # 取每个 RequestOutput 的首个 candidate 文本
+#             clean = [
+#                 (r.outputs[0].text if getattr(r, "outputs", None) else  str(r)).strip()
+#                 for r in raw
+#             ]
+#             return clean                                           # List[str]
+#         except Exception as e:
+#             retry += 1
+#             if retry > max_retry:
+#                 raise RuntimeError(f"Generation failed after {max_retry} retries") from e
+#             wait = backoff * (2 ** (retry - 1))
+#             print(f"[WARN] Generate error: {e!s} | Retry {retry}/{max_retry} after {wait}s")
+#             time.sleep(wait)
 
 def eval_gsm8k_all(
     args,
@@ -554,16 +620,25 @@ def eval_gsm8k_random(
 
     random.seed(args.seed)
     np.random.seed(args.seed)
-    data = load_dataset(args.dataset, args.nsamples, select_method=select_method, seed=args.seed)
+    data = load_dataset(args.dataset, args.nsamples, select_method=select_method)
 
-    # -------- ❷  设置 SamplingParams --------
-    sampling_params = SamplingParams(
-        temperature=0.0,
-        top_p=1.0,
-        max_tokens=1024,
-        n=1,              # GSM8K 评测通常一个样本即可
-        stop=None,        # 统一在 extract_answer 里截断
-    )
+    if args.sampling_strategy == "greedy":
+            # -------- ❷  设置 SamplingParams --------
+        sampling_params = SamplingParams(
+            temperature=0.0,
+            top_p=1.0,
+            max_tokens=1024,
+            n=1,              # GSM8K 评测通常一个样本即可
+            stop=None,        # 统一在 extract_answer 里截断
+        )
+    elif args.sampling_strategy == "top_p":
+        sampling_params = SamplingParams(
+            temperature=0.7,
+            top_p=0.9,
+            max_tokens=1024,
+            n=1,              # GSM8K 评测通常一个样本即可
+            stop=None,        # 统一在 extract_answer 里截断
+        )
 
     # -------- ❸  主循环：每种 prompt 独立评估 --------
     acc_dict: Dict[str, List[bool]] = {t: [] for t in prompt_tags}
@@ -572,12 +647,12 @@ def eval_gsm8k_random(
         if args.neg_prune:
             print("Negative pruning")
             outfile = (Path(args.save)
-                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{prune_data}.jsonl"
+                    / f"gsm8k_top_{args.sparsity_ratio:.6f}_{prune_data}_seed_{args.seed}.jsonl"
                     )
         else:
             print("Positive pruning")
             outfile = (Path(args.save)
-                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}.jsonl"
+                / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}_seed_{args.seed}.jsonl"
             )
 
         already_done = 0
@@ -604,7 +679,7 @@ def eval_gsm8k_random(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(vllm_model, messages, sampling_params)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -653,7 +728,7 @@ def eval_gsm8k_selected_samples(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600.jsonl"
+    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600_no_overlap_with_calibration.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]
@@ -664,7 +739,6 @@ def eval_gsm8k_selected_samples(
         args.nsamples,
         select_method="fixed",
         ids=ids,          # 这里就是 samples 中所有 id 的列表
-        seed=args.seed    # 传递随机种子以确保可重现性
     )
 
     # -------- ❷  设置 SamplingParams --------
@@ -715,7 +789,7 @@ def eval_gsm8k_selected_samples(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(vllm_model, messages, sampling_params)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -774,9 +848,8 @@ def eval_gsm8k_held_out(
     data = load_dataset(
         args.dataset,
         args.nsamples,
-        select_method="fixed",
+        select_method="held_out",
         ids=ids,          # 这里就是 samples 中所有 id 的列表
-        seed=args.seed    # 传递随机种子以确保可重现性
     )
 
     # -------- ❷  设置 SamplingParams --------
@@ -827,7 +900,7 @@ def eval_gsm8k_held_out(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(vllm_model, messages, sampling_params)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -863,7 +936,7 @@ def eval_gsm8k_held_out(
 
     return acc_summary
 
-def eval_gsm8k_fixed(
+def eval_gsm8k_calibration(
     args,
     vllm_model,
     tokenizer=None,
@@ -929,9 +1002,8 @@ def eval_gsm8k_fixed(
     data = load_dataset(
         args.dataset,
         args.nsamples,
-        select_method="fixed",
+        select_method="calibration",
         ids=ids,          # 这里就是 samples 中所有 id 的列表
-        seed=args.seed    # 传递随机种子以确保可重现性
     )
 
     # -------- ❷  设置 SamplingParams --------
@@ -982,7 +1054,7 @@ def eval_gsm8k_fixed(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(vllm_model, messages, sampling_params)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)

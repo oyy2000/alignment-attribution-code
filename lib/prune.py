@@ -410,6 +410,7 @@ def prune_wanda(
                                 save_folder,
                                 f"W_metric_layer_{i}_name_{name}_{prune_data}_weight_only_disentangle.pkl",
                             )
+
                         else:
                             save_folder = os.path.join(
                                 args.save, f"wanda_score/{prune_data}_weight_only"
@@ -427,6 +428,10 @@ def prune_wanda(
                             )
                         )
                         pickle.dump(W_metric, f)
+                    # Also save as torch.pt
+                    target_file_pt = target_file.replace(".pkl", "_torch.pt")
+                    torch.save(W_metric.cpu(), target_file_pt)
+                    print(f"Converted {target_file}  →  {target_file_pt}")
                     continue
 
                 W_mask = (

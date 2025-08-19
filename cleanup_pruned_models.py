@@ -58,15 +58,6 @@ def find_pruned_model_folders(base_path, pattern=None):
                     if pattern is None or pattern in full_path:
                         folders_to_delete.append(full_path)
     
-    # Search for wanda_score directories (these use most disk space)
-    wanda_score_pattern = os.path.join(base_path, "**", "wanda_score")
-    all_wanda_score_dirs = glob.glob(wanda_score_pattern, recursive=True)
-    
-    for wanda_score_dir in all_wanda_score_dirs:
-        if os.path.isdir(wanda_score_dir):
-            if pattern is None or pattern in wanda_score_dir:
-                folders_to_delete.append(wanda_score_dir)
-    
     return folders_to_delete
 
 

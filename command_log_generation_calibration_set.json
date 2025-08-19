@@ -1,0 +1,18 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_calibration_calibration_set --nsamples 120 --eval_gsm8k --eval_type calibration --prompt_method cot4shot --prune_data GSM8K_cot0shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_calibration_calibration_set --nsamples 120 --eval_gsm8k --eval_type calibration --prompt_method cot0shot --prune_data GSM8K_cot0shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_calibration_calibration_set --nsamples 120 --eval_gsm8k --eval_type calibration --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_calibration_calibration_set --nsamples 120 --eval_gsm8k --eval_type calibration --prompt_method direct --prune_data GSM8K_direct ",
+    "result": "success"
+  }
+]

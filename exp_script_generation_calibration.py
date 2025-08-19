@@ -10,32 +10,30 @@ model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
 nsamples = 120
-log_file = f"command_log_save_eval_3*3_upgrade_top_prune.json"
+log_file = f"command_log_generation_cot2shot_cot8shot_calibration_set_seed.json"
 
-prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
-sparsity_ratios = [0, 0.03, 0.06, 0.09, 0.12, 0.15] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-prune_method_options = ["wanda"]
-prompt_methods = ["direct", "cot0shot", "cot0shot_goldreason"]
-
-def build_command(prune_data, sparsity_ratio, prune_method, prompt_method):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
+prompt_methods = ["cot2shot", "cot8shot"]
+prune_data = "GSM8K_cot0shot"
+eval_type = "all"
+sampling_strategy = "greedy"
+seeds = [0]
+def build_command(prompt_method, seed):
+    save_dir = f"out/{model}/{prompt_method}/eval_{eval_type}_all/"
     command = (
         f"python main.py "
         f"--model {model} "
-        f"--prune_method {prune_method} "
-        f"--prune_data {prune_data} "
-        f"--sparsity_ratio {sparsity_ratio} "
-        f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
-        f"--eval_type held_out "
+        f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
-        f"--neg_prune "
-        f"max_new_tokens 512"
+        f"--prune_data {prune_data} "
+        f"--seed {seed} "
+        f"--sampling_strategy {sampling_strategy} "
     )
   
     return command
+
 
 def initialize_log(commands):
     if not os.path.exists(log_file):
@@ -68,7 +66,6 @@ def atomic_write_json(path, data):
         json.dump(data, tf, indent=2)
         temp_name = tf.name
     os.replace(temp_name, path)   # rename 原子替换
-
 
 def get_gpu_free_memory():
     used = subprocess.run(
@@ -121,14 +118,13 @@ def worker(task_queue, gpu_id):
             task_queue.put(task)
             time.sleep(20)
 
+
 def main():
     # Generate all commands
     commands = []
-    for prune_data in prune_data_options:
-        for sparsity in sparsity_ratios:
-            for prune_method in prune_method_options:
-                for prompt_method in prompt_methods:
-                    commands.append(build_command(prune_data, sparsity, prune_method, prompt_method))
+    for prompt_method in prompt_methods:
+        for seed in seeds:
+            commands.append(build_command(prompt_method, seed))
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()

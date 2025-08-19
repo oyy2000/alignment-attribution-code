@@ -9,28 +9,32 @@ from multiprocessing import Queue
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 120
-log_file = f"command_log_save_eval_3*3.json"
-
-prune_data_options = ["GSM8K_direct_120", "GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason"]
-sparsity_ratios = [0, 0.03, 0.06, 0.09, 0.12, 0.15] #[0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-prune_method_options = ["random", "wanda"]
-prompt_methods = ["direct", "cot0shot", "cot0shot_goldreason"]
-
-def build_command(prune_data, sparsity_ratio, prune_method, prompt_method):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/sparsity_{sparsity_ratio}"
+nsamples = 600
+eval_type = "selected_samples"
+prune_method_options = ["wanda_4_set_difference_cot4shot"] #["wanda_3_set_difference_utility"]
+prompt_methods = ["direct,cot4shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
+pq_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11]  # (p, q) for 3-set pruning
+k_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19]
+u_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19] 
+log_file = f"command_log_eval_gsm8k_wanda_4_set_600_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}.json"
+def build_command(prune_method, prompt_method, p, q, k, u):
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/4_set_alpaca_cleaned_no_safety/eval_{eval_type}/prompt_{prompt_method}/pq_{p}_{q}_k_{k}_u_{u}_granular/"
     command = (
         f"python main.py "
         f"--model {model} "
         f"--prune_method {prune_method} "
-        f"--prune_data {prune_data} "
-        f"--sparsity_ratio {sparsity_ratio} "
         f"--sparsity_type {sparsity_type} "
+        f"--sparsity_ratio 0.5 "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
         f"--eval_gsm8k "
-        f"--eval_type held_out "
+        f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
+        f"--save_sparsity "  # Save sparsity ratio
+        f"--p {p} "
+        f"--q {q} "
+        f"--k {k} "
+        f"--u {u} "
     )
   
     return command
@@ -45,17 +49,27 @@ def initialize_log(commands):
         with open(log_file, 'w') as f:
             json.dump(logs, f, indent=2)
 
+# 放在脚本最前面
+log_lock = threading.Lock()
+
 def update_log(command, result):
-    lock = threading.Lock()
-    with lock:
+    with log_lock:
         with open(log_file, 'r') as f:
             logs = json.load(f)
         for entry in logs:
             if entry["command"] == command:
                 entry["result"] = result
                 break
-        with open(log_file, 'w') as f:
-            json.dump(logs, f, indent=2)
+        atomic_write_json(log_file, logs)
+
+import tempfile, os, json
+
+def atomic_write_json(path, data):
+    dir_ = os.path.dirname(path)
+    with tempfile.NamedTemporaryFile('w', dir=dir_, delete=False) as tf:
+        json.dump(data, tf, indent=2)
+        temp_name = tf.name
+    os.replace(temp_name, path)   # rename 原子替换
 
 def get_gpu_free_memory():
     used = subprocess.run(
@@ -107,15 +121,18 @@ def worker(task_queue, gpu_id):
             print(f"[GPU {gpu_id}] Not enough memory for: {command}")
             task_queue.put(task)
             time.sleep(20)
-
+            
 def main():
     # Generate all commands
     commands = []
-    for prune_data in prune_data_options:
-        for sparsity in sparsity_ratios:
-            for prune_method in prune_method_options:
-                for prompt_method in prompt_methods:
-                    commands.append(build_command(prune_data, sparsity, prune_method, prompt_method))
+    for prune_method in prune_method_options:
+        for prompt_method in prompt_methods:
+            for p in pq_options:
+                q = p
+                for k in k_options:
+                    for u in u_options:
+                        commands.append(build_command(prune_method, prompt_method, p, q, k, u))
+
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()

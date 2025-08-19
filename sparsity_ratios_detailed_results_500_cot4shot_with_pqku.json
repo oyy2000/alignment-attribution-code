@@ -1,0 +1,466 @@
+{
+  "0.0": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 104,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 104,
+        "pruned_accuracy": 1.0,
+        "accuracy_change": 0.0
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 301,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 301,
+        "pruned_accuracy": 1.0,
+        "accuracy_change": 0.0
+      }
+    },
+    "meta": {
+      "p": null,
+      "q": null,
+      "k": null,
+      "u": null,
+      "dir": null
+    }
+  },
+  "0.00011": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 98,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 98,
+        "pruned_accuracy": 0.9423076923076923,
+        "accuracy_change": -0.05769230769230771
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 270,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 270,
+        "pruned_accuracy": 0.8970099667774086,
+        "accuracy_change": -0.10299003322259137
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.3,
+      "u": 0.4,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.3_u_0.4/"
+    }
+  },
+  "0.000119": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 92,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 92,
+        "pruned_accuracy": 0.8846153846153846,
+        "accuracy_change": -0.11538461538461542
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 272,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 272,
+        "pruned_accuracy": 0.9036544850498339,
+        "accuracy_change": -0.09634551495016608
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.1,
+      "u": 0.5,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.1_u_0.5/"
+    }
+  },
+  "0.000128": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 101,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 101,
+        "pruned_accuracy": 0.9711538461538461,
+        "accuracy_change": -0.028846153846153855
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 273,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 273,
+        "pruned_accuracy": 0.9069767441860465,
+        "accuracy_change": -0.09302325581395354
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.4,
+      "u": 0.2,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.4_u_0.2/"
+    }
+  },
+  "0.000165": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 99,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 99,
+        "pruned_accuracy": 0.9519230769230769,
+        "accuracy_change": -0.04807692307692313
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 269,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 269,
+        "pruned_accuracy": 0.893687707641196,
+        "accuracy_change": -0.10631229235880402
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.4,
+      "u": 0.1,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.4_u_0.1/"
+    }
+  },
+  "0.000254": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 97,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 97,
+        "pruned_accuracy": 0.9326923076923077,
+        "accuracy_change": -0.06730769230769229
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 259,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 259,
+        "pruned_accuracy": 0.8604651162790697,
+        "accuracy_change": -0.13953488372093026
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.2,
+      "u": 0.4,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.2_u_0.4/"
+    }
+  },
+  "0.000261": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 98,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 98,
+        "pruned_accuracy": 0.9423076923076923,
+        "accuracy_change": -0.05769230769230771
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 258,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 258,
+        "pruned_accuracy": 0.8571428571428571,
+        "accuracy_change": -0.1428571428571429
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.3,
+      "u": 0.3,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.3_u_0.3/"
+    }
+  },
+  "0.000502": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 93,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 93,
+        "pruned_accuracy": 0.8942307692307693,
+        "accuracy_change": -0.10576923076923073
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 247,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 247,
+        "pruned_accuracy": 0.8205980066445183,
+        "accuracy_change": -0.17940199335548168
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.1,
+      "u": 0.4,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.1_u_0.4/"
+    }
+  },
+  "0.000548": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 88,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 88,
+        "pruned_accuracy": 0.8461538461538461,
+        "accuracy_change": -0.15384615384615385
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 243,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 243,
+        "pruned_accuracy": 0.8073089700996677,
+        "accuracy_change": -0.19269102990033227
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.3,
+      "u": 0.2,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.3_u_0.2/"
+    }
+  },
+  "0.000819": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 82,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 82,
+        "pruned_accuracy": 0.7884615384615384,
+        "accuracy_change": -0.21153846153846156
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 235,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 235,
+        "pruned_accuracy": 0.7807308970099668,
+        "accuracy_change": -0.21926910299003322
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.3,
+      "u": 0.1,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.3_u_0.1/"
+    }
+  },
+  "0.000881": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 88,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 88,
+        "pruned_accuracy": 0.8461538461538461,
+        "accuracy_change": -0.15384615384615385
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 240,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 240,
+        "pruned_accuracy": 0.7973421926910299,
+        "accuracy_change": -0.2026578073089701
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.2,
+      "u": 0.3,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.2_u_0.3/"
+    }
+  },
+  "0.001952": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 77,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 77,
+        "pruned_accuracy": 0.7403846153846154,
+        "accuracy_change": -0.2596153846153846
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 229,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 229,
+        "pruned_accuracy": 0.760797342192691,
+        "accuracy_change": -0.23920265780730898
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.1,
+      "u": 0.3,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.1_u_0.3/"
+    }
+  },
+  "0.004302": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 48,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 48,
+        "pruned_accuracy": 0.46153846153846156,
+        "accuracy_change": -0.5384615384615384
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 99,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 99,
+        "pruned_accuracy": 0.3289036544850498,
+        "accuracy_change": -0.6710963455149501
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.2,
+      "u": 0.2,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.2_u_0.2/"
+    }
+  },
+  "0.01104": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 35,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 35,
+        "pruned_accuracy": 0.33653846153846156,
+        "accuracy_change": -0.6634615384615384
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 139,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 139,
+        "pruned_accuracy": 0.46179401993355484,
+        "accuracy_change": -0.5382059800664452
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.1,
+      "u": 0.2,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.1_u_0.2/"
+    }
+  },
+  "0.01445": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 40,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 40,
+        "pruned_accuracy": 0.38461538461538464,
+        "accuracy_change": -0.6153846153846154
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 20,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 20,
+        "pruned_accuracy": 0.0664451827242525,
+        "accuracy_change": -0.9335548172757475
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.2,
+      "u": 0.1,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.2_u_0.1/"
+    }
+  },
+  "0.068083": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 16,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 16,
+        "pruned_accuracy": 0.15384615384615385,
+        "accuracy_change": -0.8461538461538461
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 6,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 6,
+        "pruned_accuracy": 0.019933554817275746,
+        "accuracy_change": -0.9800664451827242
+      }
+    },
+    "meta": {
+      "p": 0.2,
+      "q": 0.2,
+      "k": 0.1,
+      "u": 0.1,
+      "dir": "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot/pq_0.2_0.2_k_0.1_u_0.1/"
+    }
+  }
+}

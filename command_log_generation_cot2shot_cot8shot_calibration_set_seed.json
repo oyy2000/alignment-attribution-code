@@ -1,0 +1,10 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot2shot/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot2shot --prune_data GSM8K_cot0shot --seed 0 --sampling_strategy greedy ",
+    "result": "running"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot8shot/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot8shot --prune_data GSM8K_cot0shot --seed 0 --sampling_strategy greedy ",
+    "result": "running"
+  }
+]

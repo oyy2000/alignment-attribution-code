@@ -1,0 +1,26 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 0 --sampling_strategy top_p ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 42 --sampling_strategy top_p ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 300 --sampling_strategy top_p ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 666 --sampling_strategy top_p ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 888 --sampling_strategy top_p ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/ --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 1000 --sampling_strategy top_p ",
+    "result": "success"
+  }
+]

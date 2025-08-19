@@ -1,0 +1,31 @@
+{
+  "0.0": {
+    "metrics": {
+      "direct_success_cot_success": {
+        "category": "direct_success_cot_success",
+        "pruned_correct_count": 104,
+        "original_correct": 104,
+        "original_accuracy": 1.0,
+        "pruned_correct": 104,
+        "pruned_accuracy": 1.0,
+        "accuracy_change": 0.0
+      },
+      "direct_fail_cot_success": {
+        "category": "direct_fail_cot_success",
+        "pruned_correct_count": 301,
+        "original_correct": 301,
+        "original_accuracy": 1.0,
+        "pruned_correct": 301,
+        "pruned_accuracy": 1.0,
+        "accuracy_change": 0.0
+      }
+    },
+    "meta": {
+      "p": null,
+      "q": null,
+      "k": null,
+      "u": null,
+      "dir": null
+    }
+  }
+}

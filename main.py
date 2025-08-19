@@ -27,7 +27,7 @@ from lib.prune import (
 )
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_fixed, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples
+from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -75,6 +75,7 @@ def main(args=None):
         parser.add_argument('--batch_size', type=int, default=64)
         parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
         parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
+        parser.add_argument("--sampling_strategy", type=str, default="greedy", choices=["greedy", "top_p", "top_k"])
         parser.add_argument(
             "--seed", type=int, default=0, help="Seed for sampling the calibration data."
         )
@@ -582,8 +583,8 @@ def main(args=None):
             swap_space=12,
         )
         print(f"Evaluating GSM8K {prune_data} with {args.model}")
-        if args.eval_type == "fixed":
-            acc_summary = eval_gsm8k_fixed(
+        if args.eval_type == "calibration":
+            acc_summary = eval_gsm8k_calibration(
                 args,
                 vllm_model,
                 tokenizer,

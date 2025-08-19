@@ -2,19 +2,19 @@
   "0.0": {
     "direct_success_cot_success": {
       "category": "direct_success_cot_success",
-      "pruned_correct_count": 7,
-      "original_correct": 7,
+      "pruned_correct_count": 104,
+      "original_correct": 104,
       "original_accuracy": 1.0,
-      "pruned_correct": 7,
+      "pruned_correct": 104,
       "pruned_accuracy": 1.0,
       "accuracy_change": 0.0
     },
     "direct_fail_cot_success": {
       "category": "direct_fail_cot_success",
-      "pruned_correct_count": 142,
-      "original_correct": 142,
+      "pruned_correct_count": 301,
+      "original_correct": 301,
       "original_accuracy": 1.0,
-      "pruned_correct": 142,
+      "pruned_correct": 301,
       "pruned_accuracy": 1.0,
       "accuracy_change": 0.0
     }
@@ -22,81 +22,81 @@
   "0.000165": {
     "direct_success_cot_success": {
       "category": "direct_success_cot_success",
-      "pruned_correct_count": 7,
-      "original_correct": 7,
+      "pruned_correct_count": 99,
+      "original_correct": 104,
       "original_accuracy": 1.0,
-      "pruned_correct": 7,
-      "pruned_accuracy": 1.0,
-      "accuracy_change": 0.0
+      "pruned_correct": 99,
+      "pruned_accuracy": 0.9519230769230769,
+      "accuracy_change": -0.04807692307692313
     },
     "direct_fail_cot_success": {
       "category": "direct_fail_cot_success",
-      "pruned_correct_count": 127,
-      "original_correct": 142,
+      "pruned_correct_count": 269,
+      "original_correct": 301,
       "original_accuracy": 1.0,
-      "pruned_correct": 127,
-      "pruned_accuracy": 0.8943661971830986,
-      "accuracy_change": -0.10563380281690138
+      "pruned_correct": 269,
+      "pruned_accuracy": 0.893687707641196,
+      "accuracy_change": -0.10631229235880402
     }
   },
   "0.000819": {
     "direct_success_cot_success": {
       "category": "direct_success_cot_success",
-      "pruned_correct_count": 7,
-      "original_correct": 7,
+      "pruned_correct_count": 82,
+      "original_correct": 104,
       "original_accuracy": 1.0,
-      "pruned_correct": 7,
-      "pruned_accuracy": 1.0,
-      "accuracy_change": 0.0
+      "pruned_correct": 82,
+      "pruned_accuracy": 0.7884615384615384,
+      "accuracy_change": -0.21153846153846156
     },
     "direct_fail_cot_success": {
       "category": "direct_fail_cot_success",
-      "pruned_correct_count": 127,
-      "original_correct": 142,
+      "pruned_correct_count": 235,
+      "original_correct": 301,
       "original_accuracy": 1.0,
-      "pruned_correct": 127,
-      "pruned_accuracy": 0.8943661971830986,
-      "accuracy_change": -0.10563380281690138
+      "pruned_correct": 235,
+      "pruned_accuracy": 0.7807308970099668,
+      "accuracy_change": -0.21926910299003322
     }
   },
   "0.01445": {
     "direct_success_cot_success": {
       "category": "direct_success_cot_success",
-      "pruned_correct_count": 0,
-      "original_correct": 0,
-      "original_accuracy": 0.0,
-      "pruned_correct": 0,
-      "pruned_accuracy": 0.0,
-      "accuracy_change": 0.0
+      "pruned_correct_count": 40,
+      "original_correct": 104,
+      "original_accuracy": 1.0,
+      "pruned_correct": 40,
+      "pruned_accuracy": 0.38461538461538464,
+      "accuracy_change": -0.6153846153846154
     },
     "direct_fail_cot_success": {
       "category": "direct_fail_cot_success",
-      "pruned_correct_count": 0,
-      "original_correct": 0,
-      "original_accuracy": 0.0,
-      "pruned_correct": 0,
-      "pruned_accuracy": 0.0,
-      "accuracy_change": 0.0
+      "pruned_correct_count": 20,
+      "original_correct": 301,
+      "original_accuracy": 1.0,
+      "pruned_correct": 20,
+      "pruned_accuracy": 0.0664451827242525,
+      "accuracy_change": -0.9335548172757475
     }
   },
   "0.068083": {
     "direct_success_cot_success": {
       "category": "direct_success_cot_success",
-      "pruned_correct_count": 0,
-      "original_correct": 0,
-      "original_accuracy": 0.0,
-      "pruned_correct": 0,
-      "pruned_accuracy": 0.0,
-      "accuracy_change": 0.0
+      "pruned_correct_count": 16,
+      "original_correct": 104,
+      "original_accuracy": 1.0,
+      "pruned_correct": 16,
+      "pruned_accuracy": 0.15384615384615385,
+      "accuracy_change": -0.8461538461538461
     },
     "direct_fail_cot_success": {
       "category": "direct_fail_cot_success",
-      "pruned_correct_count": 0,
-      "original_correct": 0,
-      "original_accuracy": 0.0,
-      "pruned_correct": 0,
-      "pruned_accuracy": 0.0,
-      "accuracy_change": 0.0
+      "pruned_correct_count": 6,
+      "original_correct": 301,
+      "original_accuracy": 1.0,
+      "pruned_correct": 6,
+      "pruned_accuracy": 0.019933554817275746,
+      "accuracy_change": -0.9800664451827242
     }
   }
 }

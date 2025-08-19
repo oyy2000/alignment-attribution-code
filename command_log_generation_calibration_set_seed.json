@@ -1,0 +1,98 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/0 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 0 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/42 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 42 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/300 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 300 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/666 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 666 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/888 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 888 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_all_all/1000 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot4shot --prune_data GSM8K_cot0shot --seed 1000 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/0 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 0 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/42 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 42 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/300 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 300 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/666 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 666 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/888 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 888 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot/eval_all_all/1000 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot --prune_data GSM8K_cot0shot --seed 1000 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/0 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 0 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/42 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 42 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/300 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 300 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/666 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 666 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/888 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 888 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/1000 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method cot0shot_goldreason --prune_data GSM8K_cot0shot --seed 1000 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/0 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 0 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/42 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 42 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/300 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 300 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/666 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 666 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/888 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 888 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/direct/eval_all_all/1000 --nsamples 120 --eval_gsm8k --eval_type all --prompt_method direct --prune_data GSM8K_cot0shot --seed 1000 ",
+    "result": "success"
+  }
+]
