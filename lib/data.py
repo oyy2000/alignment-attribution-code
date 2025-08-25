@@ -205,26 +205,54 @@ def extract_answer(output, item, dataset):
         return str(None)
 
     raise NotImplemented
+
+def _truncate_at_marker(text: str, markers=None) -> str:
+    """
+    在文本中查找最后一次出现的结论标志（如 So / Therefore / therefore），
+    并删除该标志及其后内容。若未找到，返回原文。
+    """
+    if not text:
+        return text
+    if markers is None:
+        # 只按你的要求保留 So / Therefore / therefore；大小写不敏感
+        markers = [r"so", r"therefore"]
+
+    # 构造形如 r"\b(?:so|therefore)\b[:,\s\-–—]*" 的模式，匹配词边界后可跟若干标点/空白
+    pat = re.compile(r"\b(?:" + "|".join(markers) + r")\b[:,\s\-–—]*", flags=re.IGNORECASE)
+
+    last_match = None
+    for m in pat.finditer(text):
+        last_match = m
+    if last_match is None:
+        return text  # 未找到标志：不改动
+
+    # 截取到标志起始位置（不包含标志）
+    truncated = text[: last_match.start()].rstrip()
+    return truncated
+
 import json
 import torch
 import random
 
-def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8K_direct"):
+def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8K_direct", truncate_answer_of_cot=False):
     if prompt == "GSM8K_direct":
         # data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+        # data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
+        data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_direct_120_with_conversation_template.jsonl"
     elif prompt == "GSM8K_cot0shot_120":
         # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_cot_120.json'
+        # data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_cot_120.json'
+        data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_cot0shot_120_with_conversation_template.jsonl"
     elif prompt == "GSM8K_direct_120":
         # data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_direct_120.json'
-    elif prompt in ["GSM8K_cot0shot_goldreason", "GSM8K_cot0shot"]:
+        # data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_direct_120.json'
+        data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_direct_120_with_conversation_template.jsonl"
+    elif prompt == "GSM8K_cot0shot_goldreason":
         # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+        # data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
+        data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_cot0shot_goldreason_120_with_conversation_template.jsonl"
     elif prompt == "GSM8K_cot4shot_120":
-        # data_file = f'../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json'
-        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/GSM8K_cot0shot_120/sparsity_0/cot4shot/gsm8k_bottom_0.000000_GSM8K_cot0shot_120.jsonl'
+        data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_cot4shot_120_with_conversation_template.jsonl'
 
     if data_file.endswith('.jsonl'):
         with open(data_file, 'r') as fin:
@@ -249,24 +277,27 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
 
     for item in sampled_items:
         # 选择prompt类型（如 direct / cot0shot.math teacher_input）
-        if "direct" in prompt:
-            input_text = item['direct.math teacher_input']
-            output_text = item['direct.math teacher_output']
-        elif prompt in ["GSM8K_cot0shot", "GSM8K_cot0shot_120" ]:
-            input_text = item['cot0shot.math teacher_input']
-            output_text = item['cot0shot.math teacher_output']
-        elif prompt == "GSM8K_cot0shot_goldreason":
-            input_text = item['cot0shot.goldreason_input']
-            output_text = item['cot0shot.goldreason_output']
-        elif prompt == "GSM8K_cot4shot_120":
-            input_text = item['input']
-            output_text = item['output']
-        else:
-            raise ValueError(f"Unsupported prompt type: {prompt}")
+        # if "direct" in prompt:
+        #     input_text = item['direct.math teacher_input']
+        #     output_text = item['direct.math teacher_output']
+        # elif prompt in ["GSM8K_cot0shot", "GSM8K_cot0shot_120" ]:
+        #     input_text = item['cot0shot.math teacher_input']
+        #     output_text = item['cot0shot.math teacher_output']
+        # elif prompt == "GSM8K_cot0shot_goldreason":
+        #     input_text = item['cot0shot.goldreason_input']
+        #     output_text = item['cot0shot.goldreason_output']
+        # elif prompt == "GSM8K_cot4shot_120":
+        input_text = item['input']
+        output_text = item['output']
+        # else:
+            # raise ValueError(f"Unsupported prompt type: {prompt}")
 
         # tokenizer encode
         input_enc = tokenizer(input_text, return_tensors="pt", truncation=True, max_length=seqlen)
         output_enc = tokenizer(output_text, return_tensors="pt", truncation=True, max_length=seqlen)
+        if truncate_answer_of_cot:
+            # So 或者 Therefore or therefore 这样的标志最后出现的位置代表要给出答案了，去掉这样标志后的内容
+            output_text = _truncate_at_marker(output_text)
 
         # 拼接并构造target
         inp = torch.cat((input_enc.input_ids, output_enc.input_ids[:, 1:]), dim=1)
@@ -274,7 +305,8 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
 
         input_len = input_enc.input_ids.shape[1]
         tar[:, :input_len] = -100  # mask掉输入部分，只监督输出
-
+        
+        
         trainloader.append((inp, tar))
 
     return trainloader, None
@@ -412,6 +444,12 @@ def get_loaders(
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_120")
     if name == "GSM8K_cot0shot_goldreason":
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_goldreason")
+    if name == "GSM8K_cot4shot_120_truncated":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot4shot_120", truncate_answer_of_cot=True)
+    if name == "GSM8K_cot0shot_120_truncated":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_120", truncate_answer_of_cot=True)
+    if name == "GSM8K_cot0shot_goldreason_truncated":
+        return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot_goldreason", truncate_answer_of_cot=True)
     if name == "wikitext":
         return get_wikitext2(nsamples, seed, seqlen, tokenizer)
     if name in ["alpaca", "alpaca_cleaned", "alpaca_cleaned_no_safety"]:

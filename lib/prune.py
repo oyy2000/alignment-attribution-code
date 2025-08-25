@@ -265,23 +265,7 @@ def prune_wanda(
     use_cache = model.config.use_cache
     model.config.use_cache = False
     print(f"loading calibration data {prune_data}")
-    assert prune_data in [
-        "wikitext",
-        "alpaca",
-        "alpaca_cleaned",
-        "alpaca_cleaned_no_safety",
-        "align",
-        "align_short",
-        "misalign",
-        "addition_direct",
-        "addition_CoT",
-        "GSM8K_direct",
-        "GSM8K_cot0shot",
-        "GSM8K_direct_120",
-        "GSM8K_cot0shot_120",
-        "GSM8K_cot0shot_goldreason",
-        "GSM8K_cot4shot_120",
-    ]
+    
     dataloader, _ = get_loaders(
         prune_data,
         nsamples=args.nsamples,
@@ -1668,7 +1652,7 @@ def prune_wanda_2_set_difference_utility(
         assert model_base is not None
         layers_base = model_base.model.layers
 
-    metric1, metric2, metric3 = "cot4shot", "direct", "utility"
+    metric1, metric2, metric3 = "cot0shot", "direct", "utility"
     print(f"🌱 2-Set pruning - p={p}, k={k}, u={u} - {metric1} ∩ {metric2} \\ {metric3}")
 
     for i, layer in enumerate(layers):
@@ -1697,7 +1681,11 @@ def prune_wanda_2_set_difference_utility(
             diff_pk   = idx_p[~torch.isin(idx_p, idx_k)]
             diff_pku  = diff_pk[~torch.isin(diff_pk, idx_u)]
             prune_set  = diff_pku  
-
+            
+            sparsity = prune_set.numel() / num_total
+            if i == 0 and sparsity < args.sparsity_threshold:
+                print(f"Layer {i} sparsity {sparsity:.4f} < threshold {args.sparsity_threshold}, return")
+                return False
             # print to file
             with open(save_sparsity_path, "a") as f:
                 print(f"layer {i} {name}", file=f)
@@ -1726,7 +1714,6 @@ def prune_wanda_2_set_difference_utility(
 
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
-
 
 def prune_wanda_4_set_difference_cot4shot(
     args,
@@ -1794,7 +1781,7 @@ def prune_wanda_4_set_difference_cot4shot(
             diff_pqk   = inter_pq[~torch.isin(inter_pq, idx_k)]
             diff_pqku  = diff_pqk[~torch.isin(diff_pqk, idx_u)]
             prune_set  = diff_pqku  
-
+            
             # print to file
             with open(save_sparsity_path, "a") as f:
                 print(f"layer {i} {name}", file=f)
@@ -1855,7 +1842,8 @@ def prune_wanda_3_set_difference_utility(
 
     metric1, metric2, metric3, metric4 = "cot0shot", "cot0shot_goldreason", "direct", "utility"
     print(f"🌱 3-Set pruning - p={p}, q={q}, k={k}, u={u} - {metric1} ∩ {metric2} ∩ {metric3} \\ {metric4}")
-
+    # ⭐ 保存前三层的稀疏率
+    # first3_sparsities = []
     for i, layer in enumerate(layers):
         subset = find_layers(layer)
         if args.use_diff or args.recover_from_base:
@@ -1904,7 +1892,10 @@ def prune_wanda_3_set_difference_utility(
                 print(f"diff_pqku.numel() = {diff_pqku.numel()}", file=f)
             if prune_set.numel() == 0:
                 continue   # 该参数没有需要置零的权重
-
+            sparsity = prune_set.numel() / num_total
+            if i == 0 and sparsity < args.sparsity_threshold:
+                print(f"Layer {i} sparsity {sparsity:.4f} < threshold {args.sparsity_threshold}, return")
+                return False
             # ---- 生成布尔 Mask 并置零 / 回滚 ----
             W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
             dim1 = subset[name].weight.size(1)
@@ -1919,6 +1910,13 @@ def prune_wanda_3_set_difference_utility(
             del W_metric1, W_metric2, W_metric3
             torch.cuda.empty_cache()                  # 及时释放显存
 
+# # ⭐ 当跑完第 3 层时，做阈值判断
+#         if i == 2:
+#             avg_sparsity = sum(first3_sparsities) / len(first3_sparsities)
+#             print(f"前三层平均 sparsity = {avg_sparsity:.4f}, 阈值 = {sparsity_threshold:.4f}")
+#             if avg_sparsity < sparsity_threshold:
+#                 print(f"⚠️ 前三层平均 sparsity {avg_sparsity:.4f} < 阈值 {sparsity_threshold:.4f}, 提前 return")
+#                 return False
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 

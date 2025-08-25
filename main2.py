@@ -55,10 +55,10 @@ def get_llm(model_name, cache_dir="llm_weights"):
             modeltype2path[model_name],
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
-            # low_cpu_mem_usage=False,
-            # device_map=None,
-            low_cpu_mem_usage=True, 
-            device_map="auto",
+            low_cpu_mem_usage=False,
+            device_map=None,
+            # low_cpu_mem_usage=True,
+            # device_map="auto",
             token=os.environ.get("HF_TOKEN")
         )
 
@@ -69,7 +69,6 @@ def get_llm(model_name, cache_dir="llm_weights"):
 def main(args=None):
     if args is None:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--sparsity_threshold', type=float, default=0.000001)
         parser.add_argument('--max_new_tokens', type=int, default=1024)
         parser.add_argument('--dataset', type=str, default='GSM8K')
         parser.add_argument('--prompt_method', type=str, default='cot0shot')
@@ -408,7 +407,7 @@ def main(args=None):
                 k=args.k,
             )
         elif args.prune_method == "wanda_3_set_difference_utility":
-            success_prune = prune_wanda_3_set_difference_utility(
+            prune_wanda_3_set_difference_utility(
                 args,
                 model,
                 tokenizer,
@@ -423,7 +422,7 @@ def main(args=None):
                 u=args.u,
             )
         elif args.prune_method == "wanda_2_set_difference_utility":
-            success_prune = prune_wanda_2_set_difference_utility(
+            prune_wanda_2_set_difference_utility(
                 args,
                 model,
                 tokenizer,
@@ -468,7 +467,7 @@ def main(args=None):
     print(f"sparsity sanity check {sparsity_ratio:.6f}")
     print("*" * 30)
     if args.save_sparsity:
-        if sparsity_ratio < args.sparsity_threshold or success_prune == False: # 0.001
+        if sparsity_ratio < 0.000001:
             return 
         args.sparsity_ratio = sparsity_ratio
         save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")

@@ -18,27 +18,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 # collect_k_values_data_600_cot4shot_pqku_granular
 # --- CONFIG ---
-BASE_DIR = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/"
-    "4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot"
-)
-U_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37, 0.40]
-PQ_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19]
-pq_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11]  # (p, q) for 3-set pruning
-k_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19]
-u_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19] 
-FILE_NAME = "pq_0.2_0.2_k_*_u_0.1/"
+# BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
+# "wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_utility/eval_selected_samples/prompt_direct,cot0shot/")
+# BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
+# "wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_0.05_granular")
+
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot"
+"/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.00001_0.05_granular")
+PQ_OPTIONS = [0.01, 0.02]  # (p, q) for 3-set pruning
+# k_options = [0.01, 0.02, 0.03, 0.04, 0.05]
+# U_OPTIONS = [0.01, 0.02, 0.03, 0.04, 0.05]
+U_OPTIONS = [round(0.01 + i*0.01, 2) for i in range(10)]
 
 ORIG_COT4_FILE = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/cot4shot/eval_selected_samples/"
-    "gsm8k_bottom_0.000000_cot4shot_selected_samples_prompt_cot4shot.jsonl"
+"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
 )
 ORIG_DIRECT_FILE = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/direct/eval_selected_samples/"
-    "gsm8k_bottom_0.000000_direct_selected_samples_prompt_direct.jsonl"
+  "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_direct.jsonl"
 )
 
 # --- IO helpers ---
@@ -153,6 +149,7 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
             if pruned_cot.get(cot_id, {}).get('correct', False):
                 pruned_correct += 1
     pruned_acc = pruned_correct / total if total else 0.0
+    print(f"Category: {category}, Total: {total}, Original Correct: {base['original_correct']}, Pruned Correct: {pruned_correct}")
     return {
         'category': category,
         'pruned_correct_count': pruned_correct,
@@ -228,12 +225,22 @@ def collect_all_results_with_meta():
     all_results[0.0] = {"metrics": orig_bucket, "meta": {"p": None, "q": None, "k": None, "u": None, "dir": None}}
 
     ratio_to_meta = discover_sparsity_dirs(BASE_DIR)
+    # Debug: show discovered sparsity dirs
+    print(f"Discovered {len(ratio_to_meta)} sparsity dirs under BASE_DIR={BASE_DIR}")
+    for rr, mm in ratio_to_meta.items():
+        print(f"  ratio={rr} -> dir={mm.get('dir')} meta(p,q,k,u)={(mm.get('p'), mm.get('q'), mm.get('k'), mm.get('u'))}")
 
     for ratio, meta in ratio_to_meta.items():
         d = meta["dir"]
         # robust file resolution
-        cand_cot = sorted(glob.glob(os.path.join(d, "*prompt_cot4shot.jsonl")))
+        cand_cot = sorted(glob.glob(os.path.join(d, "*prompt_cot0shot.jsonl")))
         cand_dir = sorted(glob.glob(os.path.join(d, "*prompt_direct.jsonl")))
+        # Debug: print what files we found for this directory
+        print(f"Checking dir={d}: found {len(cand_cot)} cot files, {len(cand_dir)} direct files")
+        if cand_cot:
+            print(f"  cot sample: {cand_cot[0]}")
+        if cand_dir:
+            print(f"  dir sample: {cand_dir[0]}")
         if not cand_cot or not cand_dir:
             all_results[ratio] = {"metrics": {}, "meta": meta}
             continue
@@ -318,7 +325,7 @@ def main():
         # 在 main() 内 for idx, u in enumerate(U_OPTIONS): 这一层里，替换子图绘制部分
         for idx, u in enumerate(U_OPTIONS):
             global FILE_NAME
-            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}_granular/"
+            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}/"
 
             print(f"Collecting results for u={u}...")
             all_results = collect_all_results_with_meta()
@@ -374,7 +381,7 @@ def main():
             ax.legend()
 
 
-        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_granular_2"
+        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_0.0005_cot0shot/0.005"
         os.makedirs(output_dir, exist_ok=True)
         out_png = os.path.join(output_dir, f'sparsity_ratios_analysis_pq_{pq}_u_sweep.png')
         plt.tight_layout()

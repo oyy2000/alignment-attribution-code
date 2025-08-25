@@ -16,34 +16,31 @@ from typing import Dict, List, Tuple, Optional
 import numpy as np  
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 # collect_k_values_data_600_cot4shot_pqku_granular
 # --- CONFIG ---
-BASE_DIR = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/unstructured/wanda_4_set_difference_cot4shot_weightonly/"
-    "4_set_alpaca_cleaned_no_safety/eval_selected_samples/prompt_direct,cot4shot"
-)
-U_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37, 0.40]
-PQ_OPTIONS = [0.01, 0.04, 0.07, 0.10, 0.13, 0.16, 0.19]
-pq_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11]  # (p, q) for 3-set pruning
-k_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19]
-u_options = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19] 
-FILE_NAME = "pq_0.2_0.2_k_*_u_0.1/"
+# BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
+# "wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_utility/eval_selected_samples/prompt_direct,cot0shot/")
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
+"wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_0.06_granular/")
+
+# PQ_OPTIONS = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11]  # (p, q) for 3-set pruning
+# U_OPTIONS = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19] 
+PQ_OPTIONS = [0.01, 0.02]  # (p, q) for 3-set pruning
+# k_options = [0.01, 0.02, 0.03, 0.04, 0.05]
+U_OPTIONS = [round(0.06 + i*0.01, 2) for i in range(10)]
+# [0.01, 0.02, 0.03, 0.04, 0.05]
 
 ORIG_COT4_FILE = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/cot4shot/eval_selected_samples/"
-    "gsm8k_bottom_0.000000_cot4shot_selected_samples_prompt_cot4shot.jsonl"
+"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
 )
 ORIG_DIRECT_FILE = (
-    "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/"
-    "llama2-7b-chat-hf/direct/eval_selected_samples/"
-    "gsm8k_bottom_0.000000_direct_selected_samples_prompt_direct.jsonl"
+  "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_direct.jsonl"
 )
 
 # --- IO helpers ---
 
-def load_jsonl(file_path: str) -> List[Dict]:
+def load_jsonl(file_path: str) -> List[Dict]: 
     data = []
     with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -232,7 +229,8 @@ def collect_all_results_with_meta():
     for ratio, meta in ratio_to_meta.items():
         d = meta["dir"]
         # robust file resolution
-        cand_cot = sorted(glob.glob(os.path.join(d, "*prompt_cot4shot.jsonl")))
+        # Use cot0shot pruned results (this script is for cot0shot)
+        cand_cot = sorted(glob.glob(os.path.join(d, "*prompt_cot0shot.jsonl")))
         cand_dir = sorted(glob.glob(os.path.join(d, "*prompt_direct.jsonl")))
         if not cand_cot or not cand_dir:
             all_results[ratio] = {"metrics": {}, "meta": meta}
@@ -310,15 +308,38 @@ def print_summary_table_with_pqku(all_results: Dict[float, Dict]):
                 f"{res.get('accuracy_change',0.0):<10.3f} {res.get('pruned_correct_count',0):<15}"
             )
 def main():
-
     categories = ["direct_success_cot_success", "direct_fail_cot_success"]
     colors = ['blue', 'red']
+    # Pre-compute global union of ratios across all (p, u) to unify x-axis across different p
+    global FILE_NAME
+    global_union_ratios = set([0.0])
+    x_min_g, x_max_g = float('inf'), float('-inf')
     for pq in PQ_OPTIONS:
-        fig, axes = plt.subplots(len(U_OPTIONS), 1, figsize=(8, 4 * len(U_OPTIONS)), sharex=False)
+        for u in U_OPTIONS:
+            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}/"
+            ratio_to_meta = discover_sparsity_dirs(BASE_DIR)
+            if ratio_to_meta:
+                keys = list(ratio_to_meta.keys())
+                if keys:
+                    global_union_ratios.update(keys)
+                    x_min_g = min(x_min_g, min(keys))
+                    x_max_g = max(x_max_g, max(keys))
+    # Ensure 0.0 is considered in x-limits
+    if x_min_g == float('inf'):
+        x_min_g = 0.0
+    else:
+        x_min_g = min(x_min_g, 0.0)
+    if x_max_g == float('-inf'):
+        x_max_g = 0.0
+    else:
+        x_max_g = max(x_max_g, 0.0)
+    xticks_global = sorted(global_union_ratios)
+
+    for pq in PQ_OPTIONS:
+        fig, axes = plt.subplots(len(U_OPTIONS), 1, figsize=(8, 4 * len(U_OPTIONS)), sharex=True)
         # 在 main() 内 for idx, u in enumerate(U_OPTIONS): 这一层里，替换子图绘制部分
         for idx, u in enumerate(U_OPTIONS):
-            global FILE_NAME
-            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}_granular/"
+            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}/"
 
             print(f"Collecting results for u={u}...")
             all_results = collect_all_results_with_meta()
@@ -373,8 +394,19 @@ def main():
             ax.grid(True, alpha=0.3)
             ax.legend()
 
+        # Apply common x-axis (limits and ticks) across all subplots using global union ratios
+        formatter = FuncFormatter(lambda x, pos: (f"{x:.2f}").rstrip('0').rstrip('.'))
+        if len(U_OPTIONS) > 1:
+            for a in axes:
+                a.set_xlim(x_min_g, x_max_g)
+                a.set_xticks(xticks_global)
+                a.xaxis.set_major_formatter(formatter)
+        else:
+            axes.set_xlim(x_min_g, x_max_g)
+            axes.set_xticks(xticks_global)
+            axes.xaxis.set_major_formatter(formatter)
 
-        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_granular_2"
+        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_cot0shot_0.01"
         os.makedirs(output_dir, exist_ok=True)
         out_png = os.path.join(output_dir, f'sparsity_ratios_analysis_pq_{pq}_u_sweep.png')
         plt.tight_layout()

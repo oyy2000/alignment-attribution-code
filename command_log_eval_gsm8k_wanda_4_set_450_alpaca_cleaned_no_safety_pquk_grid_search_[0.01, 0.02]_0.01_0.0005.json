@@ -1,0 +1,202 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.01_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.01 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.01_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.01 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.01_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.01 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.01_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.01 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.01_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.01 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.02_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.02 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.02_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.02 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.02_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.02 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.02_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.02 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.02_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.02 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.03_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.03 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.03_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.03 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.03_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.03 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.03_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.03 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.03_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.03 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.04_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.04 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.04_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.04 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.04_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.04 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.04_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.04 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.04_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.04 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.05_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.05 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.05_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.05 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.05_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.05 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.05_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.05 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.01_0.01_k_0.05_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.01 --q 0.01 --k 0.05 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.01_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.01 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.01_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.01 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.01_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.01 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.01_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.01 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.01_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.01 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.02_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.02 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.02_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.02 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.02_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.02 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.02_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.02 --u 0.04 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.02_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.02 --u 0.05 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.03_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.03 --u 0.01 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.03_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.03 --u 0.02 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.03_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.03 --u 0.03 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.03_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.03 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.03_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.03 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.04_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.04 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.04_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.04 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.04_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.04 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.04_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.04 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.04_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.04 --u 0.05 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.05_u_0.01/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.05 --u 0.01 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.05_u_0.02/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.05 --u 0.02 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.05_u_0.03/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.05 --u 0.03 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.05_u_0.04/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.05 --u 0.04 ",
+    "result": "success"
+  },
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --prune_method wanda_3_set_difference_utility --sparsity_type unstructured --sparsity_ratio 0.5 --save out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/pq_0.02_0.02_k_0.05_u_0.05/ --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method direct,cot0shot --save_sparsity --p 0.02 --q 0.02 --k 0.05 --u 0.05 ",
+    "result": "success"
+  }
+]

@@ -27,22 +27,30 @@ import seaborn as sns
 # -----------------------------------------------------------------------------
 
 DATASETS = {
-    "cot": {
+    "cot0shot_120": {
         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/wanda_score/GSM8K_cot0shot_120_weight_only_disentangle",
         "tag": "GSM8K_cot0shot_120",
     },
-    "direct": {
+    "direct_120": {
         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
         "tag": "GSM8K_direct_120",
     },
+    "cot0shot_120_truncated": {
+        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120_truncated/wanda_score/GSM8K_cot0shot_120_truncated_weight_only_disentangle",
+        "tag": "GSM8K_cot0shot_120_truncated",
+    },
+    # "direct": {
+    #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
+    #     "tag": "GSM8K_direct_120",
+    # },
     "golden": {
         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_goldreason/wanda_score/GSM8K_cot0shot_goldreason_weight_only_disentangle",
         "tag": "GSM8K_cot0shot_goldreason",
     },
-    "cot4shot": {
-        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot4shot_120/wanda_score/GSM8K_cot4shot_120_weight_only_disentangle",
-        "tag": "GSM8K_cot4shot_120",
-    },
+    # "cot4shot": {
+    #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot4shot_120/wanda_score/GSM8K_cot4shot_120_weight_only_disentangle",
+    #     "tag": "GSM8K_cot4shot_120",
+    # },
 }
 
 # Map human‑readable category names (left) to the substrings contained in the
@@ -199,7 +207,7 @@ print("Creating individual visualizations for each pair...")
 plot_start_time = time.time()
 
 # Create output directory for figures
-output_dir = "figures"
+output_dir = "figures/jaccard_analysis"
 os.makedirs(output_dir, exist_ok=True)
 
 # Create timestamp for filenames

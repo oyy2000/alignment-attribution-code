@@ -402,6 +402,7 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None):
                 raise ValueError("ids must be provided for fixed selection method.")
             items = [item for item in items if item['id'] in ids]
             return items[:nsamples] if nsamples > 0 else items
+        # TODO
         elif select_method == 'fixed':
             if ids is None:
                 raise ValueError("ids must be provided for fixed selection method.")
@@ -728,7 +729,7 @@ def eval_gsm8k_selected_samples(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600_no_overlap_with_calibration.jsonl"
+    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_dataset_with_conversation_template.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]
