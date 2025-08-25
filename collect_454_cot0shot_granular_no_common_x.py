@@ -235,12 +235,6 @@ def collect_all_results_with_meta():
         # robust file resolution
         cand_cot = sorted(glob.glob(os.path.join(d, "*prompt_cot0shot.jsonl")))
         cand_dir = sorted(glob.glob(os.path.join(d, "*prompt_direct.jsonl")))
-        # Debug: print what files we found for this directory
-        print(f"Checking dir={d}: found {len(cand_cot)} cot files, {len(cand_dir)} direct files")
-        if cand_cot:
-            print(f"  cot sample: {cand_cot[0]}")
-        if cand_dir:
-            print(f"  dir sample: {cand_dir[0]}")
         if not cand_cot or not cand_dir:
             all_results[ratio] = {"metrics": {}, "meta": meta}
             continue

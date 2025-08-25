@@ -5,7 +5,10 @@ import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from importlib.metadata import version
-from vllm import LLM
+try:
+    from vllm import LLM
+except Exception:
+    LLM = None  # allow running pruning without vllm installed
 
 from lib.prune import (
     prune_wanda,
@@ -25,6 +28,7 @@ from lib.prune import (
     prune_wanda_2_set_difference_utility,
     prune_wanda_4_set_difference_cot4shot
 )
+from lib.prune_flap_new import prune_flap  # minimal import for flap
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
 from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples
@@ -116,6 +120,7 @@ def main(args=None):
                 "wanda_3_set_difference_utility",
                 "wanda_4_set_difference_cot4shot",
                 "wanda_2_set_difference_utility",
+                "flap"
             ],
         )
         parser.add_argument(
@@ -198,6 +203,9 @@ def main(args=None):
         parser.add_argument(
             "--dump_wanda_score", action="store_true", help="Whether to dump wanda scores."
         )
+        parser.add_argument(
+            "--dump_flap_score", action="store_true", help="Whether to dump flap scores (no pruning, just save metrics)."
+        )
 
         parser.add_argument("--eval_zero_shot", action="store_true")
         parser.add_argument("--eval_attack", action="store_true")
@@ -234,7 +242,8 @@ def main(args=None):
         parser.add_argument("--rank", type=int, default=10)
         parser.add_argument("--niter", type=int, default=20)
 
-        args = parser.parse_args()
+    args = parser.parse_args()
+    success_prune = True  # default for methods that don't set it
 
     print("Disentangle:", args.disentangle)
 
@@ -244,6 +253,8 @@ def main(args=None):
             "wanda_v2",
             "wandg",
         ], "dump_wanda_score only works with wanda wanda_v2 wandg"
+    if hasattr(args, "dump_flap_score") and args.dump_flap_score:
+        assert args.prune_method == "flap", "--dump_flap_score only works with --prune_method flap"
 
     # Setting seeds for reproducibility
     random.seed(args.seed)
@@ -451,6 +462,8 @@ def main(args=None):
                 k=args.k,
                 u=args.u,
             )
+        elif args.prune_method == "flap":
+            prune_flap(args, model, tokenizer, device)
 
     if args.prune_method == "low_rank":
         make_low_rank(args, model, tokenizer, device, prune_data=args.prune_data)

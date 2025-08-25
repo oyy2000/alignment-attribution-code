@@ -15,13 +15,13 @@ eval_type = "selected_samples"
 prune_method_options = ["wanda_2_set_difference_utility"] #["wanda_3_set_difference_utility"]
 prompt_methods = ["direct,cot0shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
 pq_options = [0.01, 0.02]  # (p, q) for 3-set pruning
-k_options = [round(0.05 + i*0.01, 2) for i in range(10)]
+k_options = [round(0.01 + i*0.01, 2) for i in range(10)]
 u_options = [round(0.01 + i*0.01, 2) for i in range(10)]
-sparsity_threshold = 0.000001
+sparsity_threshold = 0.000005
 
-log_file = f"command_log_eval_gsm8k_wanda_3_set_454_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}_0.01_0.05_{sparsity_threshold}.json"
+log_file = f"command_log_eval_gsm8k_wanda_3_set_454_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}_step_0.01_sp_{sparsity_threshold}.json"
 def build_command(prune_method, prompt_method, p, q, k, u):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/wanda_3_set_difference_cot0shot/eval_{eval_type}/prompt_{prompt_method}/0.01_sp_{sparsity_threshold}_0.05_granular/pq_{p}_{q}_k_{k}_u_{u}/"
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/wanda_3_set_difference_cot0shot/eval_{eval_type}/prompt_{prompt_method}/step_0.01_sp_{sparsity_threshold}_k_0.01/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (
         f"python main.py "
         f"--sparsity_threshold {sparsity_threshold} "

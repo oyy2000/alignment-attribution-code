@@ -1,5 +1,5 @@
 model="llama2-7b-chat-hf"
-method="wanda"
+method="flap"
 type="unstructured"
 suffix="weightonly"
 prune_data="alpaca_cleaned_no_safety" #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
@@ -17,8 +17,8 @@ python main.py \
     --sparsity_type $type \
     --save $save_dir \
     --nsamples $nsamples \
-    --dump_wanda_score \
-    --batch_size 1
+    --batch_size 64 \
+    # --dump_flap_scor[e
 
     # --save_mask \
     # --eval_zero_shot \
