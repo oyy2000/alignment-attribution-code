@@ -26,17 +26,18 @@ import matplotlib.pyplot as plt
 # BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot"
 # "/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.00001_0.05_granular")
 
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_2_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/step_0.01_sp_5e-06_k_0.01/")
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_2e-06_0.05_granular")
-PQ_OPTIONS = [0.01, 0.02]  # (p, q) for 3-set pruning
-# k_options = [round(0.01 + i*0.01, 2) for i in range(10)]
-U_OPTIONS = [round(0.01 + i*0.01, 2) for i in range(10)]
+BASE_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/structured/flap_4_set_difference_weightonly/flap_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_granular"
 # PQ_OPTIONS = [0.01, 0.02]  # (p, q) for 3-set pruning
 # k_options = [0.01, 0.02, 0.03, 0.04, 0.05]
 # U_OPTIONS = [0.01, 0.02, 0.03, 0.04, 0.05]
 # U_OPTIONS = [round(0.01 + i*0.01, 2) for i in range(10)]
 
-OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/u_sweep_step_0.01_sp_2e-06_k_0.01"
+PQ_OPTIONS = [round(0.01 * i, 3) for i in range(1, 11)]   # 0.01 → 0.10
+PQ_OPTIONS = [round(0.06 * i, 3) for i in range(1, 3)]   # 0.01 → 0.10
+
+# k, u: 原来 0.01–0.05，现在扩展到 0.25
+# k_options  = [round(0.01 * i, 3) for i in range(1, 26)]   # 0.01 → 0.25
+U_OPTIONS  = [round(0.01 * i, 3) for i in range(1, 26)]   # 0.01 → 0.25
 
 ORIG_COT4_FILE = (
 "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
@@ -382,102 +383,10 @@ def main():
             ax.grid(True, alpha=0.3)
             ax.legend()
 
-            FILE_NAME = f"pq_{pq}_{pq}_k_*_u_{u}/"
 
-            print(f"Collecting results for u={u}...")
-            all_results = collect_all_results_with_meta()
-
-            ratios = sorted(all_results.keys())
-            ax = axes[idx] if len(U_OPTIONS) > 1 else axes
-
-            # 先分别计算两条曲线的 delta
-            deltas_per_cat = []
-            for i, cat in enumerate(categories):
-                delta = []
-                for r in ratios:
-                    res = all_results[r].get("metrics", {}).get(cat, {})
-                    delta.append(res.get('accuracy_change', 0.0))
-                deltas_per_cat.append(delta)
-                ax.plot(ratios, delta, 'o-', label=cat, color=colors[i])
-
-            # ---- 标注 k 值 ----
-            for j, r in enumerate(ratios):
-                if r == 0.0:
-                    continue
-                meta = all_results[r].get("meta", {})
-                k_val = meta.get("k", None)
-                if k_val is None:
-                    continue
-                y_candidates = []
-                if len(deltas_per_cat) > 0 and j < len(deltas_per_cat[0]):
-                    y_candidates.append(deltas_per_cat[0][j])
-                if len(deltas_per_cat) > 1 and j < len(deltas_per_cat[1]):
-                    y_candidates.append(deltas_per_cat[1][j])
-                if not y_candidates:
-                    continue
-                y_pos = float(np.mean(y_candidates))
-                k_text = f"k={int(k_val) if float(k_val).is_integer() else k_val}"
-                ax.annotate(
-                    k_text,
-                    (r, y_pos),
-                    textcoords="offset points",
-                    xytext=(6, 6),
-                    fontsize=7
-                )
-            # -------------------
-
-            ax.set_title(f'u = {u}')
-            ax.set_xlabel('Sparsity Ratio')
-            ax.set_ylabel('Accuracy Change')
-            ax.set_ylim(-1.0, 0.0)
-            ax.grid(True, alpha=0.3)
-            ax.legend()
-
-            # === 单独保存每个 u 的图 ===
-            fig_single, ax_single = plt.subplots(figsize=(6, 4))
-            for i, cat in enumerate(categories):
-                ax_single.plot(ratios, deltas_per_cat[i], 'o-', label=cat, color=colors[i])
-            # 再画 k 值标注
-            for j, r in enumerate(ratios):
-                if r == 0.0:
-                    continue
-                meta = all_results[r].get("meta", {})
-                k_val = meta.get("k", None)
-                if k_val is None:
-                    continue
-                y_candidates = []
-                if len(deltas_per_cat) > 0 and j < len(deltas_per_cat[0]):
-                    y_candidates.append(deltas_per_cat[0][j])
-                if len(deltas_per_cat) > 1 and j < len(deltas_per_cat[1]):
-                    y_candidates.append(deltas_per_cat[1][j])
-                if not y_candidates:
-                    continue
-                y_pos = float(np.mean(y_candidates))
-                k_text = f"k={int(k_val) if float(k_val).is_integer() else k_val}"
-                ax_single.annotate(
-                    k_text,
-                    (r, y_pos),
-                    textcoords="offset points",
-                    xytext=(6, 6),
-                    fontsize=7
-                )
-
-            ax_single.set_title(f'u = {u}')
-            ax_single.set_xlabel('Sparsity Ratio')
-            ax_single.set_ylabel('Accuracy Change')
-            ax_single.set_ylim(-1.0, 0.0)
-            ax_single.grid(True, alpha=0.3)
-            ax_single.legend()
-
-            single_out = os.path.join(OUTPUT_DIR, f'sparsity_ratios_analysis_pq_{pq}_u_{u}.png')
-            fig_single.tight_layout()
-            fig_single.savefig(single_out, dpi=300, bbox_inches='tight')
-            plt.close(fig_single)
-            print(f"Single plot saved to: {single_out}")
-
-
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        out_png = os.path.join(OUTPUT_DIR, f'sparsity_ratios_analysis_pq_{pq}_u_sweep.png')
+        output_dir = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/flap/u_sweep_0.0005_cot0shot/"
+        os.makedirs(output_dir, exist_ok=True)
+        out_png = os.path.join(output_dir, f'sparsity_ratios_analysis_pq_{pq}_all_u.png')
         plt.tight_layout()
         plt.savefig(out_png, dpi=300, bbox_inches='tight')
         print(f"Subplots saved to: {out_png}")

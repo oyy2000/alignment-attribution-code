@@ -19,6 +19,7 @@ from lib.prune import (
     check_sparsity,
     check_sparsity_layerwise,
     find_layers,
+    prune_flap_4_set_difference,
     prune_wanda_decouple_activations,
     get_mask,
     prune_wandg_set_difference,
@@ -95,7 +96,7 @@ def main(args=None):
         parser.add_argument(
             "--sparsity_type",
             type=str,
-            choices=["unstructured", "4:8", "2:4"],
+            choices=["unstructured", "4:8", "2:4", "structured"],
             default="unstructured",
         )
         parser.add_argument(
@@ -120,7 +121,7 @@ def main(args=None):
                 "wanda_3_set_difference_utility",
                 "wanda_4_set_difference_cot4shot",
                 "wanda_2_set_difference_utility",
-                "flap"
+                "flap_4_set_difference",
             ],
         )
         parser.add_argument(
@@ -263,7 +264,7 @@ def main(args=None):
 
     # Handling n:m sparsity
     prune_n, prune_m = 0, 0
-    if args.sparsity_type != "unstructured":
+    if args.sparsity_type != "unstructured" and args.sparsity_type != "structured":
         assert (
             args.sparsity_ratio == 0.5
         ), "sparsity ratio must be 0.5 for structured N:M sparsity"
@@ -435,6 +436,20 @@ def main(args=None):
             )
         elif args.prune_method == "wanda_2_set_difference_utility":
             success_prune = prune_wanda_2_set_difference_utility(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                k=args.k,
+                u=args.u,
+            )
+        elif args.prune_method == "flap_4_set_difference":
+            success_prune = prune_flap_4_set_difference(
                 args,
                 model,
                 tokenizer,

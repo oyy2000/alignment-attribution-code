@@ -1,8 +1,8 @@
 model="llama2-7b-chat-hf"
 method="flap"
-type="unstructured"
+type="structured"
 suffix="weightonly"
-prune_data="alpaca_cleaned_no_safety" #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
+prune_data="GSM8K_cot0shot_goldreason" #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
 sparsity_ratio=0.5
 save_dir="out/$model/$type/${method}_${suffix}/$prune_data/"
 nsamples=120
@@ -18,7 +18,7 @@ python main.py \
     --save $save_dir \
     --nsamples $nsamples \
     --batch_size 64 \
-    # --dump_flap_scor[e
+    --dump_flap_score
 
     # --save_mask \
     # --eval_zero_shot \

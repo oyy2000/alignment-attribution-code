@@ -17,7 +17,7 @@ prompt_methods = ["direct,cot0shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
 pq_options = [0.01, 0.02]  # (p, q) for 3-set pruning
 k_options = [round(0.01 + i*0.01, 2) for i in range(10)]
 u_options = [round(0.01 + i*0.01, 2) for i in range(10)]
-sparsity_threshold = 0.000005
+sparsity_threshold = 0.0000002
 
 log_file = f"command_log_eval_gsm8k_wanda_3_set_454_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}_step_0.01_sp_{sparsity_threshold}.json"
 def build_command(prune_method, prompt_method, p, q, k, u):

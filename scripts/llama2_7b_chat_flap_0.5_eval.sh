@@ -18,11 +18,10 @@ python main.py \
     --save $save_dir \
     --nsamples $nsamples \
     --batch_size 64 \
-    # --dump_flap_score \
     --eval_gsm8k \
     --eval_type selected_samples \
     --prompt_method cot0shot \
-
+    # --dump_flap_score \
     # --save_mask \
     # --eval_zero_shot \
     # --dump_wanda_score \

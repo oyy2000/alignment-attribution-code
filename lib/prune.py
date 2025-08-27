@@ -1605,6 +1605,25 @@ def prune_wanda_decouple_activation_norms(
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 
+def _load_flap_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_name: str,
+                device: torch.device, use_fp16: bool = False):
+    METRIC_TO_PATH = {
+        "cot0shot": "GSM8K_cot0shot_120",
+        "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
+        "direct": "GSM8K_direct_120",
+        "utility": "alpaca_cleaned_no_safety",  
+        "cot4shot": "GSM8K_cot4shot_120",
+    }
+    path  = METRIC_TO_PATH[metric]
+    base  = f"out/{model_tag}/structured/flap_weightonly/{path}/flap_score/{path}_ifv_disentangle"
+    fname = f"flap_metric_layer_{layer_idx}_name_{param_name}_{path}_ifv_torch.pt"
+    fpath = os.path.join(base, fname)
+    if not os.path.exists(fpath):
+        raise FileNotFoundError(f"Do not find the score file: {fpath}")
+
+    dtype = torch.float16 if use_fp16 else torch.float32
+    return torch.load(fpath, map_location=device).to(dtype=dtype)
+
 def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_name: str,
                 device: torch.device, use_fp16: bool = False):
     METRIC_TO_PATH = {
@@ -1623,6 +1642,172 @@ def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_na
 
     dtype = torch.float16 if use_fp16 else torch.float32
     return torch.load(fpath, map_location=device).to(dtype=dtype)
+
+def prune_flap_4_set_difference(
+    args,
+    model,
+    tokenizer,
+    model_base=None,
+    device=torch.device("cuda:0"),
+    prune_n=0,
+    prune_m=0,
+    prune_data="alpaca_cleaned_no_safety",
+    p=0.2,
+    q=0.2,
+    k=0.9,
+    u=0.9,
+    save_indices=False,   # 若为 True 也把各集合的实际索引保存下来（可能很大）
+):
+    """
+    仅计算  (Top-p of cot0shot ∩ Top-q of cot0shot_goldreason) \\ Top-k of direct \\ Top-u of utility 并且mask
+
+    返回:
+        True  正常完成
+        False  在早期层(第0层)触发稀疏率阈值提前退出
+    """
+    import os
+    import torch
+
+    # 准备输出目录 / 文件
+    dump_dir = os.path.join(args.save, "flap_dump_score")
+    os.makedirs(dump_dir, exist_ok=True)
+    log_path = os.path.join(
+        dump_dir,
+        f"dump_p{p}_q{q}_k{k}_u{u}_sparsity{args.sparsity_ratio:.6f}.txt"
+    )
+
+    if args.save_sparsity:
+        # 复用原 save_sparsity_path 逻辑（只追加写）
+        save_sparsity_path = os.path.join(
+            args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt"
+        )
+        os.makedirs(os.path.dirname(save_sparsity_path), exist_ok=True)
+    else:
+        save_sparsity_path = None
+
+    use_cache = model.config.use_cache
+    model.config.use_cache = False
+
+    layers = model.model.layers
+    if args.use_diff or args.recover_from_base:
+        assert model_base is not None
+        layers_base = model_base.model.layers  # 这里只是保持一致，不实际使用
+
+    metric1, metric2, metric3, metric4 = "cot0shot", "cot0shot_goldreason", "direct", "utility"
+    print(f"3-Set: p={p}, q={q}, k={k}, u={u} - "
+          f"{metric1} ∩ {metric2} \\ {metric3} \\ {metric4}")
+
+    with open(log_path, "w") as log_f:
+        print(f"# flap_dump_score for 3-set difference utility pruning", file=log_f)
+        print(f"# metrics: {metric1}, {metric2}, {metric3}, {metric4}", file=log_f)
+        print(f"# params: p={p}, q={q}, k={k}, u={u}", file=log_f)
+        print(f"# model: {args.model}", file=log_f)
+        print(f"# prune_data arg: {prune_data}", file=log_f)
+        print("", file=log_f)
+
+    for i, layer in enumerate(layers):
+        all_layers = find_layers(layer)  # dict: { 'self_attn.o_proj': Linear, ... }
+
+        subset = {}
+        if 'self_attn.o_proj' in all_layers:
+            subset['self_attn.o_proj'] = all_layers['self_attn.o_proj']
+        if 'mlp.down_proj' in all_layers:
+            subset['mlp.down_proj'] = all_layers['mlp.down_proj']
+
+        for name in subset:
+            dev = subset[name].weight.device
+            print(f"layer {i:<2} {name} (device {dev})")
+            try:
+                W_metric1 = _load_flap_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
+                W_metric2 = _load_flap_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
+                W_metric3 = _load_flap_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
+                W_metric4 = _load_flap_score_single_GPU(args.model, metric4, i, name, dev, use_fp16=True)
+            except FileNotFoundError as e:
+                print(f"  !! missing score file: {e}")
+                continue
+
+            num_total = W_metric1.numel()
+            top_p = max(1, int(p * num_total))
+            top_q = max(1, int(q * num_total))
+            top_k = max(1, int(k * num_total))
+            top_u = max(1, int(u * num_total))
+
+            flat1 = W_metric1.flatten()
+            flat2 = W_metric2.flatten()
+            flat3 = W_metric3.flatten()
+            flat4 = W_metric4.flatten()
+
+            idx_p = torch.topk(flat1, top_p, largest=True)[1].unique()
+            idx_q = torch.topk(flat2, top_q, largest=True)[1].unique()
+            idx_k = torch.topk(flat3, top_k, largest=True)[1].unique()
+            idx_u = torch.topk(flat4, top_u, largest=True)[1].unique()
+
+            inter_pq = idx_p[torch.isin(idx_p, idx_q)]
+            diff_pqk = inter_pq[~torch.isin(inter_pq, idx_k)]
+            diff_pqku = diff_pqk[~torch.isin(diff_pqk, idx_u)]
+            prune_set = diff_pqku  # 仅统计
+
+            sparsity = prune_set.numel() / num_total if num_total > 0 else 0.0
+
+            # 第一层阈值早停
+            if i == 0 and sparsity < args.sparsity_threshold:
+                print(f"  -> layer 0 sparsity {sparsity:.6f} < threshold {args.sparsity_threshold}, early stop (return False)")
+                with open(log_path, "a") as log_f:
+                    print(f"EARLY_STOP layer={i} name={name} sparsity={sparsity:.6f} < {args.sparsity_threshold}", file=log_f)
+                model.config.use_cache = use_cache
+                torch.cuda.empty_cache()
+                return False
+
+            # 写主日志
+            with open(log_path, "a") as log_f:
+                print(f"layer={i} name={name}", file=log_f)
+                print(f"  total={num_total}", file=log_f)
+                print(f"  |P|={idx_p.numel()} |Q|={idx_q.numel()} |K|={idx_k.numel()} |U|={idx_u.numel()}", file=log_f)
+                print(f"  |P∩Q|={inter_pq.numel()} |(P∩Q)\\K|={diff_pqk.numel()} |(P∩Q)\\K\\U|={prune_set.numel()}", file=log_f)
+                print(f"  sparsity={sparsity:.8f}", file=log_f)
+                print("", file=log_f)
+
+            # 若需要另外的稀疏文件（和原逻辑兼容）
+            if save_sparsity_path:
+                with open(save_sparsity_path, "a") as fsp:
+                    print(f"layer {i} {name} sparsity={sparsity:.8f} prune_set={prune_set.numel()} total={num_total}", file=fsp)
+
+            # 可选保存索引
+            if save_indices and prune_set.numel() > 0:
+                idx_dir = os.path.join(dump_dir, "indices")
+                os.makedirs(idx_dir, exist_ok=True)
+                torch.save(
+                    {
+                        "layer": i,
+                        "param_name": name,
+                        "idx_p": idx_p.cpu(),
+                        "idx_q": idx_q.cpu(),
+                        "idx_k": idx_k.cpu(),
+                        "idx_u": idx_u.cpu(),
+                        "inter_pq": inter_pq.cpu(),
+                        "diff_pqk": diff_pqk.cpu(),
+                        "prune_set": prune_set.cpu(),
+                        "sparsity": sparsity,
+                        "shape": tuple(subset[name].weight.shape),
+                    },
+                    os.path.join(idx_dir, f"layer{i}_{name.replace('.', '_')}.pt"),
+                )
+              # ---- 生成布尔 Mask 并置零 / 回滚 ----
+            W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
+            dim1 = subset[name].weight.size(1)
+            rows = prune_set // dim1
+            cols = prune_set %  dim1
+            W_mask[rows, cols] = True
+
+            subset[name].weight.data[W_mask] = 0.0
+            # 释放显存
+            del W_metric1, W_metric2, W_metric3, W_metric4
+            torch.cuda.empty_cache()
+
+    model.config.use_cache = use_cache
+    torch.cuda.empty_cache()
+    print(f"[flap_dump_score] 完成，日志: {log_path}")
+    return True
 
 def prune_wanda_2_set_difference_utility(
     args,
@@ -1947,7 +2132,7 @@ def prune_wanda_3_set_difference_utility(
         layers_base = model_base.model.layers
 
     metric1, metric2, metric3, metric4 = "cot0shot", "cot0shot_goldreason", "direct", "utility"
-    print(f"🌱 3-Set pruning - p={p}, q={q}, k={k}, u={u} - {metric1} ∩ {metric2} ∩ {metric3} \\ {metric4}")
+    print(f"🌱 3-Set pruning - p={p}, q={q}, k={k}, u={u} - {metric1} ∩ {metric2} \\ {metric3} \\ {metric4}")
     # ⭐ 保存前三层的稀疏率
     # first3_sparsities = []
     for i, layer in enumerate(layers):

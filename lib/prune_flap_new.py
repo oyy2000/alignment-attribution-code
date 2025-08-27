@@ -138,6 +138,7 @@ def prune_flap(
 
         # Compute metrics (and optionally prune)
         for name in target_names:
+            print(f"  -> layer {i:<2}  {name}")
             lin = subset[name]
             metric = _compute_flap_metric(metric_name, wrapped[name], lin)
             # Dump score logic

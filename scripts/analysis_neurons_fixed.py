@@ -26,43 +26,64 @@ import seaborn as sns
 # Configuration ────────────────────────────────────────────────────────────────
 # -----------------------------------------------------------------------------
 
+# DATASETS = {
+#     "cot0shot_120": {
+#         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/wanda_score/GSM8K_cot0shot_120_weight_only_disentangle",
+#         "tag": "GSM8K_cot0shot_120",
+#     },
+#     "direct_120": {
+#         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
+#         "tag": "GSM8K_direct_120",
+#     },
+#     "cot0shot_120_truncated": {
+#         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120_truncated/wanda_score/GSM8K_cot0shot_120_truncated_weight_only_disentangle",
+#         "tag": "GSM8K_cot0shot_120_truncated",
+#     },
+#     # "direct": {
+#     #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
+#     #     "tag": "GSM8K_direct_120",
+#     # },
+#     "golden": {
+#         "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_goldreason/wanda_score/GSM8K_cot0shot_goldreason_weight_only_disentangle",
+#         "tag": "GSM8K_cot0shot_goldreason",
+#     },
+#     # "cot4shot": {
+#     #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot4shot_120/wanda_score/GSM8K_cot4shot_120_weight_only_disentangle",
+#     #     "tag": "GSM8K_cot4shot_120",
+#     # },
+# }
+
+
 DATASETS = {
-    "cot0shot_120": {
-        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120/wanda_score/GSM8K_cot0shot_120_weight_only_disentangle",
+    "flap_cot0shot_120": {
+        "dir": "../out/llama2-7b-chat-hf/structured/flap_weightonly/GSM8K_cot0shot_120/flap_score/GSM8K_cot0shot_120_ifv_disentangle",
         "tag": "GSM8K_cot0shot_120",
     },
-    "direct_120": {
-        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
+    "flap_direct_120": {
+        "dir": "../out/llama2-7b-chat-hf/structured/flap_weightonly/GSM8K_direct_120/flap_score/GSM8K_direct_120_ifv_disentangle",
         "tag": "GSM8K_direct_120",
     },
-    "cot0shot_120_truncated": {
-        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_120_truncated/wanda_score/GSM8K_cot0shot_120_truncated_weight_only_disentangle",
-        "tag": "GSM8K_cot0shot_120_truncated",
+    "flap_alpaca_cleaned_no_safety": {
+        "dir": "../out/llama2-7b-chat-hf/structured/flap_weightonly/alpaca_cleaned_no_safety/flap_score/alpaca_cleaned_no_safety_ifv_disentangle",
+        "tag": "alpaca_cleaned_no_safety",
     },
-    # "direct": {
-    #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_direct_120/wanda_score/GSM8K_direct_120_weight_only_disentangle",
-    #     "tag": "GSM8K_direct_120",
-    # },
-    "golden": {
-        "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot0shot_goldreason/wanda_score/GSM8K_cot0shot_goldreason_weight_only_disentangle",
+    "flap_golden": {
+        "dir": "../out/llama2-7b-chat-hf/structured/flap_weightonly/GSM8K_cot0shot_goldreason/flap_score/GSM8K_cot0shot_goldreason_ifv_disentangle",
         "tag": "GSM8K_cot0shot_goldreason",
     },
-    # "cot4shot": {
-    #     "dir": "../out/llama2-7b-chat-hf/unstructured/wanda_weightonly/GSM8K_cot4shot_120/wanda_score/GSM8K_cot4shot_120_weight_only_disentangle",
-    #     "tag": "GSM8K_cot4shot_120",
-    # },
+   
 }
 
 # Map human‑readable category names (left) to the substrings contained in the
 # Wanda pickle filenames (right).
 CATEGORIES = {
-    "self_attn.q": "q_proj",
-    "self_attn.k": "k_proj",
-    "self_attn.v": "v_proj",
+    # "self_attn.q": "q_proj",
+    # "self_attn.k": "k_proj",
+    # "self_attn.v": "v_proj",
     "self_attn.o": "o_proj",
     "mlp.down": "down_proj",
-    "mlp.gate": "gate_proj",
-    "mlp.up": "up_proj",
+    # "mlp.gate": "gate_proj",
+    # "mlp.up": "up_proj",
 }
 
 TOPK_RATIO = 0.05  # top‑5 % mask
@@ -207,7 +228,7 @@ print("Creating individual visualizations for each pair...")
 plot_start_time = time.time()
 
 # Create output directory for figures
-output_dir = "figures/jaccard_analysis"
+output_dir = "figures/flap_jaccard_analysis"
 os.makedirs(output_dir, exist_ok=True)
 
 # Create timestamp for filenames
@@ -251,11 +272,6 @@ for pair_name in df['Pair'].unique():
     pair_plot.savefig(png_path, dpi=300, bbox_inches='tight')
     print(f"  Saved PNG: {png_path}")
     
-    # Save as PDF
-    pdf_path = os.path.join(output_dir, f"{pair_filename}.pdf")
-    pair_plot.savefig(pdf_path, bbox_inches='tight')
-    print(f"  Saved PDF: {pdf_path}")
-    
     saved_plots.append(png_path)
     plt.show()
 
@@ -288,10 +304,6 @@ combined_filename = f"jaccard_combined_{timestamp}"
 combined_png_path = os.path.join(output_dir, f"{combined_filename}.png")
 combined_plot.savefig(combined_png_path, dpi=300, bbox_inches='tight')
 print(f"Saved Combined PNG: {combined_png_path}")
-
-combined_pdf_path = os.path.join(output_dir, f"{combined_filename}.pdf")
-combined_plot.savefig(combined_pdf_path, bbox_inches='tight')
-print(f"Saved Combined PDF: {combined_pdf_path}")
 
 plot_time = time.time() - plot_start_time
 print(f"All plots created and saved in {plot_time:.2f} seconds")
@@ -332,12 +344,6 @@ for category in df['Category'].unique():
     cat_png_path = os.path.join(output_dir, f"{cat_filename}.png")
     plt.savefig(cat_png_path, dpi=300, bbox_inches='tight')
     print(f"  Saved PNG: {cat_png_path}")
-    
-    # Save as PDF
-    cat_pdf_path = os.path.join(output_dir, f"{cat_filename}.pdf")
-    plt.savefig(cat_pdf_path, bbox_inches='tight')
-    print(f"  Saved PDF: {cat_pdf_path}")
-    
     saved_summary_plots.append(cat_png_path)
     plt.show()
 
@@ -362,10 +368,6 @@ overall_summary_filename = f"jaccard_summary_overall_{timestamp}"
 overall_summary_png_path = os.path.join(output_dir, f"{overall_summary_filename}.png")
 plt.savefig(overall_summary_png_path, dpi=300, bbox_inches='tight')
 print(f"Saved Overall Summary PNG: {overall_summary_png_path}")
-
-overall_summary_pdf_path = os.path.join(output_dir, f"{overall_summary_filename}.pdf")
-plt.savefig(overall_summary_pdf_path, bbox_inches='tight')
-print(f"Saved Overall Summary PDF: {overall_summary_pdf_path}")
 
 summary_time = time.time() - summary_start_time
 print(f"All summary plots created and saved in {summary_time:.2f} seconds")
