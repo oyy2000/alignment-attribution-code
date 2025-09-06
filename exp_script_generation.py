@@ -12,7 +12,7 @@ suffix = "weightonly"
 nsamples = 600
 log_file = f"command_log_generation_600_cot4shot_direct.json"
 
-prompt_methods = ["direct", "cot4shot"]
+prompt_methods = ["cot4shot"]
 eval_type = "selected_samples"
 
 def build_command(prompt_method):

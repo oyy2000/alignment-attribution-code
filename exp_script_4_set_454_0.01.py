@@ -13,12 +13,12 @@ nsamples = 600
 eval_type = "selected_samples"
 prune_method_options = ["wanda_3_set_difference_utility"] #["wanda_3_set_difference_utility"]
 prompt_methods = ["direct,cot0shot"] #["cot2shot,cot4shot,cot8shot,cot16shot"]
-pq_options = [0.01, 0.02]  # (p, q) for 3-set pruning
-k_options = [0.01, 0.02, 0.03, 0.04, 0.05]
-u_options = [0.01, 0.02, 0.03, 0.04, 0.05]
-log_file = f"command_log_eval_gsm8k_wanda_4_set_450_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}_0.01.json"
+pq_options = [round(0.01 * i, 2) for i in range(1, 50)]   # 0.01 → 0.10
+k_options = [0.17] 
+u_options = [0.15]
+log_file = f"command_log_eval_gsm8k_wanda_4_set_454_alpaca_cleaned_no_safety_pquk_grid_search_[round(0.1 * i, 2) for i in range(1, 50)] _0.01.json"
 def build_command(prune_method, prompt_method, p, q, k, u):
-    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/wanda_4_set_difference_cot0shot/eval_{eval_type}/prompt_{prompt_method}/0.01_granular/pq_{p}_{q}_k_{k}_u_{u}/"
+    save_dir = f"out/{model}/{sparsity_type}/{prune_method}_{suffix}/wanda_4_set_difference_cot0shot/eval_{eval_type}/prompt_{prompt_method}/pure_pq_0.01_granular/pq_{p}_{q}_k_{k}_u_{u}/"
     command = (
         f"python main.py "
         f"--model {model} "

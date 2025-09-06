@@ -25,15 +25,8 @@ OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code
 # Max number of sparsity ratio points (including baseline 0.0) to plot per (k,u) panel.
 # Set to None or a large number to disable.
 MAX_POINTS = 20
-FORCE_ZERO_ORIGIN = False  # Use raw accuracy on y-axis (no delta)
-NORMALIZE_BASELINE = True   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
-
-# Figure sizing controls (avoid overly wide x dimension)
-FIG_MIN_WIDTH = 6
-FIG_MAX_WIDTH = 12   # clamp maximum width
-FIG_WIDTH_PER_LABEL = 0.2  # previous was 0.7, now narrower
-TICK_THIN_THRESHOLD_1 = 25  # if labels exceed this, thin every 2
-TICK_THIN_THRESHOLD_2 = 40  # if exceed this, thin every 3
+FORCE_ZERO_ORIGIN = True  # 仍然确保包含 baseline ratio=0.0，但不再把 y 设为 0
+X_LOG_SCALE = True        # 将 x 轴改为对数尺度（sparsity ratio）
 
 # OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/pq_wildcard_u_sweep_sp_2e-06"
 
@@ -301,17 +294,32 @@ def plot_grouped_by_u_for_each_k(
             all_results = collect_all_results_with_meta()
 
             ratios = sorted(all_results.keys())
+            # 确保包含 0.0 baseline
+            if FORCE_ZERO_ORIGIN and (0.0 not in ratios):
+                ratios = [0.0] + ratios
             # Optional: limit to first MAX_POINTS ratios (keeps baseline 0.0 plus earliest discovered)
             if MAX_POINTS is not None and len(ratios) > MAX_POINTS:
                 ratios = ratios[:MAX_POINTS]
-            # 计算每个类别的 delta 曲线（即使只有 0/1 个点也照算）
-            deltas_per_cat = []
+            # 计算每个类别的 accuracy 曲线（baseline 用 original_accuracy，其余用 pruned_accuracy）
+            values_per_cat = []
             for cat in categories:
-                delta = []
+                series = []
                 for r in ratios:
                     res = all_results[r].get("metrics", {}).get(cat, {})
-                    delta.append(res.get('accuracy_change', 0.0))
-                deltas_per_cat.append(delta)
+                    if r == 0.0:
+                        series.append(res.get('original_accuracy', 0.0))
+                    else:
+                        series.append(res.get('pruned_accuracy', res.get('original_accuracy', 0.0)))
+                values_per_cat.append(series)
+
+            # 确保 baseline 0.0 存在（不修改其 y 值）
+            if FORCE_ZERO_ORIGIN and ratios and ratios[0] != 0.0:
+                ratios = [0.0] + ratios
+                # 需要同步插入 baseline accuracy（使用第一个 ratio 的 original_accuracy 作为参考）
+                for idx_cat, cat in enumerate(categories):
+                    baseline_metrics = all_results[0.0].get('metrics', {}).get(cat, {})
+                    base_acc = baseline_metrics.get('original_accuracy', 0.0)
+                    values_per_cat[idx_cat].insert(0, base_acc)
 
             if len(ratios) == 0:
                 # 没有任何点：画空面板
@@ -324,13 +332,31 @@ def plot_grouped_by_u_for_each_k(
                 ax.grid(True, alpha=0.3)
                 continue
 
-            # 画曲线（点数多少都画）
-            for i, cat in enumerate(categories):
-                # 防御 colors 不足
-                color_i = colors[i % len(colors)] if len(colors) > 0 else None
-                ax.plot(ratios, deltas_per_cat[i], 'o-', label=cat, color=color_i)
+            # 准备 x 轴（对数尺度需要 >0），如果需要保留 0.0 基线，用一个很小的正值表示并自定义刻度标签
+            plot_x = list(ratios)
+            baseline_repl = None
+            use_log_scale = X_LOG_SCALE  # copy to local to avoid modifying global constant
+            if use_log_scale:
+                # 找到第一个正的 ratio
+                positive_ratios = [r for r in ratios if r > 0]
+                if positive_ratios:
+                    first_pos = positive_ratios[0]
+                    # 将 baseline 0.0 映射到 first_pos / 10，避免与后面点重合
+                    if ratios and ratios[0] == 0.0:
+                        baseline_repl = first_pos / 10.0
+                        if baseline_repl <= 0:
+                            baseline_repl = first_pos * 0.1 + 1e-12
+                        plot_x[0] = baseline_repl
+                else:
+                    # 极端情况：除了 0 没有点，直接线性绘制（关闭本地对数）
+                    use_log_scale = False
 
-            # 标注 pq（以两条曲线均值作为 y 位置）
+            # 画曲线（点数多少都画），使用 plot_x
+            for i, cat in enumerate(categories):
+                color_i = colors[i % len(colors)] if len(colors) > 0 else None
+                ax.plot(plot_x, values_per_cat[i], 'o-', label=cat, color=color_i)
+
+            # 标注 pq（以多条曲线均值作为 y 位置）
             for j, r in enumerate(ratios):
                 if r == 0.0:
                     continue
@@ -339,7 +365,7 @@ def plot_grouped_by_u_for_each_k(
                 if p_val is None or q_val is None:
                     continue
                 y_candidates = []
-                for series in deltas_per_cat:
+                for series in values_per_cat:
                     if j < len(series):
                         y_candidates.append(series[j])
                 if not y_candidates:
@@ -347,18 +373,48 @@ def plot_grouped_by_u_for_each_k(
                 y_pos = float(np.mean(y_candidates))
                 p_text = _format_float_for_tag(p_val)
                 q_text = _format_float_for_tag(q_val)
-                ax.annotate(
-                    f"pq=({p_text},{q_text})",
-                    (r, y_pos),
-                    textcoords="offset points",
-                    xytext=(6, 6),
-                    fontsize=7
-                )
+                # ax.annotate(
+                #     f"pq=({p_text},{q_text})",
+                #     (r, y_pos),
+                #     textcoords="offset points",
+                #     xytext=(6, 6),
+                #     fontsize=7
+                # )
 
             ax.set_title(f'u = {_format_float_for_tag(u)} (n={len(ratios)})')
-            ax.set_xlabel('Sparsity Ratio')
-            ax.set_ylabel('Accuracy Change')
-            ax.set_ylim(-1.0, 0.0)  # 与原先保持一致
+            ax.set_xlabel('Sparsity Ratio (log)' if use_log_scale else 'Sparsity Ratio')
+            ax.set_ylabel('Accuracy')
+            # 动态 y 轴：基于当前面板的数值范围，留出 5% 边距
+            flat_vals = [v for series in values_per_cat for v in series]
+            if flat_vals:
+                vmin = max(0.0, min(flat_vals) - 0.05)
+                vmax = min(1.0, max(flat_vals) + 0.05)
+                if vmax - vmin < 0.1:  # 避免太扁平
+                    mid = 0.5 * (vmin + vmax)
+                    vmin = max(0.0, mid - 0.05)
+                    vmax = min(1.0, mid + 0.05)
+                ax.set_ylim(vmin, vmax)
+            else:
+                ax.set_ylim(0.0, 1.0)
+            if use_log_scale:
+                ax.set_xscale('log')
+                # 自定义刻度：包含 baseline 标签 0.0
+                ticks = []
+                tick_labels = []
+                if baseline_repl is not None:
+                    ticks.append(baseline_repl)
+                    tick_labels.append('0.0')
+                # 选取一些代表性刻度（使用当前 plot_x 中的点）
+                for val in plot_x:
+                    if val == baseline_repl:
+                        continue
+                    ticks.append(val)
+                    tick_labels.append(f"{val:.2g}")
+                ax.set_xticks(ticks)
+                ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=8)
+            else:
+                ax.set_xticks(ratios)
+                ax.set_xticklabels([f"{r:.3g}" for r in ratios], rotation=45, ha='right', fontsize=8)
             ax.grid(True, alpha=0.3)
             ax.legend(fontsize=9)
 
@@ -376,155 +432,13 @@ def plot_grouped_by_u_for_each_k(
         plt.close(fig)
         print(f"[Saved] {out_path}")
 
-
-def plot_accuracy_by_pq_for_each_k(
-    K_OPTIONS, U_OPTIONS, categories, colors, OUTPUT_DIR,
-    collect_all_results_with_meta, _format_float_for_tag
-):
-    """Plot pruned accuracy (not delta) with x-axis labeled by (p,q) pairs instead of sparsity ratio.
-
-    For each fixed (k,u), collect all discovered directories (wildcard pq) and:
-      - Build a unique list of (p,q) pairs (exclude the baseline 0.0 entry which has p=q=None)
-      - Sort by p then q numerically
-      - (Optional) limit to MAX_POINTS
-      - Plot pruned_accuracy for each category vs enumerated index of (p,q) and label ticks as '(p,q)'
-      - Also draw the original (unpruned) accuracy as a horizontal dashed line per category for reference.
-    """
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    for k in K_OPTIONS:
-        for u in U_OPTIONS:
-            global FILE_NAME
-            FILE_NAME = f"pq_*_*_k_{k}_u_{u}/"
-            print(f"[Collect-PQ-X] pattern={FILE_NAME}")
-            all_results = collect_all_results_with_meta()
-
-            # Extract (p,q) entries (skip ratio 0.0 baseline with None p/q)
-            pq_entries = []  # list of dict: { 'p':p, 'q':q, 'ratio':r, 'metrics':metrics }
-            for ratio, bundle in all_results.items():
-                meta = bundle.get('meta', {})
-                p_val, q_val = meta.get('p'), meta.get('q')
-                if p_val is None or q_val is None:
-                    continue
-                pq_entries.append({
-                    'p': p_val,
-                    'q': q_val,
-                    'ratio': ratio,
-                    'metrics': bundle.get('metrics', {})
-                })
-
-            # Remove potential duplicate (p,q) keeping the FIRST occurrence (order after sort below)
-            # First sort by p then q
-            pq_entries.sort(key=lambda x: (x['p'], x['q']))
-            unique = []
-            seen = set()
-            for ent in pq_entries:
-                key = (ent['p'], ent['q'])
-                if key in seen:
-                    continue
-                seen.add(key)
-                unique.append(ent)
-            pq_entries = unique
-
-            if MAX_POINTS is not None and len(pq_entries) > MAX_POINTS:
-                pq_entries = pq_entries[:MAX_POINTS]
-
-            if not pq_entries:
-                print(f"[Skip] k={k} u={u} no (p,q) entries found.")
-                continue
-
-            # Build accuracy series per category (raw pruned accuracy)
-            raw_acc = {cat: [] for cat in categories}
-            for ent in pq_entries:
-                for cat in categories:
-                    raw_acc[cat].append(ent['metrics'].get(cat, {}).get('pruned_accuracy', 0.0))
-
-            # Baseline original accuracies
-            base_metrics = all_results.get(0.0, {}).get('metrics', {})
-            baseline_acc = {cat: base_metrics.get(cat, {}).get('original_accuracy', 0.0) for cat in categories}
-
-            if NORMALIZE_BASELINE:
-                # Normalize each category by its baseline; insert baseline point (0,1)
-                acc_series = {cat: [ (val / baseline_acc[cat]) if baseline_acc[cat] > 0 else 0.0 for val in raw_acc[cat]] for cat in categories}
-                for cat in categories:
-                    acc_series[cat].insert(0, 1.0)
-                x_idx = list(range(len(pq_entries) + 1))
-                tick_labels = ["0"] + [f"({ _format_float_for_tag(ent['p']) },{ _format_float_for_tag(ent['q']) })" for ent in pq_entries]
-                y_label = 'Accuracy'
-                title = f'Accuracy vs (p,q)  k={_format_float_for_tag(k)}, u={_format_float_for_tag(u)}'
-                y_min, y_max = 0.0, 1.05
-                # If normalization pushes some >1, adjust upper
-                max_val = max(max(vals) for vals in acc_series.values()) if acc_series else 1.0
-                if max_val > 1.05:
-                    y_max = min(1.25, max_val * 1.05)
-            else:
-                acc_series = raw_acc
-                x_idx = list(range(len(pq_entries)))
-                tick_labels = [f"({ _format_float_for_tag(ent['p']) },{ _format_float_for_tag(ent['q']) })" for ent in pq_entries]
-                y_label = 'Accuracy'
-                title = f'Accuracy vs (p,q)  k={_format_float_for_tag(k)}, u={_format_float_for_tag(u)}'
-                y_min, y_max = 0.0, 1.05
-
-            # Determine a narrower width with clamping
-            desired_width = FIG_WIDTH_PER_LABEL * len(tick_labels)
-            fig_width = max(FIG_MIN_WIDTH, min(FIG_MAX_WIDTH, desired_width))
-            fig, ax = plt.subplots(figsize=(fig_width, 4))
-            for i, cat in enumerate(categories):
-                color_i = colors[i % len(colors)] if colors else None
-                ax.plot(x_idx, acc_series[cat], 'o-', label=f"{cat}{' norm' if NORMALIZE_BASELINE else ' pruned'}", color=color_i)
-                if not NORMALIZE_BASELINE:
-                    # baseline horizontal line only for raw accuracy
-                    ax.hlines(baseline_acc[cat], xmin=-0.2, xmax=len(x_idx)-0.8, colors=color_i, linestyles='dashed', alpha=0.4)
-                else:
-                    # reference line at y=1
-                    ax.axhline(1.0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
-            # Potentially thin x tick labels to avoid overcrowding
-            display_idx = x_idx
-            display_labels = tick_labels
-            if len(tick_labels) > TICK_THIN_THRESHOLD_2:
-                step = 3
-            elif len(tick_labels) > TICK_THIN_THRESHOLD_1:
-                step = 2
-            else:
-                step = 1
-            if step > 1:
-                display_idx = [i for i in x_idx if i % step == 0]
-                display_labels = [tick_labels[i] for i in display_idx]
-            ax.set_xticks(display_idx)
-            ax.set_xticklabels(display_labels, rotation=45, ha='right', fontsize=7 if step>1 else 8)
-            # Minor note: all points still plotted; only labels thinned
-            ax.set_ylabel(y_label)
-            ax.set_xlabel('pq pairs')
-            ax.set_title(title)
-            ax.set_ylim(y_min, y_max)
-            ax.grid(alpha=0.3)
-            ax.legend(fontsize=8)
-            fig.tight_layout()
-            out_path = os.path.join(
-                OUTPUT_DIR,
-                f'accuracy_by_pq_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
-            )
-            fig.savefig(out_path, dpi=300, bbox_inches='tight')
-            plt.close(fig)
-            print(f"[Saved] {out_path}")
-            print(
-                "  points={pts}  (p,q) range p:[{pmin},{pmax}] q:[{qmin},{qmax}]".format(
-                    pts=len(pq_entries),
-                    pmin=_format_float_for_tag(pq_entries[0]['p']),
-                    pmax=_format_float_for_tag(pq_entries[-1]['p']),
-                    qmin=_format_float_for_tag(pq_entries[0]['q']),
-                    qmax=_format_float_for_tag(pq_entries[-1]['q'])
-                )
-            )
-
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     categories = ["direct_success_cot_success", "direct_fail_cot_success"]
     colors = ['blue', 'red']
 
-    # New plot: accuracy vs (p,q)
-    plot_accuracy_by_pq_for_each_k(
+    plot_grouped_by_u_for_each_k(
         K_OPTIONS=K_OPTIONS,
         U_OPTIONS=U_OPTIONS,
         categories=categories,

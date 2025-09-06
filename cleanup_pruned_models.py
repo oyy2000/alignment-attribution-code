@@ -10,7 +10,6 @@ import argparse
 from pathlib import Path
 import glob
 
-
 def get_folder_size(folder_path):
     """Calculate the total size of a folder in bytes."""
     total_size = 0

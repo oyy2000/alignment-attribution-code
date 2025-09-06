@@ -22,7 +22,7 @@ from matplotlib.ticker import FuncFormatter
 # BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
 # "wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_utility/eval_selected_samples/prompt_direct,cot0shot/")
 BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/"
-"wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_0.06_granular/")
+"wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_0.0005_granular/")
 
 # PQ_OPTIONS = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11]  # (p, q) for 3-set pruning
 # U_OPTIONS = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19] 
@@ -31,12 +31,15 @@ PQ_OPTIONS = [0.01, 0.02]  # (p, q) for 3-set pruning
 U_OPTIONS = [round(0.06 + i*0.01, 2) for i in range(10)]
 # [0.01, 0.02, 0.03, 0.04, 0.05]
 
-ORIG_COT4_FILE = (
+ORIG_COT0_FILE = (
 "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
 )
 ORIG_DIRECT_FILE = (
   "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_direct.jsonl"
 )
+
+CATEGORIES = ["direct_success_cot_success", "direct_fail_cot_success", "direct_success_cot_success_cot_prompt"]
+CATEGORY_COLORS = ['blue', 'red', 'green']
 
 # --- IO helpers ---
 
@@ -140,7 +143,7 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
     base = analyze_category_performance_original(category, sample_cot_ids, orig_cot, orig_direct, matches)
     base_acc = base['original_accuracy']
     pruned_correct = 0
-    if category == 'direct_success_cot_success':
+    if category == 'direct_success_cot_success': # direct success cot success direct prompt
         for cot_id in sample_cot_ids:
             dir_id = matches.get(cot_id)
             if dir_id and pruned_direct.get(dir_id, {}).get('correct', False):
@@ -148,6 +151,11 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
     elif category == 'direct_fail_cot_success':
         for cot_id in sample_cot_ids:
             if pruned_cot.get(cot_id, {}).get('correct', False):
+                pruned_correct += 1
+    elif category == 'direct_success_cot_success_cot_prompt':
+        for cot_id in sample_cot_ids:
+            dir_id = matches.get(cot_id)
+            if dir_id and pruned_cot.get(dir_id, {}).get('correct', False):
                 pruned_correct += 1
     pruned_acc = pruned_correct / total if total else 0.0
     return {
@@ -204,16 +212,17 @@ def discover_sparsity_dirs(base_dir: str) -> Dict[float, Dict]:
 
 def collect_all_results_with_meta():
     # Load originals
-    cot4_data = load_jsonl(ORIG_COT4_FILE)
+    cot0_data = load_jsonl(ORIG_COT0_FILE)
     dir_data = load_jsonl(ORIG_DIRECT_FILE)
-    cot4_info = extract_sample_info(cot4_data)
+    cot0_info = extract_sample_info(cot0_data)
     dir_info = extract_sample_info(dir_data)
-    matches = match_samples_by_question(cot4_data, dir_data)
+    matches = match_samples_by_question(cot0_data, dir_data)
 
-    d_s_c_s, _, d_f_c_s, _ = categorize_samples(cot4_info, dir_info, matches)
+    d_s_c_s, _, d_f_c_s, _ = categorize_samples(cot0_info, dir_info, matches)
     category_samples = {
         "direct_success_cot_success": d_s_c_s,
         "direct_fail_cot_success": d_f_c_s,
+        "direct_success_cot_success_cot_prompt": d_s_c_s,
     }
 
     all_results: Dict[float, Dict] = {}
@@ -221,7 +230,7 @@ def collect_all_results_with_meta():
     # 0.0 original row (no pqku)
     orig_bucket = {}
     for name, samples in category_samples.items():
-        orig_bucket[name] = analyze_category_performance_original(name, samples, cot4_info, dir_info, matches)
+        orig_bucket[name] = analyze_category_performance_original(name, samples, cot0_info, dir_info, matches)
     all_results[0.0] = {"metrics": orig_bucket, "meta": {"p": None, "q": None, "k": None, "u": None, "dir": None}}
 
     ratio_to_meta = discover_sparsity_dirs(BASE_DIR)
@@ -236,80 +245,20 @@ def collect_all_results_with_meta():
             all_results[ratio] = {"metrics": {}, "meta": meta}
             continue
         pruned_cot_info = extract_sample_info(load_jsonl(cand_cot[0]))
+        # pruned_cot_prompt_dir_info = extract_sample_info(load_jsonl(cand_cot[0]))
         pruned_dir_info = extract_sample_info(load_jsonl(cand_dir[0]))
 
         bucket = {}
         for name, samples in category_samples.items():
             bucket[name] = analyze_category_performance_pruned(
-                name, samples, cot4_info, dir_info, pruned_cot_info, pruned_dir_info, matches
+                name, samples, cot0_info, dir_info, pruned_cot_info, pruned_dir_info, matches
             )
         all_results[ratio] = {"metrics": bucket, "meta": meta}
 
     return dict(sorted(all_results.items(), key=lambda kv: kv[0]))
 
-# --- Plot & Table ---
 
-def plot_results_with_pqku(all_results: Dict[float, Dict], out_png: str):
-    ratios = sorted(all_results.keys())
-    categories = ["direct_success_cot_success", "direct_fail_cot_success"]
-    colors = ['blue', 'red']
-
-    # Determine if p, q, u are constant across pruned configs
-    ps = {v["meta"].get("p") for r, v in all_results.items() if r > 0}
-    qs = {v["meta"].get("q") for r, v in all_results.items() if r > 0}
-    us = {v["meta"].get("u") for r, v in all_results.items() if r > 0}
-
-    # Only plot the second figure (accuracy change)
-    fig, ax2 = plt.subplots(1, 1, figsize=(8, 6))
-
-    for i, cat in enumerate(categories):
-        delta = []
-        for r in ratios:
-            res = all_results[r].get("metrics", {}).get(cat, {})
-            delta.append(res.get('accuracy_change', 0.0))
-        ax2.plot(ratios, delta, 'o-', label=cat, color=colors[i], linewidth=2, markersize=8)
-
-    title_bits = []
-    title_bits.append(f"p={'const '+str(list(ps)[0]) if len(ps)==1 else 'mixed'}")
-    title_bits.append(f"q={'const '+str(list(qs)[0]) if len(qs)==1 else 'mixed'}")
-    title_bits.append(f"u={'const '+str(list(us)[0]) if len(us)==1 else 'mixed'}")
-
-    ax2.set_xlabel('Sparsity Ratio')
-    ax2.set_ylabel('Accuracy Change (Pruned - Original)')
-    ax2.set_title('Accuracy Change by Sparsity Ratio')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-
-    fig.suptitle("; ".join(title_bits), fontsize=12)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig(out_png, dpi=300, bbox_inches='tight')
-
-
-def print_summary_table_with_pqku(all_results: Dict[float, Dict]):
-    ratios = sorted(all_results.keys())
-    cats = ["direct_success_cot_success", "direct_fail_cot_success"]
-    print("\n" + "="*110)
-    print("SUMMARY TABLE (with pqku)")
-    print("="*110)
-    header = f"{'Sparsity':<10} {'P':<6} {'Q':<6} {'K':<6} {'U':<6} {'Category':<25} {'Original':<10} {'Pruned':<10} {'Change':<10} {'Pruned Correct':<15}"
-    print(header)
-    print("-"*110)
-    for r in ratios:
-        meta = all_results[r].get("meta", {})
-        P = meta.get('p', '-') if r>0 else '-'
-        Q = meta.get('q', '-') if r>0 else '-'
-        K = meta.get('k', '-') if r>0 else '-'
-        U = meta.get('u', '-') if r>0 else '-'
-        for c in cats:
-            res = all_results[r].get("metrics", {}).get(c, {})
-            print(
-                f"{r:<10} {P!s:<6} {Q!s:<6} {K!s:<6} {U!s:<6} "
-                f"{c:<25} {res.get('original_accuracy',0.0):<10.3f} {res.get('pruned_accuracy',0.0):<10.3f} "
-                f"{res.get('accuracy_change',0.0):<10.3f} {res.get('pruned_correct_count',0):<15}"
-            )
 def main():
-    categories = ["direct_success_cot_success", "direct_fail_cot_success"]
-    colors = ['blue', 'red']
     # Pre-compute global union of ratios across all (p, u) to unify x-axis across different p
     global FILE_NAME
     global_union_ratios = set([0.0])
@@ -349,13 +298,13 @@ def main():
 
             # 先分别计算两条曲线的 delta
             deltas_per_cat = []
-            for i, cat in enumerate(categories):
+            for i, cat in enumerate(CATEGORIES):
                 delta = []
                 for r in ratios:
                     res = all_results[r].get("metrics", {}).get(cat, {})
                     delta.append(res.get('accuracy_change', 0.0))
                 deltas_per_cat.append(delta)
-                ax.plot(ratios, delta, 'o-', label=cat, color=colors[i])
+                ax.plot(ratios, delta, 'o-', label=cat, color=CATEGORY_COLORS[i])
 
             # ---- 在图中标注 k（使用两条曲线的平均 y 作为标注位置）----
             # deltas_per_cat[0] 对应 direct_success_cot_success

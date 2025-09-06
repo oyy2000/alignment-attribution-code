@@ -1,0 +1,6 @@
+[
+  {
+    "command": "python main.py --model llama2-7b-chat-hf --save out/llama2-7b-chat-hf/cot4shot/eval_selected_samples --nsamples 600 --eval_gsm8k --eval_type selected_samples --prompt_method cot4shot ",
+    "result": "running"
+  }
+]
