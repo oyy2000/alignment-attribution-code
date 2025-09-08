@@ -1,2 +1,0 @@
-None	0.000000	False	Addition:6	direct	all	0.4040
-None	0.000000	False	Addition:6	cot0shot	all	0.0940

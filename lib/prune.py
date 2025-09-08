@@ -1626,7 +1626,7 @@ def _load_flap_score_single_GPU(model_tag: str, metric: str, layer_idx: int, par
     dtype = torch.float16 if use_fp16 else torch.float32
     return torch.load(fpath, map_location=device).to(dtype=dtype)
 
-def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_name: str,
+def _load_score_single_GPU(args, metric: str, layer_idx: int, param_name: str,
                 device: torch.device, use_fp16: bool = False):
     METRIC_TO_PATH = {
         "cot0shot": "GSM8K_cot0shot_120",
@@ -1635,8 +1635,10 @@ def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_na
         "utility": "alpaca_cleaned_no_safety",  
         "cot4shot": "GSM8K_cot4shot_120",
     }
+    model_tag = args.model
     path  = METRIC_TO_PATH[metric]
-    base  = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+    
+    base  = f"{args.out_dir}/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
     fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
     fpath = os.path.join(base, fname)
     if not os.path.exists(fpath):
@@ -1852,9 +1854,9 @@ def prune_wanda_2_set_difference_utility(
             print(f"  -> layer {i:<2}  {name}")
 
             dev = subset[name].weight.device          # 该层所在 GPU
-            W_metric_p = _load_score_single_GPU(args.model, metric_p, i, name, dev, use_fp16=True)
-            W_metric_k = _load_score_single_GPU(args.model, metric_k, i, name, dev, use_fp16=True)
-            W_metric_u = _load_score_single_GPU(args.model, metric_u, i, name, dev, use_fp16=True)
+            W_metric_p = _load_score_single_GPU(args, metric_p, i, name, dev, use_fp16=True)
+            W_metric_k = _load_score_single_GPU(args, metric_k, i, name, dev, use_fp16=True)
+            W_metric_u = _load_score_single_GPU(args, metric_u, i, name, dev, use_fp16=True)
             # 之后所有 topk / unique 都在 dev 上执行
             
             # # ---- 读取三种 W_metric 分数 ----
@@ -1914,100 +1916,6 @@ def prune_wanda_2_set_difference_utility(
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 
-# def prune_wanda_2_set_difference_utility(
-#     args,
-#     model,
-#     tokenizer,
-#     model_base=None,
-#     device=torch.device("cuda:0"),
-#     prune_n=0,
-#     prune_m=0,
-#     prune_data="alpaca_cleaned_no_safety",
-#     main_metrics="cot0shot",
-#     p=0.2,                # cot0shot     top-p 百分比
-#     k=0.9,                # direct       top-k 百分比
-#     u=0.9,                # utility      top-u 百分比
-# ):
-#     save_sparsity_path = None
-#     if args.save_sparsity:
-#         save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
-#         if not os.path.exists(os.path.dirname(save_sparsity_path)):
-#             os.makedirs(os.path.dirname(save_sparsity_path))
-
-#     use_cache = model.config.use_cache
-#     model.config.use_cache = False
-
-#     layers = model.model.layers
-#     if args.use_diff or args.recover_from_base:
-#         assert model_base is not None
-#         layers_base = model_base.model.layers
-
-#     metric1, metric2, metric3 = "cot0shot_goldreason", "direct", "utility"
-#     print(f"🌱 2-Set pruning - p={p}, k={k}, u={u} - {metric1} ∩ {metric2} \\ {metric3}")
-
-#     for i, layer in enumerate(layers):
-#         subset = find_layers(layer)
-#         if args.use_diff or args.recover_from_base:
-#             subset_base = find_layers(layers_base[i])
-
-#         for name in subset:
-#             print(f"  -> layer {i:<2}  {name}")
-
-#             dev = subset[name].weight.device          # 该层所在 GPU
-#             W_metric1 = _load_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
-#             W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
-#             W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
-          
-
-#             num_total = W_metric1.numel()
-#             top_p  = int(p * num_total)
-#             top_k  = int(k * num_total)
-#             top_u  = int(u * num_total)
-
-#             idx_p = torch.topk(W_metric1.flatten(), top_p , largest=True)[1].unique()
-#             idx_k = torch.topk(W_metric2.flatten(), top_k , largest=True)[1].unique()
-#             idx_u = torch.topk(W_metric3.flatten(), top_u , largest=True)[1].unique()
-
-#             diff_pk   = idx_p[~torch.isin(idx_p, idx_k)]
-#             diff_pku  = diff_pk[~torch.isin(diff_pk, idx_u)]
-#             prune_set  = diff_pku  
-            
-#             sparsity = prune_set.numel() / num_total
-#             if i == 0 and sparsity < args.sparsity_threshold:
-#                 print(f"Layer {i} sparsity {sparsity:.7f} < threshold {args.sparsity_threshold}, return")
-#                 return False
-#             # print to file
-#             with open(save_sparsity_path, "a") as f:
-#                 print(f"layer {i} {name}", file=f)
-#                 print(f"prune_set.numel() = {prune_set.numel()}", file=f)
-#                 print(f"idx_u.numel() = {idx_u.numel()}", file=f)
-#                 print(f"idx_k.numel() = {idx_k.numel()}", file=f)
-#                 print(f"idx_p.numel() = {idx_p.numel()}", file=f)
-#                 print(f"diff_pk.numel() = {diff_pk.numel()}", file=f)
-#                 print(f"diff_pku.numel() = {diff_pku.numel()}", file=f)
-#             if prune_set.numel() == 0:
-#                 continue   # 该参数没有需要置零的权重
-#             sparsity = prune_set.numel() / num_total
-#             if i == 0 and sparsity < args.sparsity_threshold:
-#                 print(f"Layer {i} sparsity {sparsity:.7f} < threshold {args.sparsity_threshold}, return")
-#                 return False
-#             # ---- 生成布尔 Mask 并置零 / 回滚 ----
-#             W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
-#             dim1 = subset[name].weight.size(1)
-#             rows = prune_set // dim1
-#             cols = prune_set %  dim1
-#             W_mask[rows, cols] = True
-
-#             if args.recover_from_base:
-#                 subset[name].weight.data[W_mask] = subset_base[name].weight.data[W_mask]
-#             else:
-#                 subset[name].weight.data[W_mask] = 0.0
-#             del W_metric1, W_metric2, W_metric3
-#             torch.cuda.empty_cache()                  # 及时释放显存
-
-#     model.config.use_cache = use_cache
-#     torch.cuda.empty_cache()
-
 def prune_wanda_4_set_difference_cot4shot(
     args,
     model,
@@ -2048,10 +1956,10 @@ def prune_wanda_4_set_difference_cot4shot(
             print(f"  -> layer {i:<2}  {name}")
 
             dev = subset[name].weight.device          # 该层所在 GPU
-            W_metric1 = _load_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
-            W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
-            W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
-            W_metric4 = _load_score_single_GPU(args.model, metric4, i, name, dev, use_fp16=True)
+            W_metric1 = _load_score_single_GPU(args, metric1, i, name, dev, use_fp16=True)
+            W_metric2 = _load_score_single_GPU(args, metric2, i, name, dev, use_fp16=True)
+            W_metric3 = _load_score_single_GPU(args, metric3, i, name, dev, use_fp16=True)
+            W_metric4 = _load_score_single_GPU(args, metric4, i, name, dev, use_fp16=True)
             # 之后所有 topk / unique 都在 dev 上执行
             
             # # ---- 读取三种 W_metric 分数 ----
@@ -2146,10 +2054,16 @@ def prune_wanda_3_set_difference_utility(
             print(f"  -> layer {i:<2}  {name}")
 
             dev = subset[name].weight.device          # 该层所在 GPU
-            W_metric1 = _load_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
-            W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
-            W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
-            W_metric4 = _load_score_single_GPU(args.model, metric4, i, name, dev, use_fp16=True)
+            W_metric1 = _load_score_single_GPU(args, metric1, i, name, dev, use_fp16=True)
+            W_metric2 = _load_score_single_GPU(args, metric2, i, name, dev, use_fp16=True)
+            W_metric3 = _load_score_single_GPU(args, metric3, i, name, dev, use_fp16=True)
+            W_metric4 = _load_score_single_GPU(args, metric4, i, name, dev, use_fp16=True)
+            # 之后所有 topk / unique 都在 dev 上执行
+            
+            # # ---- 读取三种 W_metric 分数 ----
+            # W_metric1 = _load_score(args.model, metric1, i, name)
+            # W_metric2 = _load_score(args.model, metric2, i, name)
+            # W_metric3 = _load_score(args.model, metric3, i, name)
 
             num_total = W_metric1.numel()
             top_p  = int(p * num_total)
@@ -2255,9 +2169,9 @@ def prune_wanda_3_set_difference(
             print(f"  -> layer {i:<2}  {name}")
 
             dev = subset[name].weight.device          # 该层所在 GPU
-            W_metric1 = _load_score_single_GPU(args.model, metric1, i, name, dev, use_fp16=True)
-            W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
-            W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
+            W_metric1 = _load_score_single_GPU(args, metric1, i, name, dev, use_fp16=True)
+            W_metric2 = _load_score_single_GPU(args, metric2, i, name, dev, use_fp16=True)
+            W_metric3 = _load_score_single_GPU(args, metric3, i, name, dev, use_fp16=True)
 
             # 之后所有 topk / unique 都在 dev 上执行
             

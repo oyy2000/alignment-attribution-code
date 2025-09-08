@@ -230,11 +230,11 @@ def get_wikitext2(nsamples, seed, seqlen, tokenizer):
 
 def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="alpaca"):
     if dataset == "alpaca":
-        data_files = {"train": "./data/alpaca_train.csv"}
+        data_files = {"train": "../data/alpaca_train.csv"}
     elif dataset == "alpaca_cleaned":
-        data_files = {"train": "./data/alpaca_cleaned_train.csv"}
+        data_files = {"train": "../data/alpaca_cleaned_train.csv"}
     elif dataset == "alpaca_cleaned_no_safety":
-        data_files = {"train": "./data/alpaca_cleaned_no_safety_train.csv"}
+        data_files = {"train": "../data/alpaca_cleaned_no_safety_train.csv"}
     else: 
         raise ValueError("Dataset not supported")
     traindata = load_dataset("csv", data_files=data_files, split="train")

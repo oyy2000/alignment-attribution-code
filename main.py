@@ -78,6 +78,7 @@ def get_llm(model_name, cache_dir=None):
 def main(args=None):
     if args is None:
         parser = argparse.ArgumentParser()
+        parser.add_argument('--out_dir', type=str, default='out')
         parser.add_argument('--sparsity_threshold', type=float, default=0.000001)
         parser.add_argument('--max_new_tokens', type=int, default=1024)
         parser.add_argument('--dataset', type=str, default='GSM8K')

@@ -10,14 +10,10 @@ import tempfile
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-nsamples = 600
-eval_type = "selected_samples"
-prune_method_options = ["wanda_3_set_difference_utility"]  # ["wanda_3_set_difference_utility"]
+nsamples = 120
+prune_method_options = ["wanda"]  # ["wanda_3_set_difference_utility"]
 prompt_methods = ["direct,cot0shot"]  # ["cot2shot,cot4shot,cot8shot,cot16shot"]
-pq_options = [0.01, 0.02]  # (p, q) for 3-set pruning
-k_options = [0.01] #, 0.02, 0.03, 0.04, 0.05]
-u_options = [0.01] # 0.02, 0.03, 0.04, 0.05]
-prune_data_options = ["alpaca_cleaned_no_safety"] #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
+prune_data_options = ["GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason", "GSM8K_direct_120"] # alpaca_cleaned_no_safety #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
 
 # 阈值：仅当 free/total >= 0.90 时，这张卡被当作“可用”
 FREE_RATIO_THRESHOLD = 0.90
@@ -25,24 +21,22 @@ FREE_RATIO_THRESHOLD = 0.90
 MONITOR_TIMEOUT_SEC = 180
 MONITOR_POLL_SEC = 5
 
-log_file = f"command_log_eval_gsm8k_wanda_4_set_450_alpaca_cleaned_no_safety_pquk_grid_search_{pq_options}_0.01_threshold.json"
-save_dir="/mnt/beegfs/youyang7/projects/alignment-attribution-code/out/$model/$type/${method}_${suffix}/$prune_data/"
+log_file = f"command_log_dump_new.json"
 
 # ================== Helpers ==================
-def build_command(prune_method, prompt_method, p, q, k, u):
+def build_command(prune_method, prune_data):
+    save_dir=f"/mnt/beegfs/youyang7/projects/alignment-attribution-code/out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/"
+
     command = (
-        f"python main.py "
+        f"python ../main.py "
         f"--model {model} "
+        f"--prune_data {prune_data} "
         f"--prune_method {prune_method} "
         f"--sparsity_type {sparsity_type} "
         f"--sparsity_ratio 0.5 "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_gsm8k "
-        f"--eval_type {eval_type} "
-        f"--prompt_method {prompt_method} "
-        f"--save_sparsity "
-        f"--u {u} "
+        f"--dump_wanda_score " 
     )
     return command
 
@@ -161,12 +155,8 @@ def main():
     # 生成全部命令
     commands = []
     for prune_method in prune_method_options:
-        for prompt_method in prompt_methods:
-            for p in pq_options:
-                q = p
-                for k in k_options:
-                    for u in u_options:
-                        commands.append(build_command(prune_method, prompt_method, p, q, k, u))
+        for  prune_data in prune_data_options:
+                commands.append(build_command(prune_method, prune_data))
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()
