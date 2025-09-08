@@ -346,9 +346,12 @@ def load_prompt(dataset, prompt, do_role='math teacher', do_bias='nobias'):
     if do_role not in ['defaultrole', 'randomrole']:
         role = do_role
         full_prompt = full_prompt.replace('{{role}}', role)
+    # set role if it is not a random intervention
+    if do_role not in ['defaultrole', 'randomrole']:
+        role = do_role
+        full_prompt = full_prompt.replace('{{role}}', role)
     # add bias prompt for random intervention
     is_math = dataset in ['Addition', 'Product', 'GSM8K']
-   
     return full_prompt
 
 def format_prompt(full_prompt, item):
@@ -443,8 +446,11 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None):
             data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/dev.json'
         with open(data_file, 'r') as fin:
             items = json.load(fin)
-        random.shuffle(items)
-        return items[:nsamples] if nsamples > 0 else items
+        if select_method == 'random':
+            random.shuffle(items)
+            return items[:nsamples] if nsamples > 0 else items
+        elif select_method == 'all':
+            return items
 
 def extract_answer(output, item, dataset):
     try:
@@ -476,12 +482,6 @@ def extract_answer(output, item, dataset):
     # At the bottom of extract_answer
     raise NotImplementedError(f"extract_answer does not support dataset '{dataset}'.")
 
-
-# 假设以下辅助函数已存在于你的代码库中
-#   load_prompt(dataset, prompt_tag, do_role)  -> str
-#   load_dataset(dataset_name, nsamples)       -> List[Dict]
-#   format_prompt(template, sample_dict)       -> str
-#   extract_answer(model_output, sample_dict, dataset_name) -> str / int / float
 
 RETRY_INTERVAL = 10        # 秒
 MAX_RETRY      = 5         # 最多重试 5 次
@@ -582,6 +582,130 @@ def eval_gsm8k_all(
     prune_data: str = "GSM8K_direct_120",
 ):
     return eval_gsm8k_random(args, vllm_model, tokenizer, prune_data, select_method="all")
+
+
+def eval_datasets(
+    args,
+    vllm_model,
+    tokenizer=None,
+    select_method: str = "random",
+):
+    """
+    Evaluate Addition-style arithmetic problems using vLLM.
+
+    Returns
+    -------
+    Dict[str, float]
+        {prompt_tag: accuracy}
+    """
+
+    # 1) Prepare prompts and data
+    prompt_tags = [p.strip() for p in args.prompt_method.split(",") if p.strip()]
+    full_prompts = {
+        tag: load_prompt(args.dataset, tag, do_role=args.role) for tag in prompt_tags
+    }
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    data = load_dataset(args.dataset, args.nsamples, select_method=select_method)
+
+    # 2) Sampling params
+    if args.sampling_strategy == "greedy":
+        sampling_params = SamplingParams(
+            temperature=0.0,
+            top_p=1.0,
+            max_tokens=1024,
+            n=1,
+            stop=None,
+        )
+    elif args.sampling_strategy == "top_p":
+        sampling_params = SamplingParams(
+            temperature=0.7,
+            top_p=0.9,
+            max_tokens=1024,
+            n=1,
+            stop=None,
+        )
+    else:
+        # fallback to greedy
+        sampling_params = SamplingParams(
+            temperature=0.0,
+            top_p=1.0,
+            max_tokens=1024,
+            n=1,
+            stop=None,
+        )
+
+    # 3) Evaluate per prompt tag
+    acc_dict: Dict[str, List[bool]] = {t: [] for t in prompt_tags}
+
+    for tag in prompt_tags:
+        # Output file per prompt
+        if args.neg_prune:
+            print("Negative pruning")
+            outfile = (
+                Path(args.save)
+                / f"{args.prune}_top_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type or 'random'}_prompt_{tag}.jsonl"
+            )
+        else:
+            print("Positive pruning")
+            outfile = (
+                Path(args.save)
+                / f"{args.dataset}_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type or 'random'}_prompt_{tag}.jsonl"
+            )
+
+        already_done = 0
+        out_fh = open(outfile, "a")
+
+        if outfile.exists():
+            already_done = sum(1 for _ in open(outfile))
+            if already_done >= len(data):
+                print(f"[SKIP] {outfile.name} 已完成 ({already_done}/{len(data)})")
+                out_fh.close()
+                acc_dict[tag] = [json.loads(line)["correct"] for line in open(outfile)]
+                continue
+            print(f"[RESUME] {outfile.name}: 已有 {already_done} 条，继续评估 …")
+
+        dataset_iter = data[already_done:]
+        dataset_chunks = [
+            dataset_iter[i : i + args.batch_size]
+            for i in range(0, len(dataset_iter), args.batch_size)
+        ]
+
+        for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
+            messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+
+            preds = [
+                extract_answer(out_text, sample, args.dataset)
+                for out_text, sample in zip(outputs, chunk)
+            ]
+
+            for sample, out_text, pred in zip(chunk, outputs, preds):
+                gold = sample["answer"]
+                correct = pred == gold
+                acc_dict[tag].append(correct)
+
+                record = {
+                    **sample,
+                    "prompt_tag": tag,
+                    "input": format_prompt(full_prompts[tag], sample),
+                    "output": out_text,
+                    "pred": pred,
+                    "gold": gold,
+                    "correct": correct,
+                }
+                out_fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                out_fh.flush()
+
+        out_fh.close()
+
+    acc_summary = {tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()}
+    for tag, acc in acc_summary.items():
+        n = len(acc_dict[tag])
+        print(f"[ACC] {tag:15s}: {acc:.3%} ({int(acc*n)}/{n})")
+
+    return acc_summary
 
 def eval_gsm8k_random(
     args,

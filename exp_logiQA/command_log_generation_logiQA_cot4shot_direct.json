@@ -1,0 +1,6 @@
+[
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/LOGIQA/llama2-7b-chat-hf/direct,cot0shot/eval_all --nsamples 600 --eval_datasets --dataset LOGIQA --eval_type all --prompt_method direct,cot0shot ",
+    "result": "success"
+  }
+]

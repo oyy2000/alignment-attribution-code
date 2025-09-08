@@ -32,7 +32,7 @@ from lib.prune import (
 from lib.prune_flap_new import prune_flap  # minimal import for flap
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples
+from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples, eval_datasets
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -46,10 +46,14 @@ modeltype2path = {
     "llama2-13b-chat-hf": "meta-llama/Llama-2-13b-chat-hf",
     "llama2-7b-hf": "meta-llama/Llama-2-7b-hf",
     "llama2-13b-hf": "meta-llama/Llama-2-13b-hf",
+    "mistral-7B": "mistralai/Mistral-7B-Instruct-v0.3"
 }
 
 
-def get_llm(model_name, cache_dir="llm_weights"):
+def get_llm(model_name, cache_dir=None):
+    print(os.getenv("HF_HOME") )
+    cache_dir = os.getenv("TRANSFORMERS_CACHE") or "llm_weights"
+    print(f"Using cache dir: {cache_dir}")
     if model_name in [
         "llama2-7b-chat-hf",
         "llama2-13b-chat-hf",
@@ -211,6 +215,8 @@ def main(args=None):
         parser.add_argument("--eval_zero_shot", action="store_true")
         parser.add_argument("--eval_attack", action="store_true")
         parser.add_argument("--eval_gsm8k", action="store_true")
+        parser.add_argument("--eval_datasets", action="store_true")
+
         parser.add_argument("--save_attack_res", action="store_true")
         parser.add_argument(
             "--prune_part",
@@ -675,6 +681,58 @@ def main(args=None):
                         file=f,
                         flush=True,
                     )
+
+    if args.eval_datasets:
+        # Save pruned model for vLLM eval (reuse same folder)
+        if not os.path.exists(pruned_model_folder):
+            os.makedirs(pruned_model_folder)
+        if args.neg_prune:
+            pruned_path = os.path.join(
+                pruned_model_folder,
+                f"pruned_model_top_{args.sparsity_ratio:.3f}"
+            )
+        else:
+            pruned_path = os.path.join(
+                pruned_model_folder,
+                f"pruned_model_bottom_{args.sparsity_ratio:.3f}"
+            )
+
+        # Only save if not already saved above
+        if not os.path.exists(pruned_path):
+            model.save_pretrained(pruned_path)
+        # free HF model memory before vLLM
+        try:
+            del model
+            import gc
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        vllm_model = LLM(
+            model=pruned_path,
+            tokenizer=modeltype2path[args.model],
+            dtype="float16",
+            swap_space=12,
+        )
+        print(f"Evaluating {args.dataset} with {args.model}")
+
+        sel = "random" if args.eval_type not in ["all"] else "all"
+        acc_summary = eval_datasets(
+            args,
+            vllm_model,
+            tokenizer,
+            select_method=sel,
+        )
+        # Log
+        with open(save_filepath, "a") as f:
+            for tag, acc in acc_summary.items():
+                print(
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{args.dataset}\t{tag}\t{args.eval_type}\t{acc:.4f}",
+                    file=f,
+                    flush=True,
+                )
 
     if args.eval_attack:
         # note: since vLLM only supports loading from the path, we need to save the pruned model first for faster evaluation. We can reuse this temp folder to save disk spaces

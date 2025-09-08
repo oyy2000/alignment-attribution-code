@@ -1615,7 +1615,7 @@ def _load_flap_score_single_GPU(model_tag: str, metric: str, layer_idx: int, par
         "cot4shot": "GSM8K_cot4shot_120",
     }
     path  = METRIC_TO_PATH[metric]
-    base  = f"out/{model_tag}/structured/flap_weightonly/{path}/flap_score/{path}_ifv_disentangle"
+    base  = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/{model_tag}/structured/flap_weightonly/{path}/flap_score/{path}_ifv_disentangle"
     fname = f"flap_metric_layer_{layer_idx}_name_{param_name}_{path}_ifv_torch.pt"
     fpath = os.path.join(base, fname)
     if not os.path.exists(fpath):
@@ -1634,7 +1634,7 @@ def _load_score_single_GPU(model_tag: str, metric: str, layer_idx: int, param_na
         "cot4shot": "GSM8K_cot4shot_120",
     }
     path  = METRIC_TO_PATH[metric]
-    base  = f"out/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+    base  = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
     fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
     fpath = os.path.join(base, fname)
     if not os.path.exists(fpath):

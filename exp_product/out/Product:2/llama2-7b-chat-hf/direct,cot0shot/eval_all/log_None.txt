@@ -1,0 +1,2 @@
+None	0.000000	False	Product:2	direct	all	0.2540
+None	0.000000	False	Product:2	cot0shot	all	0.0680
