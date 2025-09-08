@@ -331,14 +331,14 @@ def load_prompt(dataset, prompt, do_role='math teacher', do_bias='nobias'):
         numbers = [int(num) for num in numbers]
         assert len(numbers) == 1
         nshot = numbers[0]
-        prompt_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/prompts/prompt_{dataset}_cotnshot.jinja'
+        prompt_file = f'../data/prompts/prompt_{dataset}_cotnshot.jinja'
         with open(prompt_file, 'r') as fin:
             template_content = fin.read()
         from jinja2 import Template
         template_str = Template(template_content)
         full_prompt = make_n_shot(dataset,template_str,nshot)
     else:
-        prompt_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/prompts/prompt_{dataset}_{prompt}.txt'
+        prompt_file = f'../data/prompts/prompt_{dataset}_{prompt}.txt'
         with open(prompt_file, 'r') as fin:
             lines = [line.strip() for line in fin.readlines()]
         full_prompt = '\n'.join(lines)
@@ -366,8 +366,8 @@ def format_prompt(full_prompt, item):
 
 def load_dataset(dataset, nsamples, select_method='random', ids = None):
     if dataset == 'GSM8K':
-        data_file_test = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/test.jsonl'
-        data_file_train = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/train.jsonl'
+        data_file_test = f'../data/{dataset}/test.jsonl'
+        data_file_train = f'../data/{dataset}/train.jsonl'
         with open(data_file_test, 'r') as fin:
             items = [json.loads(line) for line in fin]
         # normalize the fields
@@ -441,9 +441,9 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None):
     else:  # default loading
         if dataset.find(':') > 0:
             dataset, arg = dataset.split(':')
-            data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/dev{arg}.json'
+            data_file = f'../data/{dataset}/dev{arg}.json'
         else:
-            data_file = f'/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/{dataset}/dev.json'
+            data_file = f'../data/{dataset}/dev.json'
         with open(data_file, 'r') as fin:
             items = json.load(fin)
         if select_method == 'random':
@@ -853,7 +853,7 @@ def eval_gsm8k_selected_samples(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_dataset_with_conversation_template.jsonl"
+    data_file = f"../data/GSM8K_eval_build/eval_dataset_with_conversation_template.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]
@@ -964,7 +964,7 @@ def eval_gsm8k_held_out(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/heldout_500.jsonl"
+    data_file = f"../data/GSM8K/heldout_500.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]
@@ -1070,20 +1070,15 @@ def eval_gsm8k_calibration(
     # 1) 数据文件和字段映射表
     PROMPT2DATA = {
         "GSM8K_direct":
-            "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-            "data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json",
+            "../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json",
         "GSM8K_cot0shot_120":
-            "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-            "data/GSM8K/output/calibration_set_cot_120.json",
+            "../data/GSM8K/output/calibration_set_cot_120.json",
         "GSM8K_direct_120":
-            "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-            "data/GSM8K/output/calibration_set_direct_120.json",
+            "../data/GSM8K/output/calibration_set_direct_120.json",
         "GSM8K_cot0shot":
-            "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-            "data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json",
+            "../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json",
         "GSM8K_cot0shot_goldreason":
-            "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-            "data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json",
+            "../data/GSM8K/output/output.GSM8K.cot0shot.goldreason.llama2-7b-chat.json",
     }
     PROMPT2FIELD = {
         "GSM8K_direct"            : "direct.math teacher_input",

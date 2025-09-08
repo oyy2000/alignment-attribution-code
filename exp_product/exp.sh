@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH -J exp_product_wanda # 作业名 
-#SBATCH -w c[32]
-#SBATCH -p a5000ada # 分区（改成你想用的，比如 a6000）
+#SBATCH -p a6000 # 分区（改成你想用的，比如 a6000）
+#SBATCH -N 2 # 节点数 
 #SBATCH --cpus-per-task=16 # CPU 核数（给 Python 线程用） 
 #SBATCH --time=2-00:00:00 # 最长运行时间（2 天） 
 #SBATCH --output=/home/%u/logs/%x-%j.out
