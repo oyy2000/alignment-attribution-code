@@ -33,7 +33,7 @@ def build_command(prune_method, prompt_method, p, q, k, u):
         f"--sparsity_ratio 0.5 "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_addition "
+        f"--eval_datasets "
         f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
         f"--dataset {eval_dataset} "

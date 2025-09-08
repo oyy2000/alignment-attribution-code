@@ -152,6 +152,8 @@ def main(args=None):
                 "GSM8K_cot4shot_120_truncated",
                 "GSM8K_cot0shot_goldreason_truncated",
                 "none",
+                "Addition:6_cot0shot",
+                "Addition:6_direct",
             ],
             default="alpaca_cleaned_no_safety",
         )

@@ -77,14 +77,6 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
         with open(data_file, 'r') as fin:
             items = json.load(fin)  
 
-    # 规范化字段
-    for idx, item in enumerate(items, start=1):
-        # id 标准化
-        item['id'] = f'GSM8K_Q{idx}'
-        # 答案清洗：取出整数部分
-        if 'answer' in item:
-            item['answer'] = str(int(item['answer'].strip().replace(',', '')))
-
     # 设置随机种子
     random.seed(seed)
     sampled_items = random.sample(items, nsamples)
@@ -128,9 +120,46 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
     return trainloader, None
 
 
-def get_addition(nsamples, seed, seqlen, tokenizer, disentangle=False):
-    data_files = {"train": "./data/addition_direct_train.csv"}
-    # input = "1 + 1 = 2\n2 + 2 = 4\n3 + 3 = 6\n4 + 4 = 8\n5 + 5 = 10"
+def get_addition(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="", truncate_answer_of_cot=False):
+    if prompt == "Addition:6_cot0shot":
+        data_file = f"../data/Addition:6_eval_build/calibration_Addition:6_cot0shot.jsonl"
+    elif prompt == "Addition:6_direct":
+        data_file = f"../data/Addition:6_eval_build/calibration_Addition:6_direct.jsonl"
+
+    if data_file.endswith('.jsonl'):
+        with open(data_file, 'r') as fin:
+            items = [json.loads(line) for line in fin]
+    else:
+        with open(data_file, 'r') as fin:
+            items = json.load(fin)  
+
+    # 设置随机种子
+    random.seed(seed)
+    sampled_items = random.sample(items, nsamples)
+
+    trainloader = []
+
+    for item in sampled_items:
+        input_text = item['input']
+        output_text = item['output']
+
+        # tokenizer encode
+        input_enc = tokenizer(input_text, return_tensors="pt", truncation=True, max_length=seqlen)
+        output_enc = tokenizer(output_text, return_tensors="pt", truncation=True, max_length=seqlen)
+        if truncate_answer_of_cot:
+            # So 或者 Therefore or therefore 这样的标志最后出现的位置代表要给出答案了，去掉这样标志后的内容
+            output_text = _truncate_at_marker(output_text)
+
+        # 拼接并构造target
+        inp = torch.cat((input_enc.input_ids, output_enc.input_ids[:, 1:]), dim=1)
+        tar = inp.clone()
+
+        input_len = input_enc.input_ids.shape[1]
+        tar[:, :input_len] = -100  # mask掉输入部分，只监督输出
+        
+        trainloader.append((inp, tar))
+
+    return trainloader, None
 
 
 # Load and process aligned dataset
@@ -245,8 +274,10 @@ def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="al
 def get_loaders(
     name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, disentangle=False, prompt="direct"
 ):
-    if name == "addition_direct":
-        return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, dataset="addition_direct")
+    if name == "Addition:6_cot0shot":
+        return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, prompt="Addition:6_cot0shot")
+    if name == "Addition:6_direct":
+        return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, prompt="Addition:6_direct")
     if name == "GSM8K_cot0shot":
         return get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle, prompt="GSM8K_cot0shot")
     if name == "GSM8K_cot4shot_120":

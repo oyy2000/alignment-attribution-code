@@ -411,11 +411,13 @@ def prune_wanda(
                                 i, name, prune_data
                             )
                         )
-                        pickle.dump(W_metric, f)
+                        target_file_pt = target_file.replace(".pkl", "_torch.pt")
+                        torch.save(W_metric.cpu(), target_file_pt)
+                        # pickle.dump(W_metric, f)
                     # Also save as torch.pt
-                    target_file_pt = target_file.replace(".pkl", "_torch.pt")
-                    torch.save(W_metric.cpu(), target_file_pt)
-                    print(f"Converted {target_file}  →  {target_file_pt}")
+                    # target_file_pt = target_file.replace(".pkl", "_torch.pt")
+                    # torch.save(W_metric.cpu(), target_file_pt)
+                    # print(f"Converted {target_file}  →  {target_file_pt}")
                     continue
 
                 W_mask = (
@@ -2133,8 +2135,8 @@ def prune_wanda_3_set_difference_utility(
 
     metric1, metric2, metric3, metric4 = "cot0shot", "cot0shot_goldreason", "direct", "utility"
     print(f"🌱 3-Set pruning - p={p}, q={q}, k={k}, u={u} - {metric1} ∩ {metric2} \\ {metric3} \\ {metric4}")
-    # ⭐ 保存前三层的稀疏率
-    # first3_sparsities = []
+    # keep sparsity threshold for first 3 layers
+    first3_sparsities = []  # 收集第 0/1/2 层每层的 sparsity
     for i, layer in enumerate(layers):
         subset = find_layers(layer)
         if args.use_diff or args.recover_from_base:
@@ -2148,12 +2150,6 @@ def prune_wanda_3_set_difference_utility(
             W_metric2 = _load_score_single_GPU(args.model, metric2, i, name, dev, use_fp16=True)
             W_metric3 = _load_score_single_GPU(args.model, metric3, i, name, dev, use_fp16=True)
             W_metric4 = _load_score_single_GPU(args.model, metric4, i, name, dev, use_fp16=True)
-            # 之后所有 topk / unique 都在 dev 上执行
-            
-            # # ---- 读取三种 W_metric 分数 ----
-            # W_metric1 = _load_score(args.model, metric1, i, name)
-            # W_metric2 = _load_score(args.model, metric2, i, name)
-            # W_metric3 = _load_score(args.model, metric3, i, name)
 
             num_total = W_metric1.numel()
             top_p  = int(p * num_total)
@@ -2184,9 +2180,9 @@ def prune_wanda_3_set_difference_utility(
             if prune_set.numel() == 0:
                 continue   # 该参数没有需要置零的权重
             sparsity = prune_set.numel() / num_total
-            if i == 0 and sparsity < args.sparsity_threshold:
-                print(f"Layer {i} sparsity {sparsity:.4f} < threshold {args.sparsity_threshold}, return")
-                return False
+            if i < 3:
+                first3_sparsities.append(sparsity)
+           
             # ---- 生成布尔 Mask 并置零 / 回滚 ----
             W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
             dim1 = subset[name].weight.size(1)
@@ -2200,16 +2196,30 @@ def prune_wanda_3_set_difference_utility(
                 subset[name].weight.data[W_mask] = 0.0
             del W_metric1, W_metric2, W_metric3
             torch.cuda.empty_cache()                  # 及时释放显存
+        # 在完成第 2 层（索引 2）后，计算前三层平均 sparsity
+        if i == 2:
+            avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities) if first3_sparsities else 0.0
+            print(
+                f"[First3 Avg] layers 0-2 sparsities = {[f'{s:.8f}' for s in first3_sparsities]} => avg = {avg_sparsity_first3:.8f}; threshold = {args.sparsity_threshold:.8f}"
+            )
+            if avg_sparsity_first3 < args.sparsity_threshold:
+                print(f"⚠️ 前三层平均 sparsity {avg_sparsity_first3:.8f} < threshold {args.sparsity_threshold:.8f}, 提前返回")
+                return False
+            if save_sparsity_path:
+                with open(save_sparsity_path, "a") as f:
+                    print(
+                        f"First3_layers_sparsity={','.join(f'{s:.8f}' for s in first3_sparsities)} AVG_first3={avg_sparsity_first3:.8f}",
+                        file=f,
+                    )
 
-# # ⭐ 当跑完第 3 层时，做阈值判断
-#         if i == 2:
-#             avg_sparsity = sum(first3_sparsities) / len(first3_sparsities)
-#             print(f"前三层平均 sparsity = {avg_sparsity:.4f}, 阈值 = {sparsity_threshold:.4f}")
-#             if avg_sparsity < sparsity_threshold:
-#                 print(f"⚠️ 前三层平均 sparsity {avg_sparsity:.4f} < 阈值 {sparsity_threshold:.4f}, 提前 return")
-#                 return False
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
+    # 函数结束时再次打印前三层汇总（若已计算）
+    if first3_sparsities:
+        avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities)
+        print(
+            f"[SUMMARY] 前三层(0,1,2) sparsity = {[f'{s:.8f}' for s in first3_sparsities]} AVG = {avg_sparsity_first3:.8f}"
+        )
 
 
 def prune_wanda_3_set_difference(

@@ -19,7 +19,7 @@ import math
 # Set to None or a large number to disable.
 MAX_POINTS = 20
 FORCE_ZERO_ORIGIN = False  # Use raw accuracy on y-axis (no delta)
-NORMALIZE_BASELINE = False   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
+NORMALIZE_BASELINE = True   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
 
 # Figure sizing controls (avoid overly wide x dimension)
 FIG_MIN_WIDTH = 6
@@ -28,10 +28,20 @@ FIG_WIDTH_PER_LABEL = 0.2  # previous was 0.7, now narrower
 TICK_THIN_THRESHOLD_1 = 25  # if labels exceed this, thin every 2
 TICK_THIN_THRESHOLD_2 = 40  # if exceed this, thin every 3
 
+# Annotate each plotted (p,q) point with its sparsity ratio value (derived from filenames)
+ANNOTATE_SPARSITY = True
+ANNOTATION_FONTSIZE = 6
+ANNOTATION_ROTATION = 90  # vertical to save horizontal space
+ANNOTATION_Y_OFFSET = 4   # points upward shift
+ANNOTATE_CATEGORY_INDEX = 0  # which category series to anchor annotations on
+
 BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/figures/"
 K_OPTIONS = [0.17] 
 U_OPTIONS = [0.15] 
+
+CATEGORIES = ["direct_success_cot_success", "direct_fail_cot_success", "direct_success_cot_success_cot_prompt"]
+CATEGORY_COLORS = ['blue', 'red', 'green']
 
 ORIG_COT4_FILE = (
     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/direct,cot0shot/eval_all/addition_bottom_0.000000_direct,cot0shot_all_prompt_cot0shot.jsonl"
@@ -40,6 +50,8 @@ ORIG_DIRECT_FILE = (
     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/direct,cot0shot/eval_all/addition_bottom_0.000000_direct,cot0shot_all_prompt_direct.jsonl"
 )
 
+# --- pqku parsing / discovery ---
+PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
 
 # --- IO helpers ---
 def load_jsonl(file_path: str) -> List[Dict]:
@@ -112,6 +124,11 @@ def analyze_category_performance_original(category: str, sample_cot_ids, orig_co
         for cot_id in sample_cot_ids:
             if orig_cot.get(cot_id, {}).get('correct', False):
                 orig_correct += 1
+    elif category == 'direct_success_cot_success_cot_prompt':
+        for cot_id in sample_cot_ids:
+            dir_id = matches.get(cot_id)
+            if dir_id and orig_cot.get(dir_id, {}).get('correct', False):
+                orig_correct += 1
     acc = orig_correct / total if total else 0.0
     return {
         'category': category,
@@ -147,6 +164,11 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
         for cot_id in sample_cot_ids:
             if pruned_cot.get(cot_id, {}).get('correct', False):
                 pruned_correct += 1
+    elif category == 'direct_success_cot_success_cot_prompt':
+        for cot_id in sample_cot_ids:
+            dir_id = matches.get(cot_id)
+            if dir_id and pruned_cot.get(dir_id, {}).get('correct', False):
+                pruned_correct += 1
     pruned_acc = pruned_correct / total if total else 0.0
     print(f"Category: {category}, Total: {total}, Original Correct: {base['original_correct']}, Pruned Correct: {pruned_correct}")
     return {
@@ -159,8 +181,6 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
         'accuracy_change': pruned_acc - base_acc,
     }
 
-# --- pqku parsing / discovery ---
-PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
 
 def parse_pqku_from_dir(dir_path: str) -> Optional[Dict[str, float]]:
     m = PQKU_RE.search(os.path.basename(dir_path.rstrip('/')))
@@ -215,6 +235,7 @@ def collect_all_results_with_meta():
     category_samples = {
         "direct_success_cot_success": d_s_c_s,
         "direct_fail_cot_success": d_f_c_s,
+        "direct_success_cot_success_cot_prompt": d_s_c_s,
     }
 
     all_results: Dict[float, Dict] = {}
@@ -249,29 +270,6 @@ def collect_all_results_with_meta():
 
     return dict(sorted(all_results.items(), key=lambda kv: kv[0]))
 
-# --- Plot & Table ---
-def print_summary_table_with_pqku(all_results: Dict[float, Dict]):
-    ratios = sorted(all_results.keys())
-    cats = ["direct_success_cot_success", "direct_fail_cot_success"]
-    print("\n" + "="*110)
-    print("SUMMARY TABLE (with pqku)")
-    print("="*110)
-    header = f"{'Sparsity':<10} {'P':<6} {'Q':<6} {'K':<6} {'U':<6} {'Category':<25} {'Original':<10} {'Pruned':<10} {'Change':<10} {'Pruned Correct':<15}"
-    print(header)
-    print("-"*110)
-    for r in ratios:
-        meta = all_results[r].get("meta", {})
-        P = meta.get('p', '-') if r>0 else '-'
-        Q = meta.get('q', '-') if r>0 else '-'
-        K = meta.get('k', '-') if r>0 else '-'
-        U = meta.get('u', '-') if r>0 else '-'
-        for c in cats:
-            res = all_results[r].get("metrics", {}).get(c, {})
-            print(
-                f"{r:<10} {P!s:<6} {Q!s:<6} {K!s:<6} {U!s:<6} "
-                f"{c:<25} {res.get('original_accuracy',0.0):<10.3f} {res.get('pruned_accuracy',0.0):<10.3f} "
-                f"{res.get('accuracy_change',0.0):<10.3f} {res.get('pruned_correct_count',0):<15}"
-            )
 
 def _format_float_for_tag(x: Optional[float]) -> str:
     if x is None:
@@ -280,105 +278,6 @@ def _format_float_for_tag(x: Optional[float]) -> str:
     if xi.is_integer():
         return str(int(xi))
     return str(xi)
-
-
-def plot_grouped_by_u_for_each_k(
-    K_OPTIONS, U_OPTIONS, categories, colors, OUTPUT_DIR,
-    collect_all_results_with_meta, _format_float_for_tag
-):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    # 每个 k 生成一张图，子图为不同 u
-    N_COLS = min(3, max(1, len(U_OPTIONS)))   # 每行最多 3 个子图
-    for k in K_OPTIONS:
-        nrows = math.ceil(len(U_OPTIONS) / N_COLS)
-        fig, axes = plt.subplots(nrows=nrows, ncols=N_COLS, figsize=(6*N_COLS, 4*nrows), squeeze=False)
-        fig.suptitle(f'Grouped by u — k = {_format_float_for_tag(k)}', fontsize=14)
-
-        for idx_u, u in enumerate(U_OPTIONS):
-            ax = axes[idx_u // N_COLS][idx_u % N_COLS]
-
-            # 组装通配路径并收集数据
-            global FILE_NAME
-            FILE_NAME = f"pq_*_*_k_{k}_u_{u}/"
-            print(f"[Collect] Using pattern: {FILE_NAME}")
-            all_results = collect_all_results_with_meta()
-
-            ratios = sorted(all_results.keys())
-            # Optional: limit to first MAX_POINTS ratios (keeps baseline 0.0 plus earliest discovered)
-            if MAX_POINTS is not None and len(ratios) > MAX_POINTS:
-                ratios = ratios[:MAX_POINTS]
-            # 计算每个类别的 delta 曲线（即使只有 0/1 个点也照算）
-            deltas_per_cat = []
-            for cat in categories:
-                delta = []
-                for r in ratios:
-                    res = all_results[r].get("metrics", {}).get(cat, {})
-                    delta.append(res.get('accuracy_change', 0.0))
-                deltas_per_cat.append(delta)
-
-            if len(ratios) == 0:
-                # 没有任何点：画空面板
-                ax.text(0.5, 0.5, "No data", ha='center', va='center', fontsize=12)
-                ax.set_title(f'u = {_format_float_for_tag(u)} (n=0)')
-                ax.set_xlabel('Sparsity Ratio')
-                ax.set_ylabel('Accuracy Change')
-                ax.set_xlim(0, 1)   # 给个占位坐标
-                ax.set_ylim(-1.0, 0.0)
-                ax.grid(True, alpha=0.3)
-                continue
-
-            # 画曲线（点数多少都画）
-            for i, cat in enumerate(categories):
-                # 防御 colors 不足
-                color_i = colors[i % len(colors)] if len(colors) > 0 else None
-                ax.plot(ratios, deltas_per_cat[i], 'o-', label=cat, color=color_i)
-
-            # 标注 pq（以两条曲线均值作为 y 位置）
-            for j, r in enumerate(ratios):
-                if r == 0.0:
-                    continue
-                meta = all_results[r].get("meta", {})
-                p_val, q_val = meta.get("p", None), meta.get("q", None)
-                if p_val is None or q_val is None:
-                    continue
-                y_candidates = []
-                for series in deltas_per_cat:
-                    if j < len(series):
-                        y_candidates.append(series[j])
-                if not y_candidates:
-                    continue
-                y_pos = float(np.mean(y_candidates))
-                p_text = _format_float_for_tag(p_val)
-                q_text = _format_float_for_tag(q_val)
-                ax.annotate(
-                    f"pq=({p_text},{q_text})",
-                    (r, y_pos),
-                    textcoords="offset points",
-                    xytext=(6, 6),
-                    fontsize=7
-                )
-
-            ax.set_title(f'u = {_format_float_for_tag(u)} (n={len(ratios)})')
-            ax.set_xlabel('Sparsity Ratio')
-            ax.set_ylabel('Accuracy Change')
-            ax.set_ylim(-1.0, 0.0)  # 与原先保持一致
-            ax.grid(True, alpha=0.3)
-            ax.legend(fontsize=9)
-
-        # 把多余的空子图关掉（当 U_OPTIONS 不能整除 N_COLS 时）
-        total_axes = nrows * N_COLS
-        for spare in range(len(U_OPTIONS), total_axes):
-            axes[spare // N_COLS][spare % N_COLS].axis('off')
-
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-        out_path = os.path.join(
-            OUTPUT_DIR,
-            f'sparsity_ratios_analysis_grouped_u_k_{_format_float_for_tag(k)}.png'
-        )
-        fig.savefig(out_path, dpi=300, bbox_inches='tight')
-        plt.close(fig)
-        print(f"[Saved] {out_path}")
 
 
 def plot_accuracy_by_pq_for_each_k(
@@ -475,13 +374,35 @@ def plot_accuracy_by_pq_for_each_k(
             fig, ax = plt.subplots(figsize=(fig_width, 4))
             for i, cat in enumerate(categories):
                 color_i = colors[i % len(colors)] if colors else None
-                ax.plot(x_idx, acc_series[cat], 'o-', label=f"{cat}{' norm' if NORMALIZE_BASELINE else ' pruned'}", color=color_i)
+                ax.plot(x_idx, acc_series[cat], 'o-', label=f"{cat}", color=color_i)
                 if not NORMALIZE_BASELINE:
                     # baseline horizontal line only for raw accuracy
                     ax.hlines(baseline_acc[cat], xmin=-0.2, xmax=len(x_idx)-0.8, colors=color_i, linestyles='dashed', alpha=0.4)
                 else:
                     # reference line at y=1
                     ax.axhline(1.0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+            # Annotate sparsity ratio above points of a chosen category series (to avoid clutter)
+            if ANNOTATE_SPARSITY and pq_entries:
+                anchor_cat = categories[ANNOTATE_CATEGORY_INDEX % len(categories)]
+                series_vals = acc_series[anchor_cat]
+                # series_vals may include inserted baseline at index 0 if NORMALIZE_BASELINE
+                start_idx = 1 if NORMALIZE_BASELINE else 0
+                for local_i, ent in enumerate(pq_entries, start=start_idx):
+                    if local_i >= len(series_vals):
+                        break
+                    ratio_str = f"{ent['ratio']:.3f}".rstrip('0').rstrip('.')
+                    ax.annotate(
+                        ratio_str,
+                        xy=(local_i, series_vals[local_i]),
+                        xytext=(0, ANNOTATION_Y_OFFSET),
+                        textcoords='offset points',
+                        ha='center', va='bottom',
+                        fontsize=ANNOTATION_FONTSIZE,
+                        rotation=ANNOTATION_ROTATION,
+                        color='dimgray',
+                        alpha=0.7
+                    )
             # Potentially thin x tick labels to avoid overcrowding
             display_idx = x_idx
             display_labels = tick_labels
@@ -524,92 +445,16 @@ def plot_accuracy_by_pq_for_each_k(
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    categories = ["direct_success_cot_success", "direct_fail_cot_success"]
-    colors = ['blue', 'red']
-
     # New plot: accuracy vs (p,q)
     plot_accuracy_by_pq_for_each_k(
         K_OPTIONS=K_OPTIONS,
         U_OPTIONS=U_OPTIONS,
-        categories=categories,
-        colors=colors,
+        categories=CATEGORIES,
+        colors=CATEGORY_COLORS,
         OUTPUT_DIR=OUTPUT_DIR,
         collect_all_results_with_meta=collect_all_results_with_meta,
         _format_float_for_tag=_format_float_for_tag
     )
-
-    # for k in K_OPTIONS:
-    #     for u in U_OPTIONS:
-    #         # 关键改动：按 pq 通配；固定 k 与 u
-    #         global FILE_NAME
-    #         FILE_NAME = f"pq_*_*_k_{k}_us_{u}_granular/"
-
-    #         print(f"[Collect] Using pattern: {FILE_NAME}")
-    #         all_results = collect_all_results_with_meta()
-    #         # print_summary_table_with_pqku(all_results)
-
-    #         ratios = sorted(all_results.keys())
-    #         # 计算两条曲线
-    #         deltas_per_cat = []
-    #         for i, cat in enumerate(categories):
-    #             delta = []
-    #             for r in ratios:
-    #                 res = all_results[r].get("metrics", {}).get(cat, {})
-    #                 delta.append(res.get('accuracy_change', 0.0))
-    #             deltas_per_cat.append(delta)
-
-    #         if len(ratios) < 2:
-    #             print(f"[Skip] k={k}, u={u} 只有 {len(ratios)} 个点，不画图")
-    #             continue
-    #         # === 单独保存每个 (k,u) 的图 ===
-    #         fig_single, ax_single = plt.subplots(figsize=(6, 4))
-    #         for i, cat in enumerate(categories):
-    #             ax_single.plot(ratios, deltas_per_cat[i], 'o-', label=cat, color=colors[i])
-
-    #         # 标注 pq
-    #         for j, r in enumerate(ratios):
-    #             if r == 0.0:
-    #                 continue
-    #             meta = all_results[r].get("meta", {})
-    #             p_val, q_val = meta.get("p", None), meta.get("q", None)
-    #             if p_val is None or q_val is None:
-    #                 continue
-    #             # y 位置：两条曲线均值
-    #             y_candidates = []
-    #             if len(deltas_per_cat) > 0 and j < len(deltas_per_cat[0]):
-    #                 y_candidates.append(deltas_per_cat[0][j])
-    #             if len(deltas_per_cat) > 1 and j < len(deltas_per_cat[1]):
-    #                 y_candidates.append(deltas_per_cat[1][j])
-    #             if not y_candidates:
-    #                 continue
-    #             y_pos = float(np.mean(y_candidates))
-    #             p_text = _format_float_for_tag(p_val)
-    #             q_text = _format_float_for_tag(q_val)
-    #             ax_single.annotate(
-    #                 f"pq=({p_text},{q_text})",
-    #                 (r, y_pos),
-    #                 textcoords="offset points",
-    #                 xytext=(6, 6),
-    #                 fontsize=7
-    #             )
-
-    #         ax_single.set_title(f'k = {_format_float_for_tag(k)}, u = {_format_float_for_tag(u)}')
-    #         ax_single.set_xlabel('Sparsity Ratio')
-    #         ax_single.set_ylabel('Accuracy Change')
-    #         ax_single.set_ylim(-1.0, 0.0)  # 与原先保持一致
-    #         ax_single.grid(True, alpha=0.3)
-    #         ax_single.legend()
-
-    #         single_out = os.path.join(
-    #             OUTPUT_DIR,
-    #             f'sparsity_ratios_analysis_pq_wildcard_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
-    #         )
-    #         fig_single.tight_layout()
-    #         fig_single.savefig(single_out, dpi=300, bbox_inches='tight')
-    #         plt.close(fig_single)
-    #         print(f"[Saved] {single_out}")
-
-
 
 
 if __name__ == '__main__':
