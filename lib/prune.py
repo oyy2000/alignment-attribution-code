@@ -1632,20 +1632,47 @@ def _load_score_single_GPU(args, metric: str, layer_idx: int, param_name: str,
         "cot0shot": "GSM8K_cot0shot_120",
         "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
         "direct": "GSM8K_direct_120",
-        "utility": "alpaca_cleaned_no_safety",  
         "cot4shot": "GSM8K_cot4shot_120",
     }
-    model_tag = args.model
-    path  = METRIC_TO_PATH[metric]
-    
-    base  = f"{args.out_dir}/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
-    fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
-    fpath = os.path.join(base, fname)
-    if not os.path.exists(fpath):
-        raise FileNotFoundError(f"未找到分数文件: {fpath}")
 
-    dtype = torch.float16 if use_fp16 else torch.float32
-    return torch.load(fpath, map_location=device).to(dtype=dtype)
+    METRIC_TO_PATH_ADDITION = {
+        "cot0shot": "Addition:6_cot0shot",
+        "direct": "Addition:6_direct",
+    }
+    model_tag = args.model
+    if metric == "utility":
+        path  = "alpaca_cleaned_no_safety"
+        base  = f"{args.out_dir}/GSM8K/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+        fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+        fpath = os.path.join(base, fname)
+        if not os.path.exists(fpath):
+            raise FileNotFoundError(f"未找到分数文件: {fpath}")
+
+        dtype = torch.float16 if use_fp16 else torch.float32
+        return torch.load(fpath, map_location=device).to(dtype=dtype)
+
+    if args.set_difference_data == "GSM8K":
+        path  = METRIC_TO_PATH[metric]
+        
+        base  = f"{args.out_dir}/GSM8K/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+        fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+        fpath = os.path.join(base, fname)
+        if not os.path.exists(fpath):
+            raise FileNotFoundError(f"未找到分数文件: {fpath}")
+
+        dtype = torch.float16 if use_fp16 else torch.float32
+        return torch.load(fpath, map_location=device).to(dtype=dtype)
+    elif args.set_difference_data == "Addition:6":
+        path  = METRIC_TO_PATH_ADDITION[metric]
+        base  = f"{args.out_dir}/{model_tag}/unstructured/wanda_weightonly/{path}/wanda_score/{path}_weight_only_disentangle"
+        fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{path}_weight_only_disentangle_torch.pt"
+        fpath = os.path.join(base, fname)
+        if not os.path.exists(fpath):
+            raise FileNotFoundError(f"未找到分数文件: {fpath}")
+
+        dtype = torch.float16 if use_fp16 else torch.float32
+        return torch.load(fpath, map_location=device).to(dtype=dtype)
+
 
 def prune_flap_4_set_difference(
     args,
@@ -1821,9 +1848,8 @@ def prune_wanda_2_set_difference_utility(
     device=torch.device("cuda:0"),
     prune_n=0,
     prune_m=0,
-    prune_data="alpaca_cleaned_no_safety",
     p=0.2,                # cot0shot     top-p 百分比
-    q=0.2,                # cot0shot_gr  top-q 百分比
+    q=0.2,                # cot0shot_goldreason top-q 百分比
     k=0.9,                # direct       top-k 百分比
     u=0.9,                # utility      top-u 百分比
 ):
@@ -1842,9 +1868,9 @@ def prune_wanda_2_set_difference_utility(
         layers_base = model_base.model.layers
 
     metric_p, metric_k, metric_u = "cot0shot", "direct", "utility"
-    print(f"🌱 3-Set pruning - p={p}, k={k}, u={u} - {metric_p} ∩ {metric_k} ∩ {metric_u}")
-    # ⭐ 保存前三层的稀疏率
-    # first3_sparsities = []
+    print(f"🌱 3-Set pruning - p={p}, k={k}, u={u} - {metric_p} - {metric_k} ∩ {metric_u}")
+    first3_sparsities = []  # 收集第 0/1/2 层每层的 sparsity
+
     for i, layer in enumerate(layers):
         subset = find_layers(layer)
         if args.use_diff or args.recover_from_base:
@@ -1857,13 +1883,7 @@ def prune_wanda_2_set_difference_utility(
             W_metric_p = _load_score_single_GPU(args, metric_p, i, name, dev, use_fp16=True)
             W_metric_k = _load_score_single_GPU(args, metric_k, i, name, dev, use_fp16=True)
             W_metric_u = _load_score_single_GPU(args, metric_u, i, name, dev, use_fp16=True)
-            # 之后所有 topk / unique 都在 dev 上执行
-            
-            # # ---- 读取三种 W_metric 分数 ----
-            # W_metric1 = _load_score(args.model, metric1, i, name)
-            # W_metric2 = _load_score(args.model, metric2, i, name)
-            # W_metric3 = _load_score(args.model, metric3, i, name)
-
+           
             num_total = W_metric_p.numel()
             top_p  = int(p * num_total)
             top_k  = int(k * num_total)
@@ -1889,9 +1909,8 @@ def prune_wanda_2_set_difference_utility(
             if prune_set.numel() == 0:
                 continue   # 该参数没有需要置零的权重
             sparsity = prune_set.numel() / num_total
-            if i == 0 and sparsity < args.sparsity_threshold:
-                print(f"Layer {i} sparsity {sparsity:.4f} < threshold {args.sparsity_threshold}, return")
-                return False
+            if i < 3:
+                first3_sparsities.append(sparsity)
             # ---- 生成布尔 Mask 并置零 / 回滚 ----
             W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
             dim1 = subset[name].weight.size(1)
@@ -1905,14 +1924,21 @@ def prune_wanda_2_set_difference_utility(
                 subset[name].weight.data[W_mask] = 0.0
             del W_metric_p, W_metric_k, W_metric_u, W_mask
             torch.cuda.empty_cache()                  # 及时释放显存
-
-# # ⭐ 当跑完第 3 层时，做阈值判断
-#         if i == 2:
-#             avg_sparsity = sum(first3_sparsities) / len(first3_sparsities)
-#             print(f"前三层平均 sparsity = {avg_sparsity:.4f}, 阈值 = {sparsity_threshold:.4f}")
-#             if avg_sparsity < sparsity_threshold:
-#                 print(f"⚠️ 前三层平均 sparsity {avg_sparsity:.4f} < 阈值 {sparsity_threshold:.4f}, 提前 return")
-#                 return False
+          # 在完成第 2 层（索引 2）后，计算前三层平均 sparsity
+        if i == 2:
+            avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities) if first3_sparsities else 0.0
+            print(
+                f"[First3 Avg] layers 0-2 sparsities = {[f'{s:.8f}' for s in first3_sparsities]} => avg = {avg_sparsity_first3:.8f}; threshold = {args.sparsity_threshold:.8f}"
+            )
+            if avg_sparsity_first3 < args.sparsity_threshold:
+                print(f"⚠️ 前三层平均 sparsity {avg_sparsity_first3:.8f} < threshold {args.sparsity_threshold:.8f}, 提前返回")
+                return False
+            if save_sparsity_path:
+                with open(save_sparsity_path, "a") as f:
+                    print(
+                        f"First3_layers_sparsity={','.join(f'{s:.8f}' for s in first3_sparsities)} AVG_first3={avg_sparsity_first3:.8f}",
+                        file=f,
+                    )
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
 

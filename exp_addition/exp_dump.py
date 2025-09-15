@@ -12,8 +12,7 @@ sparsity_type = "unstructured"
 suffix = "weightonly"
 nsamples = 120
 prune_method_options = ["wanda"]  # ["wanda_3_set_difference_utility"]
-prompt_methods = ["direct,cot0shot"]  # ["cot2shot,cot4shot,cot8shot,cot16shot"]
-prune_data_options = ["GSM8K_cot0shot_120", "GSM8K_cot0shot_goldreason", "GSM8K_direct_120"] # alpaca_cleaned_no_safety #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
+prune_data_options = ["Addition:6_cot0shot", "Addition:6_direct"] # alpaca_cleaned_no_safety #"GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
 
 # 阈值：仅当 free/total >= 0.90 时，这张卡被当作“可用”
 FREE_RATIO_THRESHOLD = 0.90
@@ -25,7 +24,8 @@ log_file = f"command_log_dump_new.json"
 
 # ================== Helpers ==================
 def build_command(prune_method, prune_data):
-    save_dir=f"/mnt/beegfs/youyang7/projects/alignment-attribution-code/out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/"
+    # save_dir=f"/mnt/beegfs/youyang7/projects/alignment-attribution-code/out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/"
+    save_dir=f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{model}/{sparsity_type}/{prune_method}_{suffix}/{prune_data}/"
 
     command = (
         f"python ../main.py "

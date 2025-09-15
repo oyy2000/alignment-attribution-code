@@ -1,4 +1,4 @@
-name: prune_llm_oyy
+name: prune_llm_yang_3_9
 channels:
   - pytorch
   - conda-forge

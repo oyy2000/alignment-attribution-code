@@ -11,7 +11,7 @@ import glob
 model = "llama2-7b-chat-hf"
 sparsity_type = "unstructured"
 suffix = "weightonly"
-log_file = f"command_log_eval_gsm8k_wanda_random_200.json"
+log_file = f"command_log_random_200_Addition:6_seeds.json"
 BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
 
@@ -30,15 +30,21 @@ def discover_sparsity_ratios(base_dir):
 
 
 sparsity_ratios = discover_sparsity_ratios(BASE_DIR)
+# order by absolute value
+sparsity_ratios = sorted(sparsity_ratios, key=lambda x: abs(x))
+# keep only the first 20 ratios
+sparsity_ratios = sparsity_ratios[:20]
+print(f"Discovered sparsity ratios: {sparsity_ratios}")
 
 prune_method_options = ["random"]
 prompt_methods = ["direct,cot0shot"]
-eval_dataset = "Addition:9"
+eval_dataset = "Addition:6"
 nsamples = 600
 eval_type = "all"
 prune_data = "gsm8k"
-def build_command(sparsity_ratio, prune_method, prompt_method):
-    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/eval_{eval_type}/prompt_{prompt_method}/"
+seeds = [0, 1, 42, 200, 888, 1000]
+def build_command(sparsity_ratio, prune_method, prompt_method, seed):
+    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/{seed}/eval_{eval_type}/prompt_{prompt_method}/sparsity_ratio_{sparsity_ratio}.jsonl"
 
     command = (
         f"python ../main.py "
@@ -48,8 +54,10 @@ def build_command(sparsity_ratio, prune_method, prompt_method):
         f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_gsm8k "
-        f"--eval_type held_out "
+        f"--seed {seed} "
+        f"--eval_datasets "
+        f"--dataset {eval_dataset} "
+        f"--eval_type all "
         f"--prompt_method {prompt_method} "
     )
   
@@ -100,7 +108,7 @@ def get_gpu_free_memory():
     total = [int(x) for x in total.stdout.decode().strip().split('\n')]
     return [t - u for t, u in zip(total, used)]
 
-def monitor_gpu(gpu_id, min_free_mem, timeout=180):
+def monitor_gpu(gpu_id, min_free_mem, timeout=180000):
     start = time.time()
     while time.time() - start < timeout:
         if get_gpu_free_memory()[gpu_id] >= min_free_mem:
@@ -144,7 +152,8 @@ def main():
     for sparsity in sparsity_ratios:
         for prune_method in prune_method_options:
             for prompt_method in prompt_methods:
-                commands.append(build_command(sparsity, prune_method, prompt_method))
+                for seed in seeds:
+                    commands.append(build_command(sparsity, prune_method, prompt_method, seed))
 
 
     initialize_log(commands)

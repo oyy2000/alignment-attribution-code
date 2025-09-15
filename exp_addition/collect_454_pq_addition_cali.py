@@ -35,10 +35,10 @@ ANNOTATION_ROTATION = 90  # vertical to save horizontal space
 ANNOTATION_Y_OFFSET = 4   # points upward shift
 ANNOTATE_CATEGORY_INDEX = 0  # which category series to anchor annotations on
 
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
-"unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 # BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
-# "unstructured/wanda_2_set_difference_utility_weightonly/Addition:6/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
+# "unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
+"unstructured/wanda_2_set_difference_utility_weightonly/Addition:6/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/figures/"
 K_OPTIONS = [0.17] 
 U_OPTIONS = [0.15] 
@@ -430,7 +430,7 @@ def plot_accuracy_by_pq_for_each_k(
             fig.tight_layout()
             out_path = os.path.join(
                 OUTPUT_DIR,
-                f'gsm8k_cali_accuracy_by_pq_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
+                f'addition_cali_accuracy_by_pq_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
             )
             fig.savefig(out_path, dpi=300, bbox_inches='tight')
             plt.close(fig)

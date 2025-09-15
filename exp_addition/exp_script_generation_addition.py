@@ -15,7 +15,7 @@ nsamples = 600
 dataset = "Addition:6"
 
 prompt_methods = ["cot0shot,direct,cot0shot_goldreason"]
-log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_addition_llama2_7b.json"
+log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_addition_hf.json"
 eval_type = "all"
 
 def build_command(prompt_method):
@@ -25,11 +25,11 @@ def build_command(prompt_method):
         f"--model {model} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_datasets "
+        f"--eval_addition "
         f"--dataset {dataset} "
         f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
-        f"--batch_size 64 "
+        f"--batch_size 8 "
     )
   
     return command

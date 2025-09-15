@@ -383,17 +383,29 @@ def load_dataset(dataset, nsamples, select_method='random', ids = None):
             random.shuffle(items)
             return items[:nsamples] if nsamples > 0 else items[:500]  # default 500 samples
         elif select_method == 'all':
+            with open(data_file_test, 'r') as fin:
+                items_test = [json.loads(line) for line in fin]
+            # normalize the fields
+            for idx, item in enumerate(items_test, start=1):
+                question = item['question']
+                parts = item['answer'].split('####')
+                item.clear()
+                item['id'] = f'test_GSM8K_Q{idx}'
+                item['question'] = question
+                item['reason'] = parts[0].strip()
+                item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
+            # Filter items_test after all items have been processed
             with open(data_file_train, 'r') as fin:
                 items_train = [json.loads(line) for line in fin]
             for idx, item in enumerate(items_train, start=1):
                 question = item['question']
                 parts = item['answer'].split('####')
                 item.clear()
-                item['id'] = f'GSM8K_Q{idx}'
+                item['id'] = f'train_GSM8K_Q{idx}'
                 item['question'] = question
                 item['reason'] = parts[0].strip()
                 item['answer'] = str(int(parts[1].strip().replace(',', '')))  # expect integer only
-            items = items + items_train
+            items = items_test + items_train
             return items
         elif select_method == 'held_out':
             if ids is None:
@@ -487,47 +499,79 @@ RETRY_INTERVAL = 10        # 秒
 MAX_RETRY      = 5         # 最多重试 5 次
 import time
 import time
-def apply_prompt_template(model_name, prompts):
-    print(f"Applying prompt template for model: {model_name}")
+def apply_prompt_template(
+    model_name,
+    prompts,
+    system_prompt: str = "You are a helpful assistant.",
+    add_generation_prompt: bool = True,
+):
     """
     根据不同的 model_name 应用聊天模板。
-    支持单个字符串或字符串列表。
+    - 对 DeepSeek-R1-Distill-Llama-8B 使用你给出的 Chat 模板的等价线性化：
+        <s>{system_prompt}<｜User｜>{user_content}[<｜Assistant｜><think>\n (可选)]
+    - 其它分支保持与你原先相同的 LLaMA2 / Mistral 模板
     """
+    print(f"Applying prompt template for model: {model_name}")
+
     if isinstance(prompts, str):
         prompts = [prompts]
 
+    name_l = (model_name or "").lower()
     formatted_prompts = []
+
     for prompt in prompts:
-        if "llama2" in model_name.lower():
-            # LLaMA 2 Chat 模版
+        # ---- DeepSeek-R1-Distill-Llama-8B (Llama-8B) ----
+        # 触发条件尽量宽松：包含 deepseek 且包含 llama
+        if "llama-8b" in name_l and "deepseek" in name_l:
+            bos_token = "<s>"
+            # system_prompt 可为空；模板里 system 是直接拼在 BOS 后面
+            sp = system_prompt or ""
+            formatted = f"{bos_token}{sp}<｜User｜>{prompt}"
+            if add_generation_prompt:
+                formatted += "<｜Assistant｜><think>\n"
+        if "qwen" in name_l and "deepseek" in name_l:
+            bos_token = "<s>"
+            sp = system_prompt or ""
+            formatted = f"{bos_token}{sp}<｜User｜>{prompt}"
+            if add_generation_prompt:
+                formatted += "<｜Assistant｜><think>\n"
+        # ---- LLaMA 2 Chat 模板 ----
+        elif "llama2" in name_l:
             B_INST, E_INST = "[INST]", "[/INST]"
             B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-            system_prompt = "You are a helpful assistant."
-            formatted = f"{B_INST} {B_SYS}{system_prompt}{E_SYS}{prompt} {E_INST}"
-        elif "mistral" in model_name.lower():
-            # Mistral 模版（以 <s> 和 [INST] 开头）
-            formatted = f"<s>[INST] {prompt} [/INST]"
-        elif "chatglm" in model_name.lower():
-            # ChatGLM 模版
-            formatted = f"[Round 1]\n问：{prompt}\n答："
+            sys_txt = system_prompt or "You are a helpful assistant."
+            formatted = f"{B_INST} {B_SYS}{sys_txt}{E_SYS}{prompt} {E_INST}"
+
+        # ---- Mistral 模板 ----
+        elif "mistral" in name_l:
+            bos_token = "<s>"
+            # 如果有 system_prompt，就放在开头
+            if system_prompt:
+                formatted = f"{bos_token}[INST] {system_prompt}\n{prompt} [/INST]"
+            else:
+                formatted = f"{bos_token}[INST] {prompt} [/INST]"
+            if add_generation_prompt:
+                formatted += " "
+        # ---- 默认不加模板 ----
         else:
-            # 默认不加模板
             formatted = prompt
 
         formatted_prompts.append(formatted)
 
     return formatted_prompts
 
-
-def _safe_generate(args, model, prompts, sampling_params, max_retry=5, backoff=10, add_template=False):
+def _safe_generate(args, model, prompts, sampling_params, max_retry=5, backoff=10):
     """
     统一把 vLLM 的输出转成 List[str]。
     prompts 既可以是 str，也可以是 List[str]，最终都以 List[str] 返回。
     """
     if isinstance(prompts, str):
         prompts = [prompts]
-    if add_template:
+    if args.add_template:
+        print("Adding prompt template for vLLM evaluation")
         prompts = apply_prompt_template(args.model, prompts)
+    else:
+        print("Not adding prompt template for vLLM evaluation")
     retry = 0
     while True:
         try:
@@ -653,6 +697,9 @@ def eval_datasets(
                 Path(args.save)
                 / f"{args.dataset}_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type or 'random'}_prompt_{tag}.jsonl"
             )
+        
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -674,7 +721,7 @@ def eval_datasets(
 
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -700,11 +747,142 @@ def eval_datasets(
 
         out_fh.close()
 
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
+
     acc_summary = {tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()}
     for tag, acc in acc_summary.items():
         n = len(acc_dict[tag])
         print(f"[ACC] {tag:15s}: {acc:.3%} ({int(acc*n)}/{n})")
 
+    return acc_summary
+
+
+def eval_addition(
+    args,
+    model,
+    tokenizer,
+    select_method: str = "random",
+):
+    """Evaluate Addition style arithmetic (e.g. Addition or Addition:6) WITHOUT vLLM.
+
+    This mirrors the logic of eval_datasets but uses plain HF generation.
+
+    Parameters
+    ----------
+    args : argparse.Namespace (expects fields: dataset, prompt_method, role, seed, nsamples, batch_size, sampling_strategy, max_new_tokens, save, sparsity_ratio, neg_prune)
+    model : PreTrainedModel
+    tokenizer : PreTrainedTokenizer
+    select_method : str
+        'random' or 'all'.
+
+    Returns
+    -------
+    Dict[str, float]
+        Mapping from prompt tag to accuracy.
+    """
+    assert args.dataset.startswith("Addition"), "eval_addition 仅用于 Addition 数据集"
+
+    prompt_tags = [p.strip() for p in args.prompt_method.split(',') if p.strip()]
+    full_prompts = {tag: load_prompt(args.dataset, tag, do_role=args.role) for tag in prompt_tags}
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
+    data = load_dataset(args.dataset, args.nsamples, select_method=select_method)
+
+    # Generation config
+    sampling_strategy = getattr(args, 'sampling_strategy', 'greedy')
+    max_new_tokens = getattr(args, 'max_new_tokens', 128)
+    temperature = 0.0
+    top_p = 1.0
+    do_sample = False
+    if sampling_strategy == 'top_p':
+        temperature = 0.7
+        top_p = 0.9
+        do_sample = True
+    elif sampling_strategy == 'top_k':  # 没有 top_k 参数，保持与 greedy 类似或可扩展
+        temperature = 0.7
+        do_sample = True
+
+    if tokenizer.pad_token is None:
+        # 安全设置 pad_token (避免批量 padding 报错)
+        tokenizer.pad_token = tokenizer.eos_token
+
+    acc_dict: Dict[str, List[bool]] = {t: [] for t in prompt_tags}
+
+    device = next(model.parameters()).device
+    model.eval()
+
+    for tag in prompt_tags:
+        if args.neg_prune:
+            outfile = (Path(args.save) / f"{args.dataset}_top_{args.sparsity_ratio:.6f}_{tag}_{select_method}_hf.jsonl")
+        else:
+            outfile = (Path(args.save) / f"{args.dataset}_bottom_{args.sparsity_ratio:.6f}_{tag}_{select_method}_hf.jsonl")
+        
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
+
+        already_done = 0
+        if outfile.exists():
+            already_done = sum(1 for _ in open(outfile))
+            if already_done >= len(data):
+                print(f"[SKIP] {outfile.name} 已完成 ({already_done}/{len(data)})")
+                acc_dict[tag] = [json.loads(line)['correct'] for line in open(outfile)]
+                continue
+            print(f"[RESUME] {outfile.name}: 已有 {already_done} 条，继续评估 …")
+
+        out_fh = open(outfile, "a")
+        dataset_iter = data[already_done:]
+        dataset_chunks = [dataset_iter[i:i+args.batch_size] for i in range(0, len(dataset_iter), args.batch_size)]
+
+        for chunk in tqdm(dataset_chunks, desc=f"HF Eval {tag}", ncols=80):
+            prompts = [format_prompt(full_prompts[tag], sample) for sample in chunk]
+            with torch.no_grad():
+                enc = tokenizer(
+                    prompts,
+                    return_tensors='pt',
+                    padding=True,
+                    truncation=True,
+                    max_length=model.config.max_position_embeddings - max_new_tokens,
+                ).to(device)
+                input_lens = enc['input_ids'].ne(tokenizer.pad_token_id).sum(dim=1)
+                gen_outputs = model.generate(
+                    **enc,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=do_sample,
+                    temperature=temperature,
+                    top_p=top_p,
+                )
+            # 解码并去掉前缀
+            for sample, ids, in_len in zip(chunk, gen_outputs, input_lens):
+                gen_ids = ids[in_len:]
+                completion = tokenizer.decode(gen_ids, skip_special_tokens=True)
+                pred = extract_answer(completion, sample, args.dataset)
+                gold = sample['answer']
+                correct = pred == gold
+                acc_dict[tag].append(correct)
+                record = {
+                    **sample,
+                    'prompt_tag': tag,
+                    'input': format_prompt(full_prompts[tag], sample),
+                    'output': completion,
+                    'pred': pred,
+                    'gold': gold,
+                    'correct': correct,
+                }
+                out_fh.write(json.dumps(record, ensure_ascii=False) + '\n')
+                out_fh.flush()
+
+
+        out_fh.close()
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
+    acc_summary = {tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()}
+    for tag, acc in acc_summary.items():
+        n = len(acc_dict[tag])
+        print(f"[HF ACC] {tag:15s}: {acc:.3%} ({int(acc*n)}/{n})")
     return acc_summary
 
 def eval_gsm8k_random(
@@ -779,6 +957,8 @@ def eval_gsm8k_random(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}_seed_{args.seed}.jsonl"
             )
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -804,7 +984,7 @@ def eval_gsm8k_random(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -830,6 +1010,8 @@ def eval_gsm8k_random(
 
         out_fh.close()
 
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -889,6 +1071,8 @@ def eval_gsm8k_selected_samples(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
             )
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -914,7 +1098,7 @@ def eval_gsm8k_selected_samples(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -939,7 +1123,8 @@ def eval_gsm8k_selected_samples(
                 out_fh.flush()
 
         out_fh.close()
-
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -1000,6 +1185,9 @@ def eval_gsm8k_held_out(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
             )
+        
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1025,7 +1213,7 @@ def eval_gsm8k_held_out(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -1050,7 +1238,8 @@ def eval_gsm8k_held_out(
                 out_fh.flush()
 
         out_fh.close()
-
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -1149,6 +1338,8 @@ def eval_gsm8k_calibration(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}.jsonl"
             )
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1174,7 +1365,7 @@ def eval_gsm8k_calibration(
         for chunk in tqdm(dataset_chunks, desc=f"Eval {tag}", ncols=80):
             # 组装输入
             messages = [format_prompt(full_prompts[tag], sample) for sample in chunk]
-            outputs = _safe_generate(args, vllm_model, messages, sampling_params, add_template=True)
+            outputs = _safe_generate(args, vllm_model, messages, sampling_params)
 
             preds = [
                 extract_answer(out_text, sample, args.dataset)
@@ -1200,6 +1391,8 @@ def eval_gsm8k_calibration(
 
         out_fh.close()
 
+        with open(json_outfile, "w") as f:
+            json.dump(all_records, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()

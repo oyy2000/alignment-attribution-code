@@ -35,10 +35,7 @@ ANNOTATION_ROTATION = 90  # vertical to save horizontal space
 ANNOTATION_Y_OFFSET = 4   # points upward shift
 ANNOTATE_CATEGORY_INDEX = 0  # which category series to anchor annotations on
 
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
-"unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
-# BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
-# "unstructured/wanda_2_set_difference_utility_weightonly/Addition:6/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/unstructured/random_weightonly/eval_all/prompt_direct,cot0shot/")
 OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/figures/"
 K_OPTIONS = [0.17] 
 U_OPTIONS = [0.15] 
@@ -53,8 +50,67 @@ ORIG_DIRECT_FILE = (
     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/direct,cot0shot/eval_all/addition_bottom_0.000000_direct,cot0shot_all_prompt_direct.jsonl"
 )
 
-# --- pqku parsing / discovery ---
+PQ_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
+
+def parse_pqku_from_dir(dir_path: str) -> Optional[Dict[str, float]]:
+    """
+    从目录名解析 p,q,k,u。目录末级名需形如 pq_<p>_<q>_k_<k>_u_<u>
+    """
+    base = os.path.basename(os.path.normpath(dir_path))
+    m = PQKU_RE.fullmatch(base)
+    if not m:
+        # 兼容偶尔多一层路径前缀，用 search 再试一次
+        m = PQKU_RE.search(base)
+        if not m:
+            return None
+    p, q, k, u = m.groups()
+    return {"p": float(p), "q": float(q), "k": float(k), "u": float(u)}
+
+
+def discover_sparsity_ratios(base_dir):
+    """
+    扫描 base_dir 下的 pq_* 目录，读取其中 *.jsonl 文件名里的
+    (gsm8k|addition)_bottom_<ratio>_ 片段，建立:
+        ratio -> {p,q,k,u, dir, _alts?}
+    若同一个 ratio 出现多组 (p,q,k,u)，首次出现作为主项，其它收集到 _alts 列表。
+    """
+    dirs = glob.glob(os.path.join(base_dir, "pq_*_*_k_*_u_*/"))
+    ratio_to_meta = {}
+
+    for d in dirs:
+        pqku = parse_pqku_from_dir(d)
+        if not pqku:
+            continue
+
+        files = glob.glob(os.path.join(d, "*.jsonl"))
+        for f in files:
+            m = re.search(r"(?:gsm8k|addition)_bottom_([0-9.]+)_",
+                          os.path.basename(f), flags=re.IGNORECASE)
+            if not m:
+                continue
+            ratio = float(m.group(1))
+            if ratio <= 0:
+                continue
+
+            # 记录该 ratio 的 meta
+            cur_meta = {**pqku, "dir": d}
+            if ratio not in ratio_to_meta:
+                ratio_to_meta[ratio] = cur_meta
+            else:
+                # 若已有且参数不同，作为备选记录
+                exist = ratio_to_meta[ratio]
+                if any(exist.get(k) != pqku.get(k) for k in ("p", "q", "k", "u")):
+                    ratio_to_meta[ratio].setdefault("_alts", []).append(cur_meta)
+
+    # 返回按 ratio 升序的映射
+    return dict(sorted(ratio_to_meta.items(), key=lambda kv: kv[0]))
+
+
+# 建立全局映射：ratio -> {p,q,k,u,dir,...}
+ratio_to_meta_map = discover_sparsity_ratios(PQ_DIR)
+
+
 
 # --- IO helpers ---
 def load_jsonl(file_path: str) -> List[Dict]:
@@ -184,42 +240,58 @@ def analyze_category_performance_pruned(category: str, sample_cot_ids, orig_cot,
         'accuracy_change': pruned_acc - base_acc,
     }
 
-
-def parse_pqku_from_dir(dir_path: str) -> Optional[Dict[str, float]]:
-    m = PQKU_RE.search(os.path.basename(dir_path.rstrip('/')))
-    if not m:
-        parts = [p for p in dir_path.split(os.sep) if p]
-        for comp in reversed(parts):
-            mm = PQKU_RE.search(comp)
-            if mm:
-                m = mm
-                break
-    if not m:
-        return None
-    p, q, k, u = m.groups()
-    return {"p": float(p), "q": float(q), "k": float(k), "u": float(u)}
+# def discover_sparsity_dirs(base_dir: str) -> Dict[float, Dict]:
+#     """Return {sparsity_ratio: {dir, p,q,k,u}}."""
+#     mapping: Dict[float, Dict] = {}
+#     files = glob.glob(os.path.join(base_dir, "*.jsonl"))
+#     for file in files:
+#         if not file:
+#             continue
+#         # Support both GSM8K and Addition filename prefixes
+#         fname = os.path.basename(file)
+#         print("[DEBUG] fname:", fname)
+#         m = re.search(r"(?:.*)_bottom_([0-9.]+)_", fname, flags=re.IGNORECASE)
+#         if not m:
+#             continue
+#         ratio = float(m.group(1))
+#         if ratio <= 0:
+#             continue
+#         print(f"[DEBUG] Found ratio: {ratio} in file: {file}")
+#         meta = ratio_to_meta_map.get(ratio, {"p": None, "q": None, "k": None, "u": None})
+#         mapping[ratio] = meta
+#     return dict(sorted(mapping.items()))
 
 def discover_sparsity_dirs(base_dir: str) -> Dict[float, Dict]:
     """Return {sparsity_ratio: {dir, p,q,k,u}}."""
     mapping: Dict[float, Dict] = {}
-    k_dirs = glob.glob(os.path.join(base_dir, FILE_NAME))
-    for d in k_dirs:
-        files = glob.glob(os.path.join(d, "*.jsonl"))
-        if not files:
+    # 递归到所有子目录寻找 .jsonl 文件
+    files = glob.glob(os.path.join(base_dir, "**", "*.jsonl"), recursive=True)
+    for file in files:
+        if not file:
             continue
-        # Support both GSM8K and Addition filename prefixes
-        fname = os.path.basename(files[0])
-        m = re.search(r"(?:.*)_bottom_([0-9.]+)_", fname, flags=re.IGNORECASE)
+        fname = os.path.basename(file)
+        print("[DEBUG] fname:", fname)
+        # 1) 支持 sparsity_ratio_xxx.jsonl
+        m = re.search(r"sparsity_ratio_([0-9.]+)\.jsonl", fname, flags=re.IGNORECASE)
+        if not m:
+            # 2) 支持旧的 _bottom_xxx_ 形式
+            m = re.search(r"(?:.*)_bottom_([0-9.]+)_", fname, flags=re.IGNORECASE)
         if not m:
             continue
+
         ratio = float(m.group(1))
         if ratio <= 0:
             continue
-        
-        meta = parse_pqku_from_dir(d) or {"p": None, "q": None, "k": None, "u": None}
-        meta.update({"dir": d})
+        print(f"[DEBUG] Found ratio: {ratio} in file: {file}")
+
+        meta = ratio_to_meta_map.get(ratio, {"p": None, "q": None, "k": None, "u": None})
+        # 额外把当前文件所在目录记录进去
+        meta = dict(meta)  # copy
+        meta["dir"] = os.path.dirname(file)
         mapping[ratio] = meta
+
     return dict(sorted(mapping.items()))
+
 
 # --- Collection ---
 def collect_all_results_with_meta():
@@ -430,7 +502,7 @@ def plot_accuracy_by_pq_for_each_k(
             fig.tight_layout()
             out_path = os.path.join(
                 OUTPUT_DIR,
-                f'gsm8k_cali_accuracy_by_pq_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
+                f'random_accuracy_by_pq_k_{_format_float_for_tag(k)}_u_{_format_float_for_tag(u)}.png'
             )
             fig.savefig(out_path, dpi=300, bbox_inches='tight')
             plt.close(fig)

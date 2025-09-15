@@ -32,7 +32,8 @@ from lib.prune import (
 from lib.prune_flap_new import prune_flap  # minimal import for flap
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
 from lib.model_wrapper_low import make_low_rank
-from lib.eval import eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random, eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples, eval_datasets
+from lib.eval import (eval_ppl, eval_zero_shot, eval_attack, eval_gsm8k_random,
+eval_gsm8k_calibration, eval_gsm8k_held_out, eval_gsm8k_all, eval_gsm8k_selected_samples, eval_datasets, eval_addition)
 
 print("torch", version("torch"))
 print("transformers", version("transformers"))
@@ -46,7 +47,10 @@ modeltype2path = {
     "llama2-13b-chat-hf": "meta-llama/Llama-2-13b-chat-hf",
     "llama2-7b-hf": "meta-llama/Llama-2-7b-hf",
     "llama2-13b-hf": "meta-llama/Llama-2-13b-hf",
-    "mistral-7B": "mistralai/Mistral-7B-Instruct-v0.3"
+    "mistral-7B-Instruct": "mistralai/Mistral-7B-Instruct-v0.3",
+    "Qwen2.5-7B-Instruct": "Qwen/Qwen2.5-7B-Instruct",
+    "DeepSeek-R1-Distill-Llama-8B": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+    "DeepSeek-R1-Distill-Qwen-7B": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
 }
 
 
@@ -54,22 +58,23 @@ def get_llm(model_name, cache_dir=None):
     print(os.getenv("HF_HOME") )
     cache_dir = os.getenv("TRANSFORMERS_CACHE") or "llm_weights"
     print(f"Using cache dir: {cache_dir}")
-    if model_name in [
-        "llama2-7b-chat-hf",
-        "llama2-13b-chat-hf",
-        "llama2-7b-hf",
-        "llama2-13b-hf",
-    ]:
-        model = AutoModelForCausalLM.from_pretrained(
-            modeltype2path[model_name],
-            torch_dtype=torch.bfloat16,
-            cache_dir=cache_dir,
-            # low_cpu_mem_usage=False,
-            # device_map=None,
-            low_cpu_mem_usage=True, 
-            device_map="auto",
-            token=os.environ.get("HF_TOKEN")
-        )
+    # if model_name in [
+    #     "llama2-7b-chat-hf",
+    #     "llama2-13b-chat-hf",
+    #     "llama2-7b-hf",
+    #     "llama2-13b-hf",
+    # ]:
+    model = AutoModelForCausalLM.from_pretrained(
+        modeltype2path[model_name],
+        torch_dtype=torch.bfloat16,
+        cache_dir=cache_dir,
+        # low_cpu_mem_usage=False,
+        # device_map=None,
+        low_cpu_mem_usage=True, 
+        device_map="auto",
+        token=os.environ.get("HF_TOKEN")
+    )
+  
 
     model.seqlen = model.config.max_position_embeddings
     return model
@@ -78,12 +83,15 @@ def get_llm(model_name, cache_dir=None):
 def main(args=None):
     if args is None:
         parser = argparse.ArgumentParser()
+        parser.add_argument('--add_template', action='store_true', help='whether to add prompt template for vLLM evaluation')
         parser.add_argument('--out_dir', type=str, default='out')
+        parser.add_argument('--set_difference_data', type=str, default='Addition:6')
         parser.add_argument('--sparsity_threshold', type=float, default=0.000001)
         parser.add_argument('--max_new_tokens', type=int, default=1024)
         parser.add_argument('--dataset', type=str, default='GSM8K')
         parser.add_argument('--prompt_method', type=str, default='cot0shot')
         parser.add_argument('--eval_type', type=str, default='fixed')
+        parser.add_argument('--eval_tool', type=str, default='vllm')
         parser.add_argument('--role', type=str, default='math teacher')
         parser.add_argument('--batch_size', type=int, default=64)
         parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
@@ -219,7 +227,7 @@ def main(args=None):
         parser.add_argument("--eval_attack", action="store_true")
         parser.add_argument("--eval_gsm8k", action="store_true")
         parser.add_argument("--eval_datasets", action="store_true")
-
+        parser.add_argument("--eval_addition", action="store_true")
         parser.add_argument("--save_attack_res", action="store_true")
         parser.add_argument(
             "--prune_part",
@@ -283,7 +291,7 @@ def main(args=None):
     model = get_llm(args.model, args.cache_dir)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(
-        modeltype2path[args.model], use_fast=False
+        modeltype2path[args.model], use_fast=True
     )
 
     if (args.decouple_align_misalign or args.decouple_align_utility) and (
@@ -452,8 +460,8 @@ def main(args=None):
                 device,
                 prune_n=prune_n,
                 prune_m=prune_m,
-                prune_data=args.prune_data,
                 p=args.p,
+                q=args.q,
                 k=args.k,
                 u=args.u,
             )
@@ -737,6 +745,25 @@ def main(args=None):
                     flush=True,
                 )
 
+    if args.eval_addition:
+        print(f"Evaluating {args.dataset} with {args.model}")
+
+        sel = "random" if args.eval_type not in ["all"] else "all"
+        acc_summary = eval_addition(
+            args,
+            model,
+            tokenizer,
+            select_method=sel,
+        )
+        # Log
+        with open(save_filepath, "a") as f:
+            for tag, acc in acc_summary.items():
+                print(
+                    f"{args.prune_method}\t{sparsity_ratio:.6f}\t{args.neg_prune}\t{args.dataset}\t{tag}\t{args.eval_type}\t{acc:.4f}",
+                    file=f,
+                    flush=True,
+                )
+            
     if args.eval_attack:
         # note: since vLLM only supports loading from the path, we need to save the pruned model first for faster evaluation. We can reuse this temp folder to save disk spaces
         pruned_path = os.path.join(

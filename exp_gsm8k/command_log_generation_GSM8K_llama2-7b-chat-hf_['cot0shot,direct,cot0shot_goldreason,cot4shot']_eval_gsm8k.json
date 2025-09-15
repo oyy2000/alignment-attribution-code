@@ -1,0 +1,18 @@
+[
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/['cot0shot,direct,cot0shot_goldreason,cot4shot']/cot0shot/eval_all --nsamples 600 --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot0shot --batch_size 64 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/['cot0shot,direct,cot0shot_goldreason,cot4shot']/direct/eval_all --nsamples 600 --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method direct --batch_size 64 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/['cot0shot,direct,cot0shot_goldreason,cot4shot']/cot0shot_goldreason/eval_all --nsamples 600 --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot0shot_goldreason --batch_size 64 ",
+    "result": "failed (code 1)"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/['cot0shot,direct,cot0shot_goldreason,cot4shot']/cot4shot/eval_all --nsamples 600 --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot4shot --batch_size 64 ",
+    "result": "failed (code 1)"
+  }
+]

@@ -4,36 +4,57 @@ import time
 import threading
 import subprocess
 from multiprocessing import Queue
+import re
+import glob
 
-TIME_OUT = 18000  # 5 hours
 # Configurable Parameters
-# model = "llama2-7b-chat-hf" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B
-model = "llama2-7b-hf" #"mistral-7B-Instruct" # Qwen2.5-7B-Instruct
-# Qwen/Qwen2.5-7B-Instruct
+model = "llama2-7b-chat-hf"
+sparsity_type = "unstructured"
 suffix = "weightonly"
+log_file = f"command_log_random_selected_samples.json"
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
+PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
+
+def discover_sparsity_ratios(base_dir):
+    dirs = glob.glob(os.path.join(base_dir, "pq_*_*_k_*_u_*/"))
+    ratios = []
+    for d in dirs:
+        files = glob.glob(os.path.join(d, "*.jsonl"))
+        for f in files:
+            m = re.search(r"(?:gsm8k|addition)_bottom_([0-9.]+)_", os.path.basename(f), flags=re.IGNORECASE)
+            if m:
+                ratio = float(m.group(1))
+                ratios.append(ratio)
+    ratios = sorted(set(ratios))
+    return ratios
+
+
+sparsity_ratios = discover_sparsity_ratios(BASE_DIR)
+
+prune_method_options = ["random"]
+prompt_methods = ["direct,cot0shot"]
+eval_dataset = "GSM8K"
 nsamples = 600
-dataset = "Addition:6"
+eval_type = "selected_samples"
+prune_data = "gsm8k"
+def build_command(sparsity_ratio, prune_method, prompt_method):
+    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/eval_{eval_type}/prompt_{prompt_method}/"
 
-prompt_methods = ["cot0shot,direct,cot0shot_goldreason"]
-log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_addition_llama2_7b.json"
-eval_type = "all"
-
-def build_command(prompt_method):
-    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/{model}/{prompt_method}/eval_{eval_type}"
     command = (
         f"python ../main.py "
         f"--model {model} "
+        f"--prune_method {prune_method} "
+        f"--sparsity_ratio {sparsity_ratio} "
+        f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_datasets "
-        f"--dataset {dataset} "
+        f"--eval_gsm8k "
+        f"--dataset {eval_dataset} "
         f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
-        f"--batch_size 64 "
     )
   
     return command
-
 
 def initialize_log(commands):
     if not os.path.exists(log_file):
@@ -80,7 +101,7 @@ def get_gpu_free_memory():
     total = [int(x) for x in total.stdout.decode().strip().split('\n')]
     return [t - u for t, u in zip(total, used)]
 
-def monitor_gpu(gpu_id, min_free_mem, timeout=TIME_OUT):
+def monitor_gpu(gpu_id, min_free_mem, timeout=180000):
     start = time.time()
     while time.time() - start < timeout:
         if get_gpu_free_memory()[gpu_id] >= min_free_mem:
@@ -117,13 +138,15 @@ def worker(task_queue, gpu_id):
             print(f"[GPU {gpu_id}] Not enough memory for: {command}")
             task_queue.put(task)
             time.sleep(20)
-
-
+            
 def main():
     # Generate all commands
     commands = []
-    for prompt_method in prompt_methods:
-        commands.append(build_command(prompt_method))
+    for sparsity in sparsity_ratios:
+        for prune_method in prune_method_options:
+            for prompt_method in prompt_methods:
+                commands.append(build_command(sparsity, prune_method, prompt_method))
+
 
     initialize_log(commands)
     pending = load_pending_or_failed_tasks()

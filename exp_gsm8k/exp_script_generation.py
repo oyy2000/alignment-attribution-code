@@ -8,28 +8,29 @@ from multiprocessing import Queue
 TIME_OUT = 18000  # 5 hours
 # Configurable Parameters
 # model = "llama2-7b-chat-hf" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B
-model = "llama2-7b-hf" #"mistral-7B-Instruct" # Qwen2.5-7B-Instruct
+model = "llama2-7b-chat-hf" #"mistral-7B-Instruct" # Qwen2.5-7B-Instruct
 # Qwen/Qwen2.5-7B-Instruct
 suffix = "weightonly"
 nsamples = 600
-dataset = "Addition:6"
+dataset = "GSM8K"
 
-prompt_methods = ["cot0shot,direct,cot0shot_goldreason"]
-log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_addition_llama2_7b.json"
+prompt_methods = ["cot0shot,direct,cot0shot_goldreason,cot4shot"]
+prompt_methods_options = ["cot0shot", "direct", "cot0shot_goldreason", "cot4shot"]  
+log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_gsm8k.json"
 eval_type = "all"
 
 def build_command(prompt_method):
-    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/{model}/{prompt_method}/eval_{eval_type}"
+    save_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/{model}/{prompt_methods}/{prompt_method}/eval_{eval_type}"
     command = (
         f"python ../main.py "
         f"--model {model} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--eval_datasets "
+        f"--eval_gsm8k " # eval_gsm8k, eval_addition, eval_datasets
         f"--dataset {dataset} "
         f"--eval_type {eval_type} "
         f"--prompt_method {prompt_method} "
-        f"--batch_size 64 "
+        f"--batch_size 64 " # do not add_template
     )
   
     return command
@@ -122,7 +123,7 @@ def worker(task_queue, gpu_id):
 def main():
     # Generate all commands
     commands = []
-    for prompt_method in prompt_methods:
+    for prompt_method in prompt_methods_options:
         commands.append(build_command(prompt_method))
 
     initialize_log(commands)
