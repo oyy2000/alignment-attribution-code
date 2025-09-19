@@ -1,0 +1,18 @@
+[
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/full_model/eval_all/prompt_cot0shot/add_template_False/ --nsamples 600 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot0shot --batch_size 64 ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/full_model/eval_all/prompt_direct/add_template_False/ --nsamples 600 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method direct --batch_size 64 ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/full_model/eval_all/prompt_cot0shot_goldreason/add_template_False/ --nsamples 600 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot0shot_goldreason --batch_size 64 ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/full_model/eval_all/prompt_cot4shot/add_template_False/ --nsamples 600 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type all --prompt_method cot4shot --batch_size 64 ",
+    "result": "success"
+  }
+]

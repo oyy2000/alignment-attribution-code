@@ -47,7 +47,7 @@ modeltype2path = {
     "llama2-13b-chat-hf": "meta-llama/Llama-2-13b-chat-hf",
     "llama2-7b-hf": "meta-llama/Llama-2-7b-hf",
     "llama2-13b-hf": "meta-llama/Llama-2-13b-hf",
-    "mistral-7B-Instruct": "mistralai/Mistral-7B-Instruct-v0.3",
+    "mistral-7B-Instruct": "mistralai/Mistral-7B-Instruct-v0.2",
     "Qwen2.5-7B-Instruct": "Qwen/Qwen2.5-7B-Instruct",
     "DeepSeek-R1-Distill-Llama-8B": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
     "DeepSeek-R1-Distill-Qwen-7B": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
@@ -291,7 +291,7 @@ def main(args=None):
     model = get_llm(args.model, args.cache_dir)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(
-        modeltype2path[args.model], use_fast=True
+        modeltype2path[args.model], use_fast=False, 
     )
 
     if (args.decouple_align_misalign or args.decouple_align_utility) and (
@@ -326,7 +326,7 @@ def main(args=None):
     print("use device ", device)
 
     if args.save_model:
-        model.save_pretrained(args.save_model)
+        model.save_pretrained(args.save_model, safe_serialization=True)
         tokenizer.save_pretrained(args.save_model)
 
     if args.sparsity_ratio != 0:
@@ -617,7 +617,7 @@ def main(args=None):
                 f"pruned_model_bottom_{args.sparsity_ratio:.3f}"
             )
         
-        model.save_pretrained(pruned_path)
+        model.save_pretrained(pruned_path, safe_serialization=True)
         del model
         import gc
         # 2. 清理 Python 垃圾回收
@@ -631,7 +631,7 @@ def main(args=None):
             model=pruned_path,
             tokenizer=modeltype2path[args.model],
             dtype="float16",
-            swap_space=12,
+            max_model_len=8192,
         )
         print(f"Evaluating GSM8K {prune_data} with {args.model}")
         if args.eval_type == "calibration":
@@ -710,7 +710,7 @@ def main(args=None):
 
         # Only save if not already saved above
         if not os.path.exists(pruned_path):
-            model.save_pretrained(pruned_path)
+            model.save_pretrained(pruned_path, safe_serialization=True)
         # free HF model memory before vLLM
         try:
             del model
@@ -725,7 +725,7 @@ def main(args=None):
             model=pruned_path,
             tokenizer=modeltype2path[args.model],
             dtype="float16",
-            swap_space=12,
+            max_model_len=8192,
         )
         print(f"Evaluating {args.dataset} with {args.model}")
 
@@ -770,7 +770,7 @@ def main(args=None):
             SAVE_PATH,
             f"{args.prune_method}_usediff_{args.use_diff}_recover_{args.recover_from_base}",
         )
-        model.save_pretrained(pruned_path)
+        model.save_pretrained(pruned_path, safe_serialization=True)
         vllm_model = LLM(
             model=pruned_path,
             tokenizer=modeltype2path[args.model],

@@ -697,9 +697,6 @@ def eval_datasets(
                 Path(args.save)
                 / f"{args.dataset}_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type or 'random'}_prompt_{tag}.jsonl"
             )
-        
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -746,10 +743,10 @@ def eval_datasets(
                 out_fh.flush()
 
         out_fh.close()
-
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
-
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     acc_summary = {tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()}
     for tag, acc in acc_summary.items():
         n = len(acc_dict[tag])
@@ -820,9 +817,6 @@ def eval_addition(
             outfile = (Path(args.save) / f"{args.dataset}_top_{args.sparsity_ratio:.6f}_{tag}_{select_method}_hf.jsonl")
         else:
             outfile = (Path(args.save) / f"{args.dataset}_bottom_{args.sparsity_ratio:.6f}_{tag}_{select_method}_hf.jsonl")
-        
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         if outfile.exists():
@@ -877,8 +871,10 @@ def eval_addition(
 
 
         out_fh.close()
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     acc_summary = {tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()}
     for tag, acc in acc_summary.items():
         n = len(acc_dict[tag])
@@ -957,8 +953,6 @@ def eval_gsm8k_random(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}_seed_{args.seed}.jsonl"
             )
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1010,8 +1004,10 @@ def eval_gsm8k_random(
 
         out_fh.close()
 
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -1071,8 +1067,6 @@ def eval_gsm8k_selected_samples(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
             )
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1123,8 +1117,10 @@ def eval_gsm8k_selected_samples(
                 out_fh.flush()
 
         out_fh.close()
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -1185,9 +1181,6 @@ def eval_gsm8k_held_out(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{args.prompt_method}_{args.eval_type}_prompt_{tag}.jsonl"
             )
-        
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1238,8 +1231,10 @@ def eval_gsm8k_held_out(
                 out_fh.flush()
 
         out_fh.close()
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()
@@ -1338,8 +1333,6 @@ def eval_gsm8k_calibration(
             outfile = (Path(args.save)
                 / f"gsm8k_bottom_{args.sparsity_ratio:.6f}_{prune_data}.jsonl"
             )
-        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
-        all_records: List[Dict] = []
 
         already_done = 0
         out_fh = open(outfile, "a")
@@ -1390,9 +1383,10 @@ def eval_gsm8k_calibration(
                 out_fh.flush()
 
         out_fh.close()
-
+        json_outfile = outfile.with_suffix(".json")  # 同名 .json 文件
+        all_json = [json.loads(line) for line in open(outfile, "r")]
         with open(json_outfile, "w") as f:
-            json.dump(all_records, f, ensure_ascii=False, indent=2)
+            json.dump(all_json, f, ensure_ascii=False, indent=2)
     # -------- ❹  汇总指标 --------
     acc_summary = {
         tag: float(np.mean(acc)) if acc else 0.0 for tag, acc in acc_dict.items()

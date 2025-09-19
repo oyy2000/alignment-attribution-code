@@ -14,7 +14,7 @@ suffix = "weightonly"
 nsamples = 600
 dataset = "Addition:6"
 
-prompt_methods = ["cot0shot,direct,cot0shot_goldreason"]
+prompt_methods = ["cot0shot,direct,cot0shot_goldreason,cot4shot,cot2shot"]
 log_file = f"command_log_generation_{dataset}_{model}_{prompt_methods}_eval_addition_llama2_7b.json"
 eval_type = "all"
 

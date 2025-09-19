@@ -1,0 +1,455 @@
+id,final_pred,gold,final_correct,has_wrong_equation,num_equations_found,examples,process_wrong_but_answer_correct
+test_GSM8K_Q33,35,35,True,False,2,"[' 10*0.5 = 5', ' 5*7 = 35']",False
+test_GSM8K_Q61,22,17,False,True,2,"[' 24/0.2 = 12', ' 24 - 2 = 22']",False
+test_GSM8K_Q62,1430,1430,True,False,0,[],False
+test_GSM8K_Q70,60,60,True,False,0,[],False
+test_GSM8K_Q75,88,88,True,False,0,[],False
+test_GSM8K_Q80,70,70,True,True,1,[' = 0.3'],True
+test_GSM8K_Q82,17,17,True,False,4,"[' 10 + 21 = 31', ' 31 + 23 = 54', ' 54 - 9 = 45']",False
+test_GSM8K_Q100,40,58,False,False,3,"[' 40*2 = 80', ' 40*1 = 40', ' 80 - 40 = 40']",False
+test_GSM8K_Q114,40,25,False,True,5,"[' 2*15 = 30', ' 30 - 5 = 25', ' 250 / 5 = 50']",False
+test_GSM8K_Q122,27,27,True,False,5,"[' 5 + 8 = 13', ' 2*5 = 10', ' 8 / 2 = 4']",False
+test_GSM8K_Q135,4,720,False,False,0,[],False
+test_GSM8K_Q138,80,29,False,False,0,[],False
+test_GSM8K_Q161,12,16,False,False,2,"[' 17 + 7 = 24', '\n24 / 2 = 12']",False
+test_GSM8K_Q165,15,15,True,False,0,[],False
+test_GSM8K_Q167,15,5,False,True,2,"[' = 3', ' = 0.375']",False
+test_GSM8K_Q221,210,70,False,True,3,"[' = 10', ' = 100', ' = 210']",False
+test_GSM8K_Q234,12,12,True,True,5,"[' = 36', '.\nx = 36', ' / 3 = 12']",True
+test_GSM8K_Q236,5,10,False,True,1,[' = 2.5'],False
+test_GSM8K_Q238,90,90,True,False,0,[],False
+test_GSM8K_Q259,6,6,True,False,0,[],False
+test_GSM8K_Q275,3200,3200,True,False,0,[],False
+test_GSM8K_Q281,7,7,True,False,0,[],False
+test_GSM8K_Q298,65,55,False,True,4,"['.\n120 - 55 = 65', ' = 15', ' + 12 + 18 = 55']",False
+test_GSM8K_Q306,4,4,True,True,2,"[' 20 = 16', '\n\n20 - 16 = 4']",True
+test_GSM8K_Q313,38,32,False,False,3,"[' 5 + 3 = 8', ' 3 + 8 = 11', ' 30 + 8 = 38']",False
+test_GSM8K_Q357,21,21,True,False,0,[],False
+test_GSM8K_Q379,15,15,True,False,2,"[' 20 + 15 = 35', '\n50 - 35 = 15']",False
+test_GSM8K_Q388,36,36,True,False,0,[],False
+test_GSM8K_Q425,526,570,False,True,4,"[' 60*4 = 240', ' 6*6 = 36', ' 10*15 = 150']",False
+test_GSM8K_Q456,10,1920,False,True,8,"[' = 8', ' = 2', ' = 2']",False
+test_GSM8K_Q463,50,71,False,False,0,[],False
+test_GSM8K_Q482,80,84,False,True,5,"[' = 3', ' = 3', ' = 32']",False
+test_GSM8K_Q488,1,4,False,True,3,"[' = 10', ' = 50', ' 50/50 = 1']",False
+test_GSM8K_Q505,2,2,True,False,0,[],False
+test_GSM8K_Q543,0,7,False,False,0,[],False
+test_GSM8K_Q554,92,92,True,False,3,"[' 2*24 = 48', ' 70*2 = 140', ' 140 - 48 = 92']",False
+test_GSM8K_Q580,100,7,False,True,7,"[' 5 - 3 = 2', ' 5 + 2 = 7', ' 12*8 = 96']",False
+test_GSM8K_Q593,1,1,True,False,0,[],False
+test_GSM8K_Q617,3,10,False,True,3,"[' 3 = 6', ' 6 + 4 = 10', ' 3 + 6 + 10 = 19']",False
+test_GSM8K_Q654,80,80,True,False,0,[],False
+test_GSM8K_Q686,14,14,True,False,0,[],False
+test_GSM8K_Q687,100,80,False,True,1,[' 30 + 60 - 10 = 100'],False
+test_GSM8K_Q718,5,5,True,False,0,[],False
+test_GSM8K_Q777,800,800,True,False,0,[],False
+test_GSM8K_Q795,32,32,True,False,3,"[' 12*1 = 12', ' (12*0.5) = 6', ' 12 + 6 + 14 = 32']",False
+test_GSM8K_Q816,5,4,False,True,2,"['\n10 - 2x = 2', '\nx = 5']",False
+test_GSM8K_Q863,80,40,False,True,2,"[' 2*2 = 4', ' = 32']",False
+test_GSM8K_Q874,12,12,True,False,0,[],False
+test_GSM8K_Q885,50,50,True,False,3,"[' 200 - 40 = 160', ' 160 - 80 = 80', ' 80 - 30 = 50']",False
+test_GSM8K_Q904,8,16,False,True,3,"[' 20/4 = 5', ' 8/3 = 2.67', ' 5 + 2.67 = 7.67']",False
+test_GSM8K_Q920,20,90,False,False,0,[],False
+test_GSM8K_Q997,16,3,False,True,5,"['\nx + 2x + (4 + 3) = 20', '\n3x + 7 = 20', '\nx = 13']",False
+test_GSM8K_Q1005,8,8,True,True,5,"[' = 64', ' - 56 = 8', 'x = 4']",True
+test_GSM8K_Q1016,320,78,False,True,4,"[' 15 - 2 = 13', ' 13*60 = 780', ' 5*8 = 40']",False
+test_GSM8K_Q1025,60,300,False,False,0,[],False
+test_GSM8K_Q1029,1000,200,False,False,0,[],False
+test_GSM8K_Q1032,66,5,False,True,3,"[' 6000 - 950 - 300 = 4150', ' (4150 / 300 = 138.33', ' 2*138.33 = 276.66']",False
+test_GSM8K_Q1037,5,10,False,True,1,[' = 5'],False
+test_GSM8K_Q1044,690000,130000,False,True,3,"[' 26*5 = 130', ' 1000*130 = 130,000', ' 130,000 + 130,000 + ... + 130,000 = 690,000']",False
+test_GSM8K_Q1050,5,20,False,False,3,"[' 50/2 = 25', ' 25 - 2.5 = 22.5', ' 22.5 + 20 = 42.5']",False
+test_GSM8K_Q1077,162,162,True,False,0,[],False
+test_GSM8K_Q1091,72,72,True,False,3,"[' 72 + 2 = 74', ' 74 - 5 = 69', ' 69 + 3 = 72']",False
+test_GSM8K_Q1101,75,5,False,True,6,"[' = 0.5', ' = 0.25', ' = 0.5']",False
+test_GSM8K_Q1106,10,40,False,True,1,"['20,000 = 10']",False
+test_GSM8K_Q1117,60,60,True,True,3,"['\nx + (0.2 x)\n= 50', ' + (0.2 x)\n= 50', ' + 10\n= 60']",True
+test_GSM8K_Q1148,22,22,True,False,4,"[' 45/5 = 9', ' 36/6 = 6', ' 49/7 = 7']",False
+test_GSM8K_Q1149,9,9,True,True,1,[' 4.\n\n36 ÷ 4 = 9'],True
+test_GSM8K_Q1164,2,12,False,True,2,"[' (3*2 = 6', ', 6 / 2 = 3']",False
+test_GSM8K_Q1178,7,17,False,False,3,"[' 12/3 = 4', ' 12/4 = 3', ' 4 + 3 = 7']",False
+test_GSM8K_Q1186,7,6,False,False,4,"[' 6*6 = 36', ' 4*6 = 24', ' 36 + 24 = 60']",False
+test_GSM8K_Q1195,75,1200,False,True,3,"[' x 3 = 120', ') = 7.5', ' / 10 = 0.75']",False
+test_GSM8K_Q1207,40000,40000,True,False,0,[],False
+test_GSM8K_Q1244,90,50,False,False,0,[],False
+test_GSM8K_Q1309,50,30,False,True,5,"[' 10 + 20 = 30', ' = 50', ' 2*2 = 4']",False
+train_GSM8K_Q20,200,16,False,False,3,"[' 40/25 = 1.6', ' 5*1.6 = 8', ' 40*5 = 200']",False
+train_GSM8K_Q54,36,36,True,True,2,"[' = 10', ' = 4']",True
+train_GSM8K_Q89,258,258,True,False,2,"[' 86*2 = 172', ' 86 + 172 = 258']",False
+train_GSM8K_Q202,7,10,False,True,2,"['\n7 + 7 + 21 + 21 + 42 + 21 + 21 = 197', ' = 27']",False
+train_GSM8K_Q242,12,12,True,False,3,"[' 72 / 2 = 36', ' 72 / 3 = 24', ' 72 - 36 - 24 = 12']",False
+train_GSM8K_Q255,30,30,True,True,4,"[' 15*10 = 150', ' 20*9 = 180', ' 150 + 180 = 330']",True
+train_GSM8K_Q303,7,7,True,False,2,"[' 2*1.5 = 3', ' 3 + 1.5 + 3 = 7.5']",False
+train_GSM8K_Q353,42,42,True,True,2,"[' 60*7 = 420', ' = 42']",True
+train_GSM8K_Q370,347,347,True,False,0,[],False
+train_GSM8K_Q382,75,75,True,False,4,"[' 450/2 = 225', ' 300 - 225 = 75', ' 450/2 = 225']",False
+train_GSM8K_Q409,548,52,False,False,3,"[' 3*140 = 420', ' 2*64 = 128', ' 420 + 128 = 548']",False
+train_GSM8K_Q416,78,78,True,True,4,"[' x 2 = 12', ' x 2 = 24', ' x 2 = 48']",True
+train_GSM8K_Q430,1104,736,False,False,2,"['\n2300*0.8 = 1840', '\n1840*0.6 = 1104']",False
+train_GSM8K_Q439,12,12,True,True,2,"[' = 14', ' = 12']",True
+train_GSM8K_Q462,20200,250,False,True,1,[' = 4000'],False
+train_GSM8K_Q467,60,80,False,True,4,"[' = 40', ' = 40', ' = 60']",False
+train_GSM8K_Q473,11,11,True,True,2,"[' (7 + 4 = 11', ' (7 + 4 = 11']",True
+train_GSM8K_Q477,92,92,True,True,2,"[' = 3', ' = 2']",True
+train_GSM8K_Q487,8,4,False,False,1,[' 9 / 5 = 1.8'],False
+train_GSM8K_Q490,84,12,False,True,2,"[' x/13 = 8', ' x/13 - 4 = 23']",False
+train_GSM8K_Q504,20,20,True,True,10,"[' = 20', ' = 140', ' = 280']",True
+train_GSM8K_Q531,3,18,False,True,6,"[' 7/7 = 1', ', 7/7 = 1', ' 7/7 = 1']",False
+train_GSM8K_Q533,88,132,False,False,4,"[' 5*12 = 60', ' 2*12 = 24', ' 48 / 12 = 4']",False
+train_GSM8K_Q539,15,3450,False,False,0,[],False
+train_GSM8K_Q552,55,4,False,True,3,"[' = 4', ' x 0.6 = 2.4', ' x 0.621371) / 1.85 = 3.55']",False
+train_GSM8K_Q565,15,15,True,True,4,"[' 100 / 2 = 50', ' 50 + 35 = 85', ' = 100']",True
+train_GSM8K_Q592,24,2,False,True,3,"[' = 3', '*80 = 240', ' 240/10 = 24']",False
+train_GSM8K_Q643,15,15,True,False,2,"[' 10 + 15 + 5 = 30', ' 30 / 2 = 15']",False
+train_GSM8K_Q667,135,125,False,True,3,"['\n5x + 5x = 150', '\n10x = 150', '\nx = 15']",False
+train_GSM8K_Q722,2200,2200,True,False,0,[],False
+train_GSM8K_Q724,3,3,True,False,0,[],False
+train_GSM8K_Q751,48,48,True,True,3,"[' = 4', '*6 = 24', ' = 24']",True
+train_GSM8K_Q856,100,1700,False,False,0,[],False
+train_GSM8K_Q866,65,65,True,True,4,"[' 60 + 5 = 65', ' = 20', '*3 = 60']",True
+train_GSM8K_Q867,44,100,False,True,4,"[' 5*6 = 30', ' + 2*2 = 4', ' = 34']",False
+train_GSM8K_Q938,35,35,True,False,0,[],False
+train_GSM8K_Q945,7,7,True,False,2,"[' 5 + 9 = 14', ' 14 / 2 = 7']",False
+train_GSM8K_Q953,200,200,True,True,2,"[' 50*3 = 150', ' = 200']",True
+train_GSM8K_Q955,30,1200,False,False,1,[' 10*3 = 30'],False
+train_GSM8K_Q960,25,25,True,True,3,"[' = 50', ' + 150 = 200', ' (50 / 200) x 100 = 25']",True
+train_GSM8K_Q967,96,192,False,False,1,[' 24*4 = 96'],False
+train_GSM8K_Q972,12,12,True,False,0,[],False
+train_GSM8K_Q1005,1260,1260,True,False,1,[' 6*7 = 42'],False
+train_GSM8K_Q1009,20,4,False,True,3,"[' (20 - 12 = 8', ' (8 - 4 = 4', ' (20 - 4 = 6']",False
+train_GSM8K_Q1014,10,2,False,False,2,"['10 = 10', '10 = 10']",False
+train_GSM8K_Q1100,20,10,False,True,2,"[' = 20', ' = 20']",False
+train_GSM8K_Q1125,2,14,False,False,0,[],False
+train_GSM8K_Q1200,5,3,False,True,1,[' = 5'],False
+train_GSM8K_Q1259,15,1350,False,True,3,"[' = 90', ' = 450', ' = 40,500']",False
+train_GSM8K_Q1265,25200,2520000,False,True,4,"[' = 21', '*12 = 252', ' = 252']",False
+train_GSM8K_Q1281,240,240,True,False,0,[],False
+train_GSM8K_Q1301,480,10,False,True,2,"[' = 120', ' x 4 = 480']",False
+train_GSM8K_Q1316,27,27,True,False,2,"[' 5*7 = 35', ' 35 - 8 = 27']",False
+train_GSM8K_Q1332,40,40,True,True,2,"[' = 5', ' = 40']",True
+train_GSM8K_Q1349,5,50,False,False,0,[],False
+train_GSM8K_Q1356,280,280,True,False,2,"[' 6*40 = 240', ' 40 + 240 = 280']",False
+train_GSM8K_Q1365,8700,7100,False,False,0,[],False
+train_GSM8K_Q1367,35,55,False,True,3,"[' = 20', ' + (15 - 0)\n= 20', ' + 15\n= 35']",False
+train_GSM8K_Q1387,4,4,True,True,1,[' x = 4'],True
+train_GSM8K_Q1398,3,3,True,True,4,"[' = 2', ' = 9', ' = 9']",True
+train_GSM8K_Q1401,2,22,False,True,21,"[' = 2', ' = 6', ' = 2']",False
+train_GSM8K_Q1420,20,6,False,True,1,[') = 20'],False
+train_GSM8K_Q1422,63,35,False,True,5,"['\n84 - 21 = 63', ' 21/2 = 10.5', ' 28/2 = 14']",False
+train_GSM8K_Q1427,12,12,True,True,2,"[' = 300', ' = 12']",True
+train_GSM8K_Q1432,5,5,True,True,5,"[' = 120', ' = 40', ' = 200']",True
+train_GSM8K_Q1440,15,5,False,False,0,[],False
+train_GSM8K_Q1451,25,25,True,True,5,"[' 40 - 4 = 36', ' 36 / 3 = 12', ' 12 + 10 = 22']",True
+train_GSM8K_Q1454,16,16,True,True,1,[' = 16'],True
+train_GSM8K_Q1492,100,100,True,False,2,"[' 20*15 = 300', ' 400 - 300 = 100']",False
+train_GSM8K_Q1514,12,12,True,False,2,"[' 8/2 = 4', ' 3 × 4 = 12']",False
+train_GSM8K_Q1530,2100,900,False,False,2,"[' 5,000 + 2,000 = 7,000', ' 7,000*0.3 = 2,100']",False
+train_GSM8K_Q1605,5,5,True,True,2,"[' 3/4 + 2 = 5', ' 1/4*13 = 3']",True
+train_GSM8K_Q1620,30,30,True,True,2,"[' (3*2 = 6', ' (6*5 = 30']",True
+train_GSM8K_Q1625,36,18,False,False,0,[],False
+train_GSM8K_Q1626,900,80,False,False,0,[],False
+train_GSM8K_Q1646,15,15,True,False,0,[],False
+train_GSM8K_Q1691,12,12,True,True,6,"[' = 7', '*1.5 = 10.5', ' = 9']",True
+train_GSM8K_Q1720,0,120,False,False,0,[],False
+train_GSM8K_Q1780,4380,4380,True,False,3,"[' 4*365 = 1460', ' 2*1460 = 2920', ' 1460 + 2920 = 4380']",False
+train_GSM8K_Q1813,9,3,False,True,4,"[' = 7', ' = 6', ' = 3']",False
+train_GSM8K_Q1857,45,45,True,False,3,"[' 3*10 = 30', ' 1*15 = 15', ' 30 + 15 = 45']",False
+train_GSM8K_Q1859,0,200000,False,False,0,[],False
+train_GSM8K_Q1918,10200,10200,True,False,0,[],False
+train_GSM8K_Q1919,48,3,False,False,0,[],False
+train_GSM8K_Q1942,84,216,False,True,5,"['x = 30', ' = 84', ' = 84']",False
+train_GSM8K_Q1943,3,3,True,True,1,[' = 3'],True
+train_GSM8K_Q1950,95,12,False,False,0,[],False
+train_GSM8K_Q1952,5,10,False,False,3,"[' 100 - 5 = 95', ' 95 - 10 = 85', ' 85 - 10 = 75']",False
+train_GSM8K_Q1977,26,22,False,False,0,[],False
+train_GSM8K_Q2025,30,30,True,False,3,"['\n20 + 15 = 35', '\n3 + 2 = 5', '\n35 - 5 = 30']",False
+train_GSM8K_Q2045,24,44,False,True,2,"[' = 2', ' = 24']",False
+train_GSM8K_Q2070,62,62,True,False,2,"[' 80 - 24 = 56', ' 56 + 6 = 62']",False
+train_GSM8K_Q2081,7,413,False,False,0,[],False
+train_GSM8K_Q2106,8,80,False,False,0,[],False
+train_GSM8K_Q2132,2,2,True,True,3,"[' = 4', ' = 4', ' = 1']",True
+train_GSM8K_Q2153,68,14,False,True,7,"[' 5\n70 ÷ 5 = 14', '\n14*3 = 42', '\n70 ÷ 3 = 23']",False
+train_GSM8K_Q2165,18,18,True,False,2,"[' 24 / 4 = 6', ' 24 - 6 = 18']",False
+train_GSM8K_Q2203,100,100,True,False,2,"[' 5*2 = 10', ' 10*20 = 200']",False
+train_GSM8K_Q2218,975,975,True,False,0,[],False
+train_GSM8K_Q2228,19,19,True,True,3,"[' x 2 = 10', ' x 3 = 9', ' 10 + 9 = 19']",True
+train_GSM8K_Q2232,3,3,True,False,4,"[' 3*2 = 6', ' 6*1 = 6', ' 6 + 6 = 12']",False
+train_GSM8K_Q2239,43,43,True,False,2,"[' 80 - 12 = 68', ' 68 - 25 = 43']",False
+train_GSM8K_Q2241,20,5,False,False,0,[],False
+train_GSM8K_Q2254,14,14,True,False,0,[],False
+train_GSM8K_Q2258,625,750,False,True,2,"[' 3/4*4,000 = 2,500', ' 1/4*2,500 = 625']",False
+train_GSM8K_Q2298,900,900,True,False,2,"[' 9*2 = 18', ' 18*50 = 900']",False
+train_GSM8K_Q2305,97,97,True,False,0,[],False
+train_GSM8K_Q2308,12,12,True,True,2,"[' = 9', ' = 3']",True
+train_GSM8K_Q2327,45,45,True,False,2,"[' 20*3 = 60', ' 60 - 15 = 45']",False
+train_GSM8K_Q2336,4,6,False,False,1,[' 4/10 = 0.4'],False
+train_GSM8K_Q2389,1260,1260,True,True,8,"[' = 40', ' = 50', ' = 14']",True
+train_GSM8K_Q2401,9,9,True,False,0,[],False
+train_GSM8K_Q2442,5,5,True,False,0,[],False
+train_GSM8K_Q2448,21,21,True,False,1,[' 7*3 = 21'],False
+train_GSM8K_Q2450,41,41,True,False,0,[],False
+train_GSM8K_Q2456,184,184,True,False,0,[],False
+train_GSM8K_Q2462,13000,14000,False,False,0,[],False
+train_GSM8K_Q2476,75,75,True,True,2,"[' / 4 = 0.75', ' = 75']",True
+train_GSM8K_Q2477,2000,2000,True,False,1,[' 80*5 = 400'],False
+train_GSM8K_Q2484,7,7,True,False,0,[],False
+train_GSM8K_Q2498,80,80,True,False,0,[],False
+train_GSM8K_Q2507,8,8,True,True,1,[' 6 + (1/3) = 8'],True
+train_GSM8K_Q2514,13,23,False,False,2,"[' 16 - 6 = 10', ' 16 - 3 = 13']",False
+train_GSM8K_Q2546,6,6,True,False,2,"[' 3 + 2 = 5', ' 1 + 5 = 6']",False
+train_GSM8K_Q2548,30,30,True,True,5,"[' = 3', ' = 300', ' = 10']",True
+train_GSM8K_Q2557,51700,51700,True,True,4,"[' = 2000', ' = 35,700', ' = 16,000']",True
+train_GSM8K_Q2561,147,153,False,False,0,[],False
+train_GSM8K_Q2566,60,60,True,True,3,"[' = 120', ' = 1080', ' = 60']",True
+train_GSM8K_Q2581,200,200,True,False,2,"[' 80*10 = 800', ' 800 / 4 = 200']",False
+train_GSM8K_Q2615,1,3,False,False,4,"[' 12 - 2 = 10', ' 10 - 4 = 6', ' 6 / 2 = 3']",False
+train_GSM8K_Q2622,12,16,False,True,1,[' 7 + 4 - 1 = 12'],False
+train_GSM8K_Q2658,16,16,True,True,3,"[' = 12', ' 2*12 = 24', ' 24 - 8 = 16']",True
+train_GSM8K_Q2676,660,660,True,False,2,"[' 300 + 60 = 360', ' 300 + 360 = 660']",False
+train_GSM8K_Q2705,3077,2800,False,False,0,[],False
+train_GSM8K_Q2711,21,21,True,True,3,"[' 2 + 3 + 6 = 11', ' 3 + 5 + 2 = 10', '.\n11 + 10 = 21']",True
+train_GSM8K_Q2716,9,9,True,True,4,"[' = 7', ' + 11 + 9 = 27', ' = 27']",True
+train_GSM8K_Q2726,130,50,False,True,4,"[' = 24', ' = 16', ') = 384']",False
+train_GSM8K_Q2740,17600,17600,True,False,1,[' 5 - 2 = 3'],False
+train_GSM8K_Q2746,12,12,True,False,2,"[' 19*2 = 38', ' 50 - 38 = 12']",False
+train_GSM8K_Q2750,13,80,False,True,6,"[' 3x = 8', ' 2x = 8', ' 3x = 8']",False
+train_GSM8K_Q2769,5,45,False,False,2,"[' 40 / 2 = 20', ' 25 - 20 = 5']",False
+train_GSM8K_Q2772,2,3,False,False,4,"[' 2*5 = 10', ' 2*5 = 10', ' 2*5 = 10']",False
+train_GSM8K_Q2791,63,2100,False,True,2,"[' 4 + 5 = 9', ' = 63']",False
+train_GSM8K_Q2792,155,155,True,False,0,[],False
+train_GSM8K_Q2793,70,35,False,True,5,"[' = 10', ' = 30', ' = 40']",False
+train_GSM8K_Q2814,67,450,False,True,2,"['350 = 3', '350 = 3']",False
+train_GSM8K_Q2832,7,7,True,True,5,"[' 42 = 14', ' 14 = 7', '.\n1/3 = 0.33']",True
+train_GSM8K_Q2867,5,5,True,True,2,"[' 6*50 = 300', ' = 5']",True
+train_GSM8K_Q2878,50,20,False,True,3,"[' (1500 / 75 = 20', ' (750 / 25 = 30', ' = 50']",False
+train_GSM8K_Q2903,4,4,True,False,4,"[' 5*2 = 10', ' 10 + 20 = 30', ' 30 - 10 = 20']",False
+train_GSM8K_Q2940,8,8,True,True,2,"['. 3*4 = 12', ' 12 - 4 = 8']",True
+train_GSM8K_Q2969,3,4,False,True,2,"['3000 / 3 = 1000', '\nx = 3']",False
+train_GSM8K_Q2974,10,10,True,False,3,"[' 60 / 3 = 20', ' 60 - 20 = 40', ' 40 / 4 = 10']",False
+train_GSM8K_Q2998,900,900,True,True,4,"[' 2*100 = 200', ' 6*100 = 600', ' = 200']",True
+train_GSM8K_Q3001,14,14,True,True,2,"[' 20 = 6', '\n\n20 - 6 = 14']",True
+train_GSM8K_Q3007,100,25,False,True,2,"[' 50 + 50 = 100', '.\n100 - 50 = 50']",False
+train_GSM8K_Q3024,2,2,True,False,0,[],False
+train_GSM8K_Q3026,96,96,True,False,3,"[' 12*4 = 48', ' 16*3 = 48', ' 48 + 48 = 96']",False
+train_GSM8K_Q3033,700,700,True,False,0,[],False
+train_GSM8K_Q3090,5,9,False,True,3,"['\n\nx + 10x + 10x + 10x + 10x = 50', '\n\n9x = 50', '\n\nx = 5']",False
+train_GSM8K_Q3103,1980,180,False,True,3,"[' 20*10 = 200', ' 200 - 2 = 198', ' = 1980']",False
+train_GSM8K_Q3131,850,780,False,True,8,"[' = 60', ' = 240', ' = 60']",False
+train_GSM8K_Q3191,4,210,False,False,0,[],False
+train_GSM8K_Q3235,6230,6230,True,False,0,[],False
+train_GSM8K_Q3236,43,43,True,False,2,"[' 93 - 30 = 63', ' 63 - 20 = 43']",False
+train_GSM8K_Q3272,40,40,True,True,2,"[' = 10', ' + 30 = 40']",True
+train_GSM8K_Q3382,85,85,True,False,0,[],False
+train_GSM8K_Q3392,5,5,True,True,8,"[' = 1', ' = 5', ' = 1']",True
+train_GSM8K_Q3405,305,355,False,False,2,"[' 300 + 30 = 330', '\n\n330 - 25 = 305']",False
+train_GSM8K_Q3407,260,400,False,False,2,"[' 13*2 = 26', ' 26*10 = 260']",False
+train_GSM8K_Q3418,35,35,True,True,3,"[' 3 + 7 + 4 + 6 = 20', ' 3 + 4 = 7', '. 7/20 = 0.35']",True
+train_GSM8K_Q3437,3,9,False,True,10,"[' (1/4*12 = 3', ' (12 - 3 = 9', ' 1/6 + 1/4 = 1']",False
+train_GSM8K_Q3459,1872,936,False,False,2,"[' 2*234 = 468', ' 4*468 = 1872']",False
+train_GSM8K_Q3476,25,25,True,False,3,"[' 12 + 5 = 17', ' 12 - 4 = 8', ' 17 + 8 = 25']",False
+train_GSM8K_Q3479,50,18,False,False,1,[' 3*8 = 24'],False
+train_GSM8K_Q3524,30,30,True,True,3,"[' 200 = 120', ' 120 = 60', ' 60 = 30']",True
+train_GSM8K_Q3541,3,3,True,False,2,"[' 2 + 1 + 2 = 5', ' 1 + 1 = 2']",False
+train_GSM8K_Q3587,20,20,True,True,3,"[' / 5 = 10', ' 3*10 = 30', ' 50 - 30 = 20']",True
+train_GSM8K_Q3594,20,20,True,False,0,[],False
+train_GSM8K_Q3598,260,260,True,False,1,['\n80 + 60 + 120 = 260'],False
+train_GSM8K_Q3604,900,900,True,False,0,[],False
+train_GSM8K_Q3684,50,35,False,False,3,"[' 50 - 15 = 35', ' 25 + 35 + 40 = 100', ' 400 / 8 = 50']",False
+train_GSM8K_Q3705,427,477,False,False,2,"[' 327 + 50 = 377', ' 377 + 50 = 427']",False
+train_GSM8K_Q3767,4,200,False,False,4,"[' 20 + 9 = 29', ' 6/2 = 3', ' 5*8 = 40']",False
+train_GSM8K_Q3806,1640,1640,True,True,1,[' = 12'],True
+train_GSM8K_Q3855,8,8,True,False,2,"[' 4 + 6 = 10', ' 10 - 2 = 8']",False
+train_GSM8K_Q3886,79,79,True,True,3,"[' = 39', ' = 40', ' = 79']",True
+train_GSM8K_Q3899,117,117,True,False,0,[],False
+train_GSM8K_Q3998,54,54,True,False,2,"[' 8*7 = 56', ' 56 - 2 = 54']",False
+train_GSM8K_Q4000,2,2,True,False,3,"[' 4*5 = 20', ' 3*6 = 18', ' 20 - 18 = 2']",False
+train_GSM8K_Q4018,200,200,True,False,0,[],False
+train_GSM8K_Q4061,104,104,True,True,3,"[' 8*5 = 40', '2 = 144', ' 144 - 40 = 104']",True
+train_GSM8K_Q4082,192,21,False,True,14,"[' 3*5 = 15', ' 3*2 = 6', ' 15 + 6 = 21']",False
+train_GSM8K_Q4085,4,4,True,False,4,"[' 12*1 = 12', ' 12 - 2 = 10', ' 10*3/5 = 6']",False
+train_GSM8K_Q4086,64,64,True,True,2,"[' 100 - 20% = 80', ' 80 - 20% = 64']",True
+train_GSM8K_Q4087,160,160,True,True,3,"[' 3(50) = 150', ' x + 10 = 150', ' + 10 = 160']",True
+train_GSM8K_Q4113,240,60,False,True,2,"[' = 40', ' = 40']",False
+train_GSM8K_Q4138,15,15,True,False,2,"[' 12 + 4 = 16', ' 16 - 1 = 15']",False
+train_GSM8K_Q4160,3,30,False,False,0,[],False
+train_GSM8K_Q4171,55,80,False,False,0,[],False
+train_GSM8K_Q4189,68,68,True,False,0,[],False
+train_GSM8K_Q4203,2,45,False,False,0,[],False
+train_GSM8K_Q4222,72,72,True,False,0,[],False
+train_GSM8K_Q4224,2,2,True,False,0,[],False
+train_GSM8K_Q4244,22000,22000,True,False,0,[],False
+train_GSM8K_Q4256,5,5,True,True,3,"[' = 3', ' = 2', ' = 5']",True
+train_GSM8K_Q4257,720,720,True,False,0,[],False
+train_GSM8K_Q4265,50,50,True,True,5,"[' 5*3 = 15', ' 10*2 = 20', ' = 15']",True
+train_GSM8K_Q4283,6,240,False,True,2,"[' = 4', ' = 80']",False
+train_GSM8K_Q4287,60,50,False,False,2,"[' 80 + 10 = 90', ' 90 - 30 = 60']",False
+train_GSM8K_Q4347,6,14,False,True,5,"[' = 8', ' = 14', ' = 2']",False
+train_GSM8K_Q4354,10,10,True,False,0,[],False
+train_GSM8K_Q4359,8,8,True,True,3,"[' = 4', ' = 40', ' = 2']",True
+train_GSM8K_Q4370,8,9,False,False,0,[],False
+train_GSM8K_Q4382,5,4,False,False,3,"[' 8*8 = 64', ' 64 / 2 = 32', ' 48 / 32 = 1.5']",False
+train_GSM8K_Q4389,40,2,False,True,6,"[' 5*2 = 10', ' 5*3 = 15', ' 5*1 = 5']",False
+train_GSM8K_Q4425,160,136,False,False,1,[' 64 + 96 = 160'],False
+train_GSM8K_Q4437,780,780,True,False,0,[],False
+train_GSM8K_Q4470,0,630,False,False,0,[],False
+train_GSM8K_Q4476,17,17,True,True,4,"[' = 12', ' + 18 + 21 = 51', ' = 51']",True
+train_GSM8K_Q4492,63,63,True,False,2,"[' 3*3 = 9', ' 7*9 = 63']",False
+train_GSM8K_Q4525,30,30,True,False,3,"[' 60 - 10 = 50', ' 50 / 2 = 25', ' 25 + 5 = 30']",False
+train_GSM8K_Q4569,30,40,False,False,0,[],False
+train_GSM8K_Q4586,10,10,True,False,0,[],False
+train_GSM8K_Q4596,9600,9600,True,True,2,"[' 4*200 = 800', ' x 12 = 9600']",True
+train_GSM8K_Q4607,320,320,True,True,2,"[') = 400', ' = 320']",True
+train_GSM8K_Q4618,55,55,True,False,0,[],False
+train_GSM8K_Q4643,23,23,True,True,3,"[' 34 + 32 = 66', ', X = 89', ' - 66 = 23']",True
+train_GSM8K_Q4666,20,20,True,False,3,"[' 80 / 2 = 40', ' 80 / 4 = 20', ' 80 - 40 - 20 = 20']",False
+train_GSM8K_Q4686,11,5,False,False,2,"[' 10 - 2 = 8', ' 8 + 3 = 11']",False
+train_GSM8K_Q4700,0,42,False,True,2,"[' = 0', ' = 0']",False
+train_GSM8K_Q4741,76,76,True,False,3,"[' 3*12 = 36', ' 2*20 = 40', ' 36 + 40 = 76']",False
+train_GSM8K_Q4753,10,10,True,True,8,"[' 20 - 6 = 14', ' 14 - 8 = 6', ' x 100\n= 8']",True
+train_GSM8K_Q4765,21,21,True,True,2,"[' 1.4 (1.4 = 40', ').\n\n15*1.4 = 21']",True
+train_GSM8K_Q4768,20,20,True,False,0,[],False
+train_GSM8K_Q4769,30,30,True,True,4,"[' = 20', ' = 10', '\n= 20']",True
+train_GSM8K_Q4771,63,63,True,False,0,[],False
+train_GSM8K_Q4773,706,706,True,False,4,"[' 5*42 = 210', ' 10*30 = 300', ' 7*28 = 196']",False
+train_GSM8K_Q4803,2,2,True,True,2,"[' 3*4 = 12', ' = 2']",True
+train_GSM8K_Q4824,110,110,True,True,3,"[' 20 = 60', ' 60 / 2 = 30', ' 20 + 60 + 30 = 110']",True
+train_GSM8K_Q4879,4,4,True,False,3,"[' 30 - 20 = 10', ' 10 / 2 = 5', ' 5 - 1 = 4']",False
+train_GSM8K_Q4885,150,150,True,False,0,[],False
+train_GSM8K_Q4906,60,20,False,True,5,"[' = 2', ' = 2', ' = 40']",False
+train_GSM8K_Q4965,3,45500,False,False,0,[],False
+train_GSM8K_Q4984,4,4,True,False,0,[],False
+train_GSM8K_Q5002,800,800,True,False,0,[],False
+train_GSM8K_Q5007,3,3,True,False,0,[],False
+train_GSM8K_Q5011,0,100,False,False,0,[],False
+train_GSM8K_Q5049,6,24,False,False,2,"[' 3/3 = 1', ' 2*3 = 6']",False
+train_GSM8K_Q5072,20,60,False,False,0,[],False
+train_GSM8K_Q5073,3,6,False,True,2,"[', 9*1/3 = 6', ' 9 - 6 = 3']",False
+train_GSM8K_Q5122,24,21,False,False,3,"[' 45 / 3 = 15', ' 45 / 5 = 9', ' 15 + 9 = 24']",False
+train_GSM8K_Q5123,20,40,False,False,0,[],False
+train_GSM8K_Q5158,0,2,False,False,0,[],False
+train_GSM8K_Q5163,2,2,True,True,4,"[' = 120', ' = 2', ' = 120']",True
+train_GSM8K_Q5195,1075,1075,True,False,0,[],False
+train_GSM8K_Q5200,10,100,False,True,4,"[' x = 0.3', ' x + 0.3x = 0.4', '\n0.4x - x = 0.1']",False
+train_GSM8K_Q5244,8,8,True,True,2,"[' = 20', ' = 8']",True
+train_GSM8K_Q5271,32,32,True,True,1,[' = 32'],True
+train_GSM8K_Q5273,33,220,False,False,0,[],False
+train_GSM8K_Q5278,7,7,True,False,1,[' 28/4 = 7'],False
+train_GSM8K_Q5289,0,140,False,False,0,[],False
+train_GSM8K_Q5328,680,680,True,False,0,[],False
+train_GSM8K_Q5333,3,3,True,False,3,"[' (3 + 2) = 5', ' (2 + 2 + 5) = 9', ' 9/3 = 3']",False
+train_GSM8K_Q5343,25,15,False,True,3,"[' = 3', '*10 = 30', ' 30 - 5 = 25']",False
+train_GSM8K_Q5348,561,88,False,False,0,[],False
+train_GSM8K_Q5378,80,160,False,False,0,[],False
+train_GSM8K_Q5395,48,48,True,False,2,"[' 5*8 = 40', ' 8 + 40 = 48']",False
+train_GSM8K_Q5416,50,3,False,True,4,"['1 = 50', '1 = 99', ' = 50']",False
+train_GSM8K_Q5428,0,150,False,False,0,[],False
+train_GSM8K_Q5450,8,6,False,False,0,[],False
+train_GSM8K_Q5468,6,6,True,False,2,"[' 18*3 = 54', ' 54 / 9 = 6']",False
+train_GSM8K_Q5475,75,41,False,True,3,"[' = 0.3', ' = 6', ' x + 15 = 75']",False
+train_GSM8K_Q5480,33,33,True,False,2,"['6*5 = 30', '30*0.10 = 3']",False
+train_GSM8K_Q5511,60,105,False,False,2,"[' 35 - 10 = 25', ' 25 + 35 = 60']",False
+train_GSM8K_Q5515,8,8,True,True,3,"[' 2x + x = 3', '\n\n3x = 24', '\n\nx = 8']",True
+train_GSM8K_Q5523,45,45,True,False,2,"[' 20 + 15 = 35', ' 80 - 35 = 45']",False
+train_GSM8K_Q5566,54,54,True,True,5,"[' = 120', ' = 120', '*0.5 = 60']",True
+train_GSM8K_Q5582,6,14,False,True,1,['. 40 - 10 = 30'],False
+train_GSM8K_Q5602,50,24,False,True,1,['.\n25% = 0.25'],False
+train_GSM8K_Q5623,3,3,True,True,5,"[' = 3', ' = 3', ' + 4 = 7']",True
+train_GSM8K_Q5681,450,450,True,False,0,[],False
+train_GSM8K_Q5682,18,18,True,False,5,"[' 5*18 = 90', ' 4*18 = 72', ' 5*18 = 90']",False
+train_GSM8K_Q5688,66,66,True,False,2,"['\n5*2 = 10', '\n3*4 = 12']",False
+train_GSM8K_Q5695,7,9,False,True,3,"[' x 1.5 = 3', ' = 2', ' 2 + 3 + 2 = 7']",False
+train_GSM8K_Q5699,12,10,False,True,2,"['10 = 12', '10 = 12']",False
+train_GSM8K_Q5714,18,11,False,True,8,"[' 6/2 = 3', ' = 3', '*3 = 9']",False
+train_GSM8K_Q5737,22,22,True,False,2,"[' 2*14 = 28', ' 28 - 6 = 22']",False
+train_GSM8K_Q5751,1800,1800,True,False,3,"[' 20*30 = 600', ' 40*30 = 1200', ' 600 + 1200 = 1800']",False
+train_GSM8K_Q5763,170,3,False,True,6,"[' = 52', ' = 38', ' = 40']",False
+train_GSM8K_Q5793,40,22,False,False,6,"[' 3*5 = 15', ' 37 - 15 = 22', ' 27 - 7 = 20']",False
+train_GSM8K_Q5812,160,248,False,True,2,"[' = 25', ' = 3']",False
+train_GSM8K_Q5826,8,20,False,False,1,['\n\n20 ÷ 8 = 2.5'],False
+train_GSM8K_Q5872,3,24,False,False,0,[],False
+train_GSM8K_Q5873,2,2,True,False,2,"[' 15 - 5 = 10', ' 10*0.2 = 2']",False
+train_GSM8K_Q5878,66,66,True,False,0,[],False
+train_GSM8K_Q5896,8,16,False,False,3,"[' 6*2 = 12', ' 12*2 = 24', ' 24 / 3 = 8']",False
+train_GSM8K_Q5911,20,20,True,True,4,"[' = 5', '*8 = 40', ' = 5']",True
+train_GSM8K_Q5934,100,3,False,False,0,[],False
+train_GSM8K_Q5967,59,150,False,True,6,"[' 20/100 = 1', ' 20/100 = 1', ' 30/100 = 3']",False
+train_GSM8K_Q5977,5,13,False,True,2,"[' - 2*8 = 16', ' 16 - 5 = 11']",False
+train_GSM8K_Q5987,40,10,False,False,0,[],False
+train_GSM8K_Q5992,75,100,False,False,0,[],False
+train_GSM8K_Q6040,25,25,True,True,1,[' = 3'],True
+train_GSM8K_Q6077,42,42,True,True,6,"[' = 51', ' + 5 = 56', ' = 56']",True
+train_GSM8K_Q6095,13,13,True,True,3,"[' 13 = 2', ' + (8x) + 13 = 2', ' x = 20']",True
+train_GSM8K_Q6103,3,120,False,False,0,[],False
+train_GSM8K_Q6106,1400,1400,True,False,1,[' 14*100 = 1400'],False
+train_GSM8K_Q6147,30,5,False,False,0,[],False
+train_GSM8K_Q6165,11,11,True,False,0,[],False
+train_GSM8K_Q6166,14,14,True,True,5,"[' = 65', ' = 13', ' + 8 + 18 + 12 = 51']",True
+train_GSM8K_Q6170,4,5,False,False,0,[],False
+train_GSM8K_Q6175,33,7,False,True,2,"[' = 20', ' = 3.33']",False
+train_GSM8K_Q6184,6,6,True,False,2,"[' 4*3 = 12', ' 12/2 = 6']",False
+train_GSM8K_Q6185,48,3,False,True,3,"[' 2*6 = 12', '\nx/4 = 12', '\nx = 48']",False
+train_GSM8K_Q6197,4,4,True,True,4,"[' = 600', ' = 150', ' = 750']",True
+train_GSM8K_Q6198,100,100,True,True,4,"['\n\n200 + 2x + x = 500', '\n\n600 = 2', '\n\n3x = 300']",True
+train_GSM8K_Q6226,65,65,True,True,3,"[' 60 + 75 = 135', '.\n200 - 135 = 65', '.\n200 - 135 = 65']",True
+train_GSM8K_Q6250,320,55,False,True,7,"[' 3x + 5 = 20', ' 3x = 15', ' x = 5']",False
+train_GSM8K_Q6280,97,97,True,False,0,[],False
+train_GSM8K_Q6306,10,8,False,True,4,"[' 40 - 8 = 32', ', x = 32', ' / (x/3) = 32']",False
+train_GSM8K_Q6321,2,6,False,True,6,"['\n4x + 2 = 4', '(2x - 2) + 2\n4x + 2 = 8', 'x - 4 + 2\n4x = 8']",False
+train_GSM8K_Q6331,25,15,False,True,2,"[' = 25', ' = 25']",False
+train_GSM8K_Q6351,30,20,False,True,4,"[') = 10', ' + 20 = 30', ' 30 + x = 40']",False
+train_GSM8K_Q6357,11,11,True,False,0,[],False
+train_GSM8K_Q6459,27,11,False,False,0,[],False
+train_GSM8K_Q6472,31,31,True,False,2,"[' 2*12 = 24', ' 7 + 24 = 31']",False
+train_GSM8K_Q6494,8,8,True,True,2,"[' 6/4 = 1', ' 1 1/2 - 8 = 6']",True
+train_GSM8K_Q6504,22,22,True,False,3,"[' 12 / 2 = 6', ' 4*6 = 24', '\n24 - 2 = 22']",False
+train_GSM8K_Q6525,75,75,True,False,0,[],False
+train_GSM8K_Q6526,16,16,True,False,1,['\n1 + 3 + 4 + 4 + 4 = 16'],False
+train_GSM8K_Q6529,5300,5200,False,True,3,"[' 2073 + 4112 + 985 = 7170', ' 2073 + 4112 = 6285', ' 6285 - 985 = 5300']",False
+train_GSM8K_Q6531,6,6,True,False,3,"[' 20 - 6 = 14', ' 14 - 6 = 8', ' 8 - 6 = 2']",False
+train_GSM8K_Q6532,3,3,True,False,3,"[' 6 + 2 = 8', ' 3*3 = 9', ' 8 - 9 = -1']",False
+train_GSM8K_Q6552,10,10,True,False,0,[],False
+train_GSM8K_Q6575,1080,1320,False,False,0,[],False
+train_GSM8K_Q6580,20,20,True,False,1,[' 100 - 80 = 20'],False
+train_GSM8K_Q6591,26,26,True,True,6,"[' 2 = 35', ' = 70', ' 4 = 48']",True
+train_GSM8K_Q6606,9,6,False,True,3,"['\n50 + 9 + 121 = 180', '\n1,500 - 180 = 1,320', ' 1320 / 220 = 5.9']",False
+train_GSM8K_Q6720,30,30,True,True,3,"[' 1/3*45 = 15', ' = 45', ' - 15 = 30']",True
+train_GSM8K_Q6736,16,16,True,False,3,"[' 4*2 = 8', ' 8 / 2 = 4', ' 4 + 8 + 4 = 16']",False
+train_GSM8K_Q6741,150,150,True,False,0,[],False
+train_GSM8K_Q6782,141,141,True,True,11,"[' 7*18 = 126', ' 126 + 15 = 141', ' 141*3 = 423']",True
+train_GSM8K_Q6785,40,40,True,True,4,"[' = 120', ' = 20', ' 2\n= 20']",True
+train_GSM8K_Q6801,16,16,True,False,2,"[' 20 - 7 - 3 + 4 = 14', ' 14 + 2 = 16']",False
+train_GSM8K_Q6823,40,5,False,True,2,"[' = 20', ' = 20']",False
+train_GSM8K_Q6830,17,17,True,False,0,[],False
+train_GSM8K_Q6840,75,50,False,False,0,[],False
+train_GSM8K_Q6889,108,2,False,False,0,[],False
+train_GSM8K_Q6899,325,325,True,True,3,"[' x 1.5 = 150', ' / 2 = 75', ' 100 + 150 + 75 = 325']",True
+train_GSM8K_Q6911,800,800,True,True,2,"[' 20*8 = 160', ' = 800']",True
+train_GSM8K_Q6929,750,750,True,False,3,"[' 10*300 = 3000', ' 3/4*3000 = 2250', ' 3000 - 2250 = 750']",False
+train_GSM8K_Q6931,6,6,True,False,2,"[' 9 - 1.75 = 7.25', ' 7.25 - 1.25 = 6']",False
+train_GSM8K_Q6932,120,120,True,True,5,"[' = 40', ' = 2', ' = 80']",True
+train_GSM8K_Q6982,20,20,True,False,3,"[' 100 - 8 = 92', ' 92 / 4 = 23', ' 23 - 3 = 20']",False
+train_GSM8K_Q7018,400,400,True,False,0,[],False
+train_GSM8K_Q7041,10,5,False,False,1,[' 5 + 10 = 15'],False
+train_GSM8K_Q7054,39,35,False,True,2,"[' (4*17 = 68', ' 17 + 22 = 39']",False
+train_GSM8K_Q7075,360,80,False,True,5,"[' = 240', ' = 1,936,000', ' = 1,936,000']",False
+train_GSM8K_Q7156,4,7,False,True,3,"[' = 700', ' = 2.33', ' = 18.4']",False
+train_GSM8K_Q7167,250,295,False,True,3,"[' = 150', '\n= 150', ' - x + x\n= 250']",False
+train_GSM8K_Q7187,37,37,True,False,3,"[' 3*5 = 15', ' 11*2 = 22', ' 15 + 22 = 37']",False
+train_GSM8K_Q7223,80,16,False,False,0,[],False
+train_GSM8K_Q7235,7,7,True,False,1,['\n\n28 ÷ 4 = 7'],False
+train_GSM8K_Q7259,38000,38000,True,False,4,"[' 8*1000 = 8000', ' 6*1000 = 6000', ' 4*8000 = 32000']",False
+train_GSM8K_Q7291,75,75,True,False,3,"[' 300/2 = 150', ' 150/2 = 75', ' 75/2 = 37.5']",False
+train_GSM8K_Q7310,62,82,False,False,0,[],False
+train_GSM8K_Q7313,100,72,False,True,2,"['\n\n2x + 4 = 220', '\n\nx = 100']",False
+train_GSM8K_Q7314,12,21,False,False,3,"[' 3*4 = 12', ' 3*6 = 18', ' 18 + 12 = 30']",False
+train_GSM8K_Q7320,4,2,False,True,5,"[' = 50', ' = 200', ' = 100']",False
+train_GSM8K_Q7333,50000,67500,False,True,5,"[' x + 0.5x = 1.5', '\nx + (x + 0.5x) = 45,000', '\nx + 0.5x = 45,000']",False
+train_GSM8K_Q7344,2,2,True,False,1,[' 2*8 = 16'],False
+train_GSM8K_Q7370,11,5,False,False,2,"[' 4 + 6 = 10', ' 15 - 4 = 11']",False
+train_GSM8K_Q7384,7,7,True,True,2,"[' (9 + 12 = 21', ' 3.\n21 ÷ 3 = 7']",True
+train_GSM8K_Q7388,0,400,False,False,0,[],False
+train_GSM8K_Q7389,56,35,False,True,4,"[' = 8', ' = 8', ' = 56']",False
+train_GSM8K_Q7396,42,420,False,False,1,[' 84/2 = 42'],False
+train_GSM8K_Q7406,20,20,True,False,0,[],False
+train_GSM8K_Q7417,25,15,False,True,13,"[' 5*3 = 15', ' 18 / 3 = 6', ' 7*3 = 21']",False
+train_GSM8K_Q7449,96,96,True,False,0,[],False

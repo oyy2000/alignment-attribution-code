@@ -1,0 +1,455 @@
+id,final_pred,gold,final_correct,process_has_error,process_wrong_but_answer_correct,wrong_steps_json
+train_GSM8K_Q2716,9,9,True,False,False,[]
+train_GSM8K_Q7018,400,400,True,False,False,[]
+train_GSM8K_Q6175,7,7,True,False,False,[]
+train_GSM8K_Q416,78,78,True,False,False,[]
+train_GSM8K_Q5992,100,100,True,False,False,[]
+test_GSM8K_Q114,25,25,True,False,False,[]
+train_GSM8K_Q6932,120,120,True,False,False,[]
+train_GSM8K_Q6830,17,17,True,False,False,[]
+train_GSM8K_Q6823,5,5,True,True,True,"[""40 pages / 15 pages per 5 minutes = 2.67 minutes per page"", ""40 pages / 15 pages per 3 minutes = 2.67 minutes per page"", ""Total time for Meso and Tyler to type 40 pages = Meso's time + Tyler's time = 5.34 minutes""]"
+train_GSM8K_Q4257,720,720,True,False,False,[]
+train_GSM8K_Q1265,2520000,2520000,True,False,False,[]
+test_GSM8K_Q1106,40,40,True,True,True,"[""Amount Lauren needs to save each month = $100,000 x 0.20 = $20,000"", ""Number of years Lauren needs to work = $200,000 (retirement goal) / $20,000 (monthly savings) = 10 years""]"
+train_GSM8K_Q3855,8,8,True,False,False,[]
+train_GSM8K_Q1125,14,14,True,True,True,"[""75% of 12 blouses = 9 blouses (since 75% is equal to 9/10)"", ""50% of 6 skirts = 3 skirts (since 50% is equal to 3/5)"", ""25% of 8 slacks = 2 slacks (since 25% is equal to 2/5)""]"
+train_GSM8K_Q5511,105,105,True,False,False,[]
+train_GSM8K_Q7313,72,72,True,False,False,[]
+train_GSM8K_Q6147,5,5,True,True,True,"[""Rick saved half of the cost of the gift (which is $250 - $155 = $100)"", ""Total cost of gift and cake = $250"", ""Amount they have left after buying the gift and cake = $255 - $250 = $5""]"
+train_GSM8K_Q477,92,92,True,False,False,[]
+test_GSM8K_Q388,36,36,True,False,False,[]
+test_GSM8K_Q1101,5,5,True,True,True,"[""Therefore, Bobby's lunches and breaks add up to 1 hour after 5 days.""]"
+train_GSM8K_Q2165,18,18,True,False,False,[]
+train_GSM8K_Q6840,50,50,True,False,False,[]
+train_GSM8K_Q7344,2,2,True,False,False,[]
+train_GSM8K_Q2581,200,200,True,True,True,"[""80 oranges / 10 pieces per orange = 800 pieces of orange.""]"
+train_GSM8K_Q5566,54,54,True,False,False,[]
+test_GSM8K_Q357,21,21,True,True,True,"[""Dean's mother gave him $28, so she gave him: $28 - $17 = $11 more than he spent"", ""Dean had $11 from his mother, plus the $10 she gave him earlier, so he has: $11 + $10 = $21 left""]"
+train_GSM8K_Q5278,7,7,True,False,False,[]
+test_GSM8K_Q997,3,3,True,True,True,"[""x + 2x + Alessandro's age + Akbar's age = 20"", ""x + 2x + 4 + 3 = 20""]"
+train_GSM8K_Q2081,413,413,True,False,False,[]
+train_GSM8K_Q1367,55,55,True,False,False,[]
+train_GSM8K_Q4741,76,76,True,False,False,[]
+test_GSM8K_Q425,570,570,True,False,False,[]
+train_GSM8K_Q6580,20,20,True,False,False,[]
+test_GSM8K_Q234,12,12,True,False,False,[]
+train_GSM8K_Q2239,43,43,True,False,False,[]
+test_GSM8K_Q82,17,17,True,False,False,[]
+train_GSM8K_Q1952,10,10,True,True,True,"[""Since she eats 5 chips on the first day, the number of chips she eats on the first day is 5."", ""Since she likes the chips and eats 5 more, the number of chips she eats each day after the first day is 10."", ""100 chips / 10 chips per day = 10 days""]"
+train_GSM8K_Q5122,21,21,True,False,False,[]
+train_GSM8K_Q5244,8,8,True,False,False,[]
+train_GSM8K_Q1259,1350,1350,True,False,False,[]
+train_GSM8K_Q467,80,80,True,True,True,"[""d. Finally, let's convert the number of days to hours:\n\t* 10 days \\* 8 hours/day = 80 hours""]"
+train_GSM8K_Q3405,355,355,True,False,False,[]
+train_GSM8K_Q1859,200000,200000,True,False,False,[]
+train_GSM8K_Q2132,2,2,True,True,True,"[""Area of each right triangle is: Area = base x height = 2 x height = 2 x 2 = 4 square inches"", ""Total area of right triangles = area of square / area of each right triangle = 4 square inches / 4 square inches = 1""]"
+train_GSM8K_Q5378,160,160,True,False,False,[]
+train_GSM8K_Q592,2,2,True,False,False,[]
+test_GSM8K_Q221,70,70,True,False,False,[]
+train_GSM8K_Q6525,75,75,True,False,False,[]
+train_GSM8K_Q938,35,35,True,False,False,[]
+train_GSM8K_Q3033,700,700,True,True,True,"[""Since he gives away 700 kg on Friday, that means he has 1300 kg of tomatoes left on Friday (2000 - 700 = 1300)."", ""We know that Tedra has 1300 kg of tomatoes left on Friday. If he gives away 700 kg, then he has 600 kg of tomatoes remaining (1300 - 700 = 600).""]"
+train_GSM8K_Q1950,12,12,True,False,False,[]
+test_GSM8K_Q456,1920,1920,True,False,False,[]
+train_GSM8K_Q6040,25,25,True,False,False,[]
+train_GSM8K_Q6529,5200,5200,True,True,True,"[""Onions - (Tomatoes + Corn) = 985 - 6185 = -5200""]"
+train_GSM8K_Q1857,45,45,True,False,False,[]
+train_GSM8K_Q5695,9,9,True,False,False,[]
+train_GSM8K_Q2232,3,3,True,False,False,[]
+test_GSM8K_Q61,17,17,True,False,False,[]
+train_GSM8K_Q2793,35,35,True,False,False,[]
+train_GSM8K_Q5428,150,150,True,False,False,[]
+train_GSM8K_Q5011,100,100,True,False,False,[]
+train_GSM8K_Q4965,45500,45500,True,False,False,[]
+test_GSM8K_Q686,14,14,True,False,False,[]
+test_GSM8K_Q1164,12,12,True,False,False,[]
+train_GSM8K_Q6351,20,20,True,True,True,"[""Tyler ate one and a half times more than Jerome, so he ate 30 pizza rolls.""]"
+train_GSM8K_Q7384,7,7,True,False,False,[]
+train_GSM8K_Q2448,21,21,True,False,False,[]
+train_GSM8K_Q1780,4380,4380,True,False,False,[]
+train_GSM8K_Q955,1200,1200,True,True,True,"[""1. How many apples does Pam have in total? We know that Pam has 10 bags of apples, and each bag has as many apples as 3 of Gerald's bags. So, the total number of apples Pam has is:\n10 bags x 3 bags per bag = 30 bags of apples"", ""2. How many apples does each bag of Pam's have? Since Gerald's bags have 40 apples each, and Pam has 30 bags of apples, we can find out how many apples each bag of Pam's has by dividing the total number of apples by the number of bags:\n30 bags of apples ÷ 30 bags = 1 bag of apples"", ""3. How many apples does Gerald have? Since Gerald has 40 apples in each of his bags, and Pam has 30 bags of apples, we can find out how many apples Gerald has by multiplying the number of bags Pam has by the number of apples in each bag of Gerald's:\n30 bags of apples x 40 apples per bag = 1200 apples""]"
+train_GSM8K_Q4082,21,21,True,False,False,[]
+train_GSM8K_Q7187,37,37,True,False,False,[]
+test_GSM8K_Q795,32,32,True,False,False,[]
+test_GSM8K_Q1016,78,78,True,False,False,[]
+train_GSM8K_Q5007,3,3,True,False,False,[]
+train_GSM8K_Q2462,14000,14000,True,False,False,[]
+train_GSM8K_Q4389,2,2,True,False,False,[]
+train_GSM8K_Q7370,5,5,True,False,False,[]
+train_GSM8K_Q667,125,125,True,False,False,[]
+train_GSM8K_Q5763,3,3,True,True,True,"[""Total number of students = 26 + 19 + 20 + 25 = 100"", ""Time = 100 students x 2 minutes/student = 200 minutes"", ""Time = 200 minutes / 60 = 3.33 hours""]"
+train_GSM8K_Q1646,15,15,True,False,False,[]
+train_GSM8K_Q4686,5,5,True,True,True,"[""10 - 0 = 10"", ""10 - 2 = 8"", ""8 - 3 = 5""]"
+train_GSM8K_Q6494,8,8,True,True,True,"[""6 cups = 6 x 4 = 24 1/4 cups"", ""remove 24 1/4 cups / 4 = 6 scoops""]"
+train_GSM8K_Q5416,3,3,True,True,True,"[""Box A: $25 / $0.50 per contact = 50 contacts"", ""Box B: $33 / $0.34 per contact = 99 contacts""]"
+train_GSM8K_Q2750,80,80,True,False,False,[]
+train_GSM8K_Q54,36,36,True,False,False,[]
+train_GSM8K_Q6911,800,800,True,False,False,[]
+train_GSM8K_Q3437,9,9,True,False,False,[]
+train_GSM8K_Q6321,6,6,True,True,True,"[""2x - 2 = the number of Bennett's brothers"", ""x = the number of Bennett's brothers + 2"", ""x = 4 + 2 = 6""]"
+train_GSM8K_Q5873,2,2,True,False,False,[]
+train_GSM8K_Q490,12,12,True,False,False,[]
+train_GSM8K_Q3476,25,25,True,False,False,[]
+train_GSM8K_Q6929,750,750,True,False,False,[]
+test_GSM8K_Q777,800,800,True,False,False,[]
+train_GSM8K_Q5878,66,66,True,False,False,[]
+train_GSM8K_Q3418,35,35,True,False,False,[]
+test_GSM8K_Q505,2,2,True,True,True,"[""1. First, let's calculate the total cost of the strawberry gum Suzie bought:\n2 packs x $2 per pack = $4"", ""2. Next, let's find out how much the green apple gum cost:\n$7 - $4 = $3""]"
+train_GSM8K_Q1422,35,35,True,True,True,"[""84 - 21 = 63"", ""63 - 28 = 35""]"
+test_GSM8K_Q1117,60,60,True,False,False,[]
+train_GSM8K_Q6899,325,325,True,False,False,[]
+train_GSM8K_Q4769,30,30,True,False,False,[]
+train_GSM8K_Q4803,2,2,True,False,False,[]
+train_GSM8K_Q1626,80,80,True,False,False,[]
+train_GSM8K_Q5002,800,800,True,False,False,[]
+train_GSM8K_Q1942,216,216,True,True,True,"[""Kayla's amount = $30 - Vika's amount = $30 - $84 = $54.""]"
+test_GSM8K_Q379,15,15,True,False,False,[]
+train_GSM8K_Q3191,210,210,True,False,False,[]
+train_GSM8K_Q6306,8,8,True,False,False,[]
+test_GSM8K_Q920,90,90,True,True,True,"[""10 lollipops x $0.8 per lollipop = $0.80 per student"", ""$0.80 per student x 30 students = $2.40""]"
+train_GSM8K_Q960,25,25,True,False,False,[]
+train_GSM8K_Q2305,97,97,True,False,False,[]
+test_GSM8K_Q1005,8,8,True,True,True,"[""x - y = 64 - 56 = 8""]"
+test_GSM8K_Q75,88,88,True,False,False,[]
+test_GSM8K_Q275,3200,3200,True,False,False,[]
+train_GSM8K_Q3026,96,96,True,False,False,[]
+train_GSM8K_Q2903,4,4,True,False,False,[]
+train_GSM8K_Q7291,75,75,True,True,True,"[""* Offices: 300 / 2 = 150 offices"", ""* Restaurants: 300 / 2 = 150 restaurants"", ""Number of restaurants = 150 restaurants / 300 units = 0.5 restaurants per unit""]"
+train_GSM8K_Q2792,155,155,True,False,False,[]
+train_GSM8K_Q1332,40,40,True,False,False,[]
+test_GSM8K_Q654,80,80,True,False,False,[]
+train_GSM8K_Q3767,200,200,True,False,False,[]
+train_GSM8K_Q4470,630,630,True,False,False,[]
+train_GSM8K_Q1492,100,100,True,False,False,[]
+train_GSM8K_Q2258,750,750,True,False,False,[]
+train_GSM8K_Q5049,24,24,True,False,False,[]
+train_GSM8K_Q2814,450,450,True,True,True,"[""The cost of fixing her automobile is $350 + $50 = $400."", ""3X = $400 + $50"", ""X = $450""]"
+test_GSM8K_Q874,12,12,True,False,False,[]
+train_GSM8K_Q6736,16,16,True,False,False,[]
+train_GSM8K_Q4382,4,4,True,True,True,"[""64 x 3 = 48"", ""3 = 48 / 64""]"
+train_GSM8K_Q4569,40,40,True,False,False,[]
+train_GSM8K_Q7235,7,7,True,True,True,"[""and her three friends will receive 7 dominoes each, for a total of 21 dominoes.""]"
+train_GSM8K_Q1356,280,280,True,False,False,[]
+train_GSM8K_Q1620,30,30,True,False,False,[]
+train_GSM8K_Q6197,4,4,True,True,True,"[""800g / 50g per small order = 16 small orders"", ""800g / 200g per large order = 4 large orders""]"
+train_GSM8K_Q2561,153,153,True,False,False,[]
+test_GSM8K_Q580,7,7,True,False,False,[]
+train_GSM8K_Q3998,54,54,True,False,False,[]
+train_GSM8K_Q487,4,4,True,True,True,"[""Tuesday: 2 x 2 = 4 inches"", ""Total rainfall for the week: 2 + 4 + 0 + 1 + x = ?""]"
+test_GSM8K_Q236,10,10,True,False,False,[]
+train_GSM8K_Q1100,10,10,True,False,False,[]
+train_GSM8K_Q5123,40,40,True,False,False,[]
+train_GSM8K_Q5987,10,10,True,False,False,[]
+train_GSM8K_Q4283,240,240,True,False,False,[]
+train_GSM8K_Q5699,10,10,True,False,False,[]
+train_GSM8K_Q1919,3,3,True,False,False,[]
+train_GSM8K_Q7389,35,35,True,False,False,[]
+train_GSM8K_Q3806,1640,1640,True,False,False,[]
+test_GSM8K_Q167,5,5,True,True,True,"[""So, Sandra will have to babysit her neighbor's daughter 5 times to get the 9 eggs she needs to make 15 Spanish flans.""]"
+train_GSM8K_Q2218,975,975,True,True,True,"[""The discount amount = 25% of $650 = $162.50."", ""To find the new price of each television, we can subtract the discount amount from the original price."", ""The new price of each television = $650 - $162.50 = $487.50.""]"
+test_GSM8K_Q1195,1200,1200,True,False,False,[]
+train_GSM8K_Q430,736,736,True,True,True,"[""We know that the remaining 80% of the English books are not published in the country""]"
+train_GSM8K_Q1432,5,5,True,False,False,[]
+train_GSM8K_Q2940,8,8,True,False,False,[]
+train_GSM8K_Q2241,5,5,True,True,True,"[""Frozen yogurt: 5 pints x $5/ pint = $25."", ""Chewing gum: 2 packs x $0.50/pack = $1."", ""$25 (from Step 2) / $1/2 = $50/2 = $25/ pint""]"
+train_GSM8K_Q2740,17600,17600,True,False,False,[]
+train_GSM8K_Q2203,100,100,True,False,False,[]
+train_GSM8K_Q6357,11,11,True,False,False,[]
+test_GSM8K_Q488,4,4,True,True,True,"[""5 pounds/horse x 4 horses = 20 pounds/day"", ""To find the total amount of oats needed for five days, we multiply the number of meals per day by the number of days: 2 meals/day x 5 days = 10 meals"", ""20 pounds/meal x 10 meals = 200 pounds""]"
+train_GSM8K_Q5333,3,3,True,False,False,[]
+train_GSM8K_Q4607,320,320,True,False,False,[]
+test_GSM8K_Q138,29,29,True,True,True,"[""Now, let's calculate the tip: $5.00 (tip) = $24.00 (total cost) x 0.20 (tip percentage)""]"
+train_GSM8K_Q3382,85,85,True,False,False,[]
+test_GSM8K_Q1148,22,22,True,True,True,"[""Lauren can draw 7 small-sized picture scenes per day.\n\nL = 45 / 5 = 9 days...\n\nS = 49 / 7 = 7 days"", ""Total days = 9 + 6 + 7 = 22 days""]"
+train_GSM8K_Q2615,3,3,True,True,True,"[""When Megan's aunt came over, Megan gave her half of her remaining eggs (6 eggs)"", ""Megan has 18 eggs left, and she wants to divide them equally for her next 3 meals.""]"
+train_GSM8K_Q6931,6,6,True,False,False,[]
+train_GSM8K_Q2867,5,5,True,False,False,[]
+train_GSM8K_Q945,7,7,True,False,False,[]
+test_GSM8K_Q1044,130000,130000,True,False,False,[]
+train_GSM8K_Q6198,100,100,True,True,True,"[""Substituting the value of x (which is twice the value of the third number), we get: Third number = 500 - 200 - 2(Third number)."", ""Simplifying the equation, we get: Third number = 500 - 200 - 4Third number.""]"
+train_GSM8K_Q3598,260,260,True,True,True,"[""Now, let's add the number of oranges Nora picked from the third tree: 120. + 140 = 260.""]"
+train_GSM8K_Q4018,200,200,True,False,False,[]
+train_GSM8K_Q6741,150,150,True,True,True,"[""* Sally has $80."", ""* If Sally had $20 less, she would have $80 - $20 = $60."", ""* If Jolly has $20 more, she would have $70 + $20 = $90."", ""Sally has $60, and Jolly has $90.""]"
+train_GSM8K_Q20,16,16,True,True,True,"[""So, the time it takes Tim to bike to work each day is: Time to work = 40 miles / 25 mph = 1.6 hours (each way)"", ""And the time it takes Tim to bike back home each day is: Time back home = 40 miles / 25 mph = 1.6 hours (each way)""]"
+train_GSM8K_Q4189,68,68,True,False,False,[]
+train_GSM8K_Q2566,60,60,True,False,False,[]
+test_GSM8K_Q33,35,35,True,False,False,[]
+test_GSM8K_Q306,4,4,True,False,False,[]
+train_GSM8K_Q3899,117,117,True,False,False,[]
+test_GSM8K_Q281,7,7,True,False,False,[]
+train_GSM8K_Q6185,3,3,True,True,True,"[""1/4 × 2 = 0.5 pizzas"", ""0.5 pizzas × 6 slices per pizza = 3 slices""]"
+train_GSM8K_Q6801,16,16,True,False,False,[]
+train_GSM8K_Q4000,2,2,True,False,False,[]
+train_GSM8K_Q2974,10,10,True,False,False,[]
+train_GSM8K_Q7167,295,295,True,False,False,[]
+train_GSM8K_Q2308,12,12,True,False,False,[]
+train_GSM8K_Q1005,1260,1260,True,True,True,"[""Since they work for 6 hours a day, and there are 7 days in total, the professionals work a total of: 6 hours/day x 7 days = 42 hours"", ""So, the professionals work a total of 42 hours.""]"
+train_GSM8K_Q3604,900,900,True,False,False,[]
+train_GSM8K_Q5934,3,3,True,False,False,[]
+train_GSM8K_Q4256,5,5,True,False,False,[]
+train_GSM8K_Q2327,45,45,True,False,False,[]
+test_GSM8K_Q1025,300,300,True,False,False,[]
+test_GSM8K_Q1244,50,50,True,True,True,"[""$X = $15.00 ÷ 30 = $0.50 per stick"", ""So, each stick of jerky costs $0.50 in cents.""]"
+train_GSM8K_Q2442,5,5,True,False,False,[]
+train_GSM8K_Q1440,5,5,True,False,False,[]
+train_GSM8K_Q4224,2,2,True,True,True,"[""Average cost per piece of fruit = Total cost ÷ Number of pieces = $40 ÷ 12 (apples) + 4 (bananas) + 4 (oranges) = $3.33 per apple""]"
+train_GSM8K_Q6532,3,3,True,True,True,"[""Number of logs left after 3 hours = 6 + 9"", ""Number of logs left after 3 hours = 15""]"
+train_GSM8K_Q2726,50,50,True,True,True,"[""3/4 x 10 = 7.5"", ""24 x 7.5 = 180""]"
+train_GSM8K_Q5343,15,15,True,False,False,[]
+train_GSM8K_Q4753,10,10,True,False,False,[]
+train_GSM8K_Q6606,6,6,True,False,False,[]
+train_GSM8K_Q2401,9,9,True,False,False,[]
+train_GSM8K_Q4171,80,80,True,False,False,[]
+train_GSM8K_Q4160,30,30,True,False,False,[]
+train_GSM8K_Q370,347,347,True,False,False,[]
+train_GSM8K_Q2705,2800,2800,True,True,True,"[""Percentage reduction = ($2400 - $4000) / $4000 = -30%"", ""New value = Original value x (1 - Percentage reduction)""]"
+test_GSM8K_Q904,16,16,True,True,True,"[""Jo can make 4 masks with 2 yards of material, so she can make 4 x 2 = 8 small masks with 2 yards of material."", ""For large masks, Jo can make 3 masks with 2.25 yards of material, so she can make 3 x 2.25 = 6.75 large masks with 2.25 yards of material."", ""To make 20 small masks, Jo would need 8 x 2 = 16 yards of material."", ""To make 8 large masks, Jo would need 6.75 x 2.25 = 15.5 yards of material."", ""Therefore, Jo would need a total of 16 + 15.5 = 31.5 yards of material.""]"
+train_GSM8K_Q5523,45,45,True,False,False,[]
+train_GSM8K_Q242,12,12,True,False,False,[]
+test_GSM8K_Q687,80,80,True,False,False,[]
+train_GSM8K_Q4087,160,160,True,True,True,"[""3x + 10 = 50"", ""x = 150""]"
+train_GSM8K_Q1451,25,25,True,False,False,[]
+train_GSM8K_Q5468,6,6,True,False,False,[]
+train_GSM8K_Q1813,3,3,True,False,False,[]
+train_GSM8K_Q6591,26,26,True,False,False,[]
+train_GSM8K_Q3236,43,43,True,False,False,[]
+train_GSM8K_Q5158,2,2,True,True,True,"[""The tip amount is the difference between the total amount and the bill amount = $18.00 - $20.00 = $2.00.""]"
+train_GSM8K_Q4596,9600,9600,True,False,False,[]
+train_GSM8K_Q7320,2,2,True,False,False,[]
+train_GSM8K_Q2336,6,6,True,False,False,[]
+train_GSM8K_Q5714,11,11,True,True,True,"[""2. Tom is one-third as fast a runner as Tina, so if Tina runs a mile in 6 minutes, Tom runs a mile in 6 minutes / 3 = 2 minutes.""]"
+train_GSM8K_Q1420,6,6,True,False,False,[]
+test_GSM8K_Q259,6,6,True,False,False,[]
+train_GSM8K_Q2514,23,23,True,True,True,"[""32 staff members - 6 chefs - 3 waiters = 23"", ""The model incorrectly combines all staff into one group instead of calculating chefs and waiters separately.""]"
+train_GSM8K_Q1349,50,50,True,False,False,[]
+train_GSM8K_Q2389,1260,1260,True,False,False,[]
+test_GSM8K_Q1186,6,6,True,True,True,"[""Total number of slices eaten = 36 + 24 = 60 slices"", ""Number of pizza pies = Total number of slices eaten / Number of slices in each pizza = 60 slices / 12 slices (cheese) = 60 slices / 8 slices (pepperoni) = 7.5 pizza pies (cheese) = 9 pizza pies (pepperoni)""]"
+train_GSM8K_Q2070,62,62,True,False,False,[]
+train_GSM8K_Q5073,6,6,True,False,False,[]
+train_GSM8K_Q6504,22,22,True,True,True,"[""Carla visited the monkeys and counted 4 times the number of camels as monkeys."", ""So, if there are 6 camels, then there are 6 x 4 = 24 monkeys.""]"
+train_GSM8K_Q6077,42,42,True,True,True,"[""14 cows x 4 (quarters) = 56 cows""]"
+train_GSM8K_Q4492,63,63,True,False,False,[]
+train_GSM8K_Q1200,3,3,True,False,False,[]
+train_GSM8K_Q2228,19,19,True,False,False,[]
+train_GSM8K_Q1301,10,10,True,True,True,"[""2 hours = 2 x 60 minutes = 120 minutes"", ""120 minutes + 480 minutes = 600 minutes""]"
+train_GSM8K_Q5681,450,450,True,False,False,[]
+train_GSM8K_Q1009,4,4,True,False,False,[]
+train_GSM8K_Q5896,16,16,True,False,False,[]
+train_GSM8K_Q5602,24,24,True,False,False,[]
+train_GSM8K_Q2106,80,80,True,True,True,"[""Total Cost = 10 x $10 = $100"", ""Total Cost = Total Cost - Cost of Free Lessons""]"
+train_GSM8K_Q3392,5,5,True,True,True,"[""1. Kelly spent the first day traveling, so there are 6 days left for her to visit her relatives."", ""2. She spent the next 5 days at her Grandparents' house, so there are 11 days left (6 days - 5 days = 11 days).""]"
+train_GSM8K_Q6889,2,2,True,True,True,"[""54 x $x = $216."", ""$216 - 54 x $x = $108"", ""54 x $x = $108""]"
+train_GSM8K_Q2476,75,75,True,True,True,"[""$0.25 per lollipop x 3 lollipops = $0.75"", ""Therefore, the answer is $0.75.""]"
+test_GSM8K_Q1091,72,72,True,True,True,"[""Since the first child is 6 feet tall, that means they are 72 inches tall (since there are 9 inches in a foot).""]"
+train_GSM8K_Q3090,9,9,True,False,False,[]
+train_GSM8K_Q533,132,132,True,False,False,[]
+train_GSM8K_Q5515,8,8,True,False,False,[]
+test_GSM8K_Q1149,9,9,True,False,False,[]
+train_GSM8K_Q4618,55,55,True,True,True,"[""* For each magazine sold to the other neighbor, she earned $5.00 x 2 = $10.00.""]"
+train_GSM8K_Q1977,22,22,True,False,False,[]
+train_GSM8K_Q4203,45,45,True,True,True,"[""subtract the time it takes to make the batter and bake the cookies (15 minutes)"", ""1 hour and 45 minutes (2 hours - 15 minutes)""]"
+train_GSM8K_Q2878,20,20,True,False,False,[]
+train_GSM8K_Q2153,14,14,True,False,False,[]
+train_GSM8K_Q4765,21,21,True,False,False,[]
+train_GSM8K_Q1316,27,27,True,False,False,[]
+test_GSM8K_Q463,71,71,True,False,False,[]
+train_GSM8K_Q1943,3,3,True,False,False,[]
+train_GSM8K_Q3007,25,25,True,True,True,"[""we can subtract the number of flavors she tried 2 years ago from the number of flavors she tried last year:\n\n50 - 25 = 25""]"
+train_GSM8K_Q7223,16,16,True,False,False,[]
+train_GSM8K_Q2548,30,30,True,False,False,[]
+test_GSM8K_Q122,27,27,True,False,False,[]
+train_GSM8K_Q4879,4,4,True,False,False,[]
+train_GSM8K_Q2456,184,184,True,False,False,[]
+train_GSM8K_Q2507,8,8,True,True,True,"[""6 hours x 1.33 = 7.8 hours of sleep per night""]"
+train_GSM8K_Q2477,2000,2000,True,True,True,"[""that means they will clean 80 x 5 = 400 cars in 5 days.""]"
+test_GSM8K_Q1029,200,200,True,False,False,[]
+train_GSM8K_Q5682,18,18,True,False,False,[]
+train_GSM8K_Q1514,12,12,True,False,False,[]
+train_GSM8K_Q4771,63,63,True,False,False,[]
+train_GSM8K_Q1454,16,16,True,True,True,"[""2000 g / 0.125 kg = 16 bars""]"
+train_GSM8K_Q2045,44,44,True,False,False,[]
+test_GSM8K_Q816,4,4,True,True,True,"[""Total ingredient equation: 6Z + 4Z = 10Z = 10 ounces..."", ""Thus, she uses Z = 10 / 10 = 1 ounce of zest.""]"
+train_GSM8K_Q4287,50,50,True,True,True,"[""Therefore, there are 50 black-haired girls in the choir (80 - 40 = 50).""]"
+train_GSM8K_Q4643,23,23,True,False,False,[]
+train_GSM8K_Q5967,150,150,True,False,False,[]
+train_GSM8K_Q867,100,100,True,False,False,[]
+train_GSM8K_Q439,12,12,True,False,False,[]
+train_GSM8K_Q2676,660,660,True,False,False,[]
+train_GSM8K_Q2772,3,3,True,False,False,[]
+train_GSM8K_Q3407,400,400,True,False,False,[]
+train_GSM8K_Q5395,48,48,True,False,False,[]
+train_GSM8K_Q4425,136,136,True,False,False,[]
+train_GSM8K_Q565,15,15,True,False,False,[]
+train_GSM8K_Q4885,150,150,True,False,False,[]
+train_GSM8K_Q5793,22,22,True,False,False,[]
+train_GSM8K_Q6170,5,5,True,True,True,"[""Substituting the values, we get: Number of months = 26.3 miles / (6 miles per month)"", ""Number of months = 4.5 months""]"
+train_GSM8K_Q5812,248,248,True,False,False,[]
+train_GSM8K_Q2658,16,16,True,False,False,[]
+train_GSM8K_Q6526,16,16,True,False,False,[]
+train_GSM8K_Q303,7,7,True,True,True,"[""3. Present 3: 2 x 2 square feet = 4 square feet"", ""2 + 1.5 + 4 = 7.5 square feet""]"
+test_GSM8K_Q554,92,92,True,False,False,[]
+test_GSM8K_Q165,15,15,True,False,False,[]
+train_GSM8K_Q6982,20,20,True,False,False,[]
+train_GSM8K_Q7054,35,35,True,False,False,[]
+test_GSM8K_Q617,10,10,True,False,False,[]
+train_GSM8K_Q4525,30,30,True,True,True,"[""Carson returned exactly 5 oranges, so the total number of oranges Johann has now is 25 + 5 = 30 oranges.""]"
+train_GSM8K_Q2769,45,45,True,False,False,[]
+test_GSM8K_Q1207,40000,40000,True,False,False,[]
+train_GSM8K_Q643,15,15,True,False,False,[]
+train_GSM8K_Q1398,3,3,True,True,True,"[""Marly adds 2 quarts of milk and three times as much chicken stock to 1 quart of pureed vegetables, so the total amount of liquid he adds is: 2 quarts + 3x = 1 quart"", ""Solve the equation for \""x\"". 2 quarts + 3x = 1 quart"", ""3x = 1 - 2 quarts"", ""x = 1 / 3"", ""1/3 of a quart / 3 quarts per bag = 1/3 of a bag""]"
+train_GSM8K_Q3459,936,936,True,True,True,"[""Beginning of Step 5: 936 newspapers/month x 4 weeks/month = 3744 newspapers/month (for Jake)"", ""2 x 3744 = 7488 newspapers/month (for Miranda)""]"
+train_GSM8K_Q4085,4,4,True,True,True,"[""So, there are 0.6 x 12 = 7.2 flowers that are tulips."", ""12 - 7.2 = 4.8""]"
+train_GSM8K_Q4984,4,4,True,True,True,"[""6 hours x 0.4 L per hour = 2.4 hours hiking."", ""Step 3: Find out how long Violet and her dog can spend hiking.""]"
+test_GSM8K_Q1309,30,30,True,False,False,[]
+train_GSM8K_Q539,3450,3450,True,False,False,[]
+train_GSM8K_Q2298,900,900,True,False,False,[]
+train_GSM8K_Q7396,420,420,True,False,False,[]
+train_GSM8K_Q4824,110,110,True,False,False,[]
+train_GSM8K_Q5072,60,60,True,True,True,"[""New balance = Old balance - Amount received from selling players + Amount spent on buying players""]"
+train_GSM8K_Q1605,5,5,True,False,False,[]
+train_GSM8K_Q5911,20,20,True,False,False,[]
+train_GSM8K_Q5623,3,3,True,False,False,[]
+train_GSM8K_Q1530,900,900,True,False,False,[]
+test_GSM8K_Q863,40,40,True,False,False,[]
+train_GSM8K_Q6575,1320,1320,True,False,False,[]
+train_GSM8K_Q3524,30,30,True,False,False,[]
+train_GSM8K_Q4773,706,706,True,False,False,[]
+train_GSM8K_Q6184,6,6,True,False,False,[]
+train_GSM8K_Q1014,2,2,True,True,True,"[""Total amount spent = $60 (for long-sleeved jerseys) + $80 (for striped jerseys)""]"
+train_GSM8K_Q552,4,4,True,True,True,"[""Step 4: Finally, we can use the two calculations we just made to find Arlene's average hiking pace in miles per hour: 4 miles per hour / 10 pounds per hour = 0.4 miles per hour""]"
+train_GSM8K_Q2025,30,30,True,False,False,[]
+train_GSM8K_Q4476,17,17,True,False,False,[]
+train_GSM8K_Q5751,1800,1800,True,False,False,[]
+train_GSM8K_Q4700,42,42,True,False,False,[]
+train_GSM8K_Q2546,6,6,True,False,False,[]
+train_GSM8K_Q7041,5,5,True,True,True,"[""If two-thirds of the remaining dolphins are currently in training, that means there are (20 - 5) / 3 = 10 dolphins in training."", ""So, the total number of dolphins in training right now is 5 + 10 = 15 dolphins."", ""Therefore, the number of dolphins that will be trained next month is 15 + 5 = 20 dolphins.""]"
+train_GSM8K_Q4113,60,60,True,False,False,[]
+train_GSM8K_Q6095,13,13,True,False,False,[]
+train_GSM8K_Q7310,82,82,True,False,False,[]
+train_GSM8K_Q4354,10,10,True,True,True,"[""So, Norris has $85 left.""]"
+train_GSM8K_Q866,65,65,True,False,False,[]
+test_GSM8K_Q298,55,55,True,True,True,"[""30 days (3 days/week x 7 days/week)"", ""Friday: 0 crates (Sam was closed)\nSaturday: 20 crates (as mentioned in the problem)\nSunday: 0 crates (Sam was closed)""]"
+train_GSM8K_Q2450,41,41,True,False,False,[]
+train_GSM8K_Q856,1700,1700,True,False,False,[]
+train_GSM8K_Q7075,80,80,True,False,False,[]
+train_GSM8K_Q2832,7,7,True,False,False,[]
+train_GSM8K_Q382,75,75,True,False,False,[]
+train_GSM8K_Q6166,14,14,True,False,False,[]
+train_GSM8K_Q2254,14,14,True,False,False,[]
+train_GSM8K_Q2746,12,12,True,False,False,[]
+train_GSM8K_Q3705,477,477,True,True,True,"[""* If the store sold 327 televisions this year, and last year they sold 277 (50 more than last year), then the increase in televisions sold each year is 50.""]"
+train_GSM8K_Q1281,240,240,True,False,False,[]
+train_GSM8K_Q4666,20,20,True,False,False,[]
+train_GSM8K_Q7314,21,21,True,False,False,[]
+test_GSM8K_Q62,1430,1430,True,False,False,[]
+train_GSM8K_Q5289,140,140,True,False,False,[]
+test_GSM8K_Q238,90,90,True,False,False,[]
+train_GSM8K_Q7417,15,15,True,False,False,[]
+train_GSM8K_Q1691,12,12,True,False,False,[]
+test_GSM8K_Q593,1,1,True,False,False,[]
+train_GSM8K_Q6720,30,30,True,False,False,[]
+train_GSM8K_Q7388,400,400,True,False,False,[]
+train_GSM8K_Q7156,7,7,True,False,False,[]
+train_GSM8K_Q5163,2,2,True,False,False,[]
+train_GSM8K_Q1401,22,22,True,False,False,[]
+train_GSM8K_Q4265,50,50,True,True,True,"[""So, the total number of points scored by Marcus's team is 15 + 20 = 35 points.""]"
+train_GSM8K_Q6106,1400,1400,True,True,True,"[""* Since the town council has now planted twice as many cherry trees as they originally planned, the total number of leaves that fall from all 14 trees is 2 x 700 = 1400 leaves.""]"
+train_GSM8K_Q2711,21,21,True,False,False,[]
+train_GSM8K_Q3235,6230,6230,True,False,False,[]
+train_GSM8K_Q953,200,200,True,False,False,[]
+train_GSM8K_Q5348,88,88,True,False,False,[]
+train_GSM8K_Q202,10,10,True,True,True,"[""Archibald eats 1 apple a day for 2 weeks, so he eats a total of 2 apples in those 2 weeks."", ""Over the next 3 weeks, he eats the same number of apples as the total of the first 2 weeks, which is 2 apples."", ""So, he eats a total of 2 + 2 = 4 apples in the next 3 weeks."", ""Over the next 2 weeks, he eats 3 apples a day, so he eats a total of 3 x 2 = 6 apples in those 2 weeks."", ""Therefore, Archibald averages a total of 4 + 6 = 10 apples per week over the entire 7-week period.""]"
+train_GSM8K_Q1387,4,4,True,True,True,"[""Step 3: 6 customers - 4 cars = 2 customers"", ""Step 4: 2 customers x 4 tires per car = 8 tires replaced"", ""Step 6: 12 tires - 8 tires = 4 tires left""]"
+train_GSM8K_Q2622,16,16,True,False,False,[]
+train_GSM8K_Q3684,35,35,True,False,False,[]
+train_GSM8K_Q6531,6,6,True,True,True,"[""Now, we know that Charles has 2 papers left, so we can set up the equation: 6 + x = 20"", ""Can you solve for x now?""]"
+train_GSM8K_Q3886,79,79,True,False,False,[]
+train_GSM8K_Q6459,11,11,True,False,False,[]
+train_GSM8K_Q2484,7,7,True,False,False,[]
+test_GSM8K_Q1178,17,17,True,False,False,[]
+train_GSM8K_Q3587,20,20,True,False,False,[]
+train_GSM8K_Q972,12,12,True,False,False,[]
+train_GSM8K_Q2498,80,80,True,False,False,[]
+train_GSM8K_Q4061,104,104,True,False,False,[]
+train_GSM8K_Q4086,64,64,True,False,False,[]
+train_GSM8K_Q5195,1075,1075,True,False,False,[]
+train_GSM8K_Q6250,55,55,True,False,False,[]
+train_GSM8K_Q5475,41,41,True,False,False,[]
+train_GSM8K_Q967,192,192,True,False,False,[]
+test_GSM8K_Q1037,10,10,True,False,False,[]
+test_GSM8K_Q543,7,7,True,False,False,[]
+train_GSM8K_Q5737,22,22,True,False,False,[]
+train_GSM8K_Q6782,141,141,True,False,False,[]
+train_GSM8K_Q1365,7100,7100,True,False,False,[]
+train_GSM8K_Q5480,33,33,True,False,False,[]
+train_GSM8K_Q5977,13,13,True,False,False,[]
+train_GSM8K_Q4347,14,14,True,False,False,[]
+train_GSM8K_Q6103,120,120,True,False,False,[]
+train_GSM8K_Q5826,20,20,True,False,False,[]
+test_GSM8K_Q135,720,720,True,False,False,[]
+train_GSM8K_Q3479,18,18,True,False,False,[]
+train_GSM8K_Q5271,32,32,True,True,True,"[""Let's say x is the number of cups of pesto Cheryl will be able to make. We know that Cheryl needs 4 cups of basil to make 1 cup of pesto, so we can write: 4 = x / 1"", ""We also know that Cheryl can harvest 16 cups of basil every week for 8 weeks, so we can write: 16 x 8 = x"", ""Now we can solve the problem by simplifying the equation. We can do this by multiplying both sides of the equation by 8 to get rid of the 16: 8 x 16 = x"", ""Now we can see that x = 128.""]"
+train_GSM8K_Q89,258,258,True,False,False,[]
+train_GSM8K_Q1720,120,120,True,True,True,"[""Interest charge = $150.00 x 20% = $30.00"", ""New balance = $150.00 - $30.00 = $120.00""]"
+train_GSM8K_Q1625,18,18,True,False,False,[]
+test_GSM8K_Q80,70,70,True,False,False,[]
+train_GSM8K_Q4586,10,10,True,False,False,[]
+train_GSM8K_Q3103,180,180,True,False,False,[]
+train_GSM8K_Q2998,900,900,True,True,True,"[""1. Lila watches the video at two times the average speed, which means she watches it in: 2 x 100 = 200 hours"", ""2. Roger watches the video at the average speed, which means he watches it in: 100 hours"", ""3. Since they both watch six of the same videos, they watch a total of: 6 x 100 = 600 hours"", ""200 + 100 + 600 = 900 hours""]"
+train_GSM8K_Q7449,96,96,True,False,False,[]
+train_GSM8K_Q5450,6,6,True,False,False,[]
+train_GSM8K_Q4359,8,8,True,True,True,"[""* Using the calculations from Step 4, we can see that dividing each pizza into 8 slices results in the closest to 4 slices per child, with each child receiving approximately 3.67 slices (4 x 8 = 32 slices / 20 children).""]"
+train_GSM8K_Q6552,10,10,True,False,False,[]
+train_GSM8K_Q3272,40,40,True,False,False,[]
+train_GSM8K_Q353,42,42,True,False,False,[]
+train_GSM8K_Q1918,10200,10200,True,False,False,[]
+test_GSM8K_Q100,58,58,True,False,False,[]
+train_GSM8K_Q751,48,48,True,False,False,[]
+train_GSM8K_Q6472,31,31,True,False,False,[]
+train_GSM8K_Q6785,40,40,True,False,False,[]
+train_GSM8K_Q4222,72,72,True,False,False,[]
+test_GSM8K_Q1032,5,5,True,False,False,[]
+train_GSM8K_Q6280,97,97,True,False,False,[]
+train_GSM8K_Q6331,15,15,True,False,False,[]
+train_GSM8K_Q6165,11,11,True,False,False,[]
+test_GSM8K_Q482,84,84,True,True,True,"[""48 grains = 0.048 pounds"", ""Three-quarters of 0.048 pounds = 0.036 pounds"", ""0.036 pounds + 0.048 pounds = 0.084 pounds""]"
+test_GSM8K_Q885,50,50,True,False,False,[]
+train_GSM8K_Q2791,2100,2100,True,False,False,[]
+train_GSM8K_Q7333,67500,67500,True,False,False,[]
+test_GSM8K_Q718,5,5,True,True,True,"[""$5.00 - $10 = $5.00""]"
+train_GSM8K_Q3024,2,2,True,True,True,"[""So, the amount of money Lola spent on stickers is: $2 / 2 = $1"", ""So, the number of packs of stickers Dora got is: $1 / $2 = half a pack""]"
+train_GSM8K_Q5582,14,14,True,False,False,[]
+train_GSM8K_Q3001,14,14,True,False,False,[]
+train_GSM8K_Q4138,15,15,True,False,False,[]
+train_GSM8K_Q7406,20,20,True,False,False,[]
+train_GSM8K_Q504,20,20,True,False,False,[]
+train_GSM8K_Q5872,24,24,True,False,False,[]
+train_GSM8K_Q473,11,11,True,True,True,"[""9 years - 7 years = 2 years""]"
+train_GSM8K_Q5273,220,220,True,False,False,[]
+train_GSM8K_Q4768,20,20,True,True,True,"[""the cost of 2 pans is $40 / 2 = $20""]"
+train_GSM8K_Q4244,22000,22000,True,False,False,[]
+test_GSM8K_Q70,60,60,True,False,False,[]
+train_GSM8K_Q3594,20,20,True,False,False,[]
+train_GSM8K_Q409,52,52,True,False,False,[]
+train_GSM8K_Q6226,65,65,True,False,False,[]
+train_GSM8K_Q2557,51700,51700,True,False,False,[]
+train_GSM8K_Q722,2200,2200,True,False,False,[]
+train_GSM8K_Q5688,66,66,True,False,False,[]
+test_GSM8K_Q1077,162,162,True,False,False,[]
+train_GSM8K_Q462,250,250,True,False,False,[]
+train_GSM8K_Q7259,38000,38000,True,False,False,[]
+train_GSM8K_Q1427,12,12,True,True,True,"[""Step 2: Convert the time given in hours to minutes: 8 hours = 8 x 60 = 480 minutes"", ""Step 3: Divide the total number of forms by the number of forms the clerk can process per hour: 2400 forms / 25 forms per hour = 96 hours""]"
+train_GSM8K_Q3541,3,3,True,False,False,[]
+train_GSM8K_Q5328,680,680,True,True,True,"[""New price of paintings = $100 + $20 = $120 each""]"
+train_GSM8K_Q4437,780,780,True,False,False,[]
+test_GSM8K_Q1050,20,20,True,False,False,[]
+train_GSM8K_Q3131,780,780,True,False,False,[]
+train_GSM8K_Q4370,9,9,True,False,False,[]
+train_GSM8K_Q5200,100,100,True,False,False,[]
+train_GSM8K_Q724,3,3,True,True,True,"[""3x = 5"", ""x = 5 / 3"", ""John ate 5/3 bags of chips for dinner""]"
+train_GSM8K_Q4906,20,20,True,True,True,"[""We know that Hilary has 20 big toenails and 40 regular toenails, for a total of 60 toenails."", ""if Hilary has collected 60 toenails, that means there are 40 toenails left in the jar."", ""40 regular toenails left in the jar, and each regular toenail takes up 1/5 of the space in the jar, then the big toenails take up 2 x 1/5 = 2/5 of the space in the jar.""]"
+train_GSM8K_Q2969,4,4,True,True,True,"[""* Jon makes $0.75 \\times 3000 = $2250 per month"", ""* Karen makes $3000 \\times 3 = $9000 in 3 months""]"
+train_GSM8K_Q255,30,30,True,False,False,[]
+test_GSM8K_Q313,32,32,True,True,True,"[""Next, let's find the age of Quinn. We know that Jane is 3 years younger than Quinn, so if Quinn is x years old, Jane is x - 3 years old."", ""Now, we can use the information that Quinn is 30 years old to find the age of Trent. If Jane is x - 3 years old and Quinn is x years old, then Trent is x + 5 years old.""]"
+test_GSM8K_Q161,16,16,True,False,False,[]
+train_GSM8K_Q531,18,18,True,True,True,"[""Step 1: Identify the total number of desserts Pat has: 42 cookies + 63 pieces of candy + 21 brownies = 126 desserts"", ""Step 2: Divide the total number of desserts by the number of people in Pat's family: 126 desserts ÷ 7 people = 18 desserts per person""]"

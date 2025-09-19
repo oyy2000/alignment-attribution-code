@@ -1,0 +1,43 @@
+{
+  "direct_success_cot_success": [
+    "test_GSM8K_Q1091",
+    "train_GSM8K_Q6741",
+    "train_GSM8K_Q6198",
+    "train_GSM8K_Q1100",
+    "train_GSM8K_Q5244",
+    "train_GSM8K_Q5200",
+    "train_GSM8K_Q3392",
+    "train_GSM8K_Q5271",
+    "train_GSM8K_Q5007",
+    "train_GSM8K_Q1943",
+    "train_GSM8K_Q2462",
+    "train_GSM8K_Q7291",
+    "train_GSM8K_Q1952",
+    "test_GSM8K_Q1101",
+    "train_GSM8K_Q4686",
+    "train_GSM8K_Q2615",
+    "test_GSM8K_Q1117",
+    "train_GSM8K_Q4359",
+    "test_GSM8K_Q167",
+    "train_GSM8K_Q6532",
+    "train_GSM8K_Q5699"
+  ],
+  "direct_fail_cot_success": [
+    "train_GSM8K_Q6197",
+    "train_GSM8K_Q5566",
+    "train_GSM8K_Q3033",
+    "train_GSM8K_Q5158",
+    "train_GSM8K_Q2867",
+    "train_GSM8K_Q6494",
+    "train_GSM8K_Q4283",
+    "test_GSM8K_Q1106",
+    "train_GSM8K_Q1454",
+    "train_GSM8K_Q5826",
+    "train_GSM8K_Q531",
+    "train_GSM8K_Q430",
+    "train_GSM8K_Q565",
+    "train_GSM8K_Q2793",
+    "train_GSM8K_Q20",
+    "train_GSM8K_Q2132"
+  ]
+}

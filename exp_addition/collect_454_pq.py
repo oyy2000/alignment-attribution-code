@@ -17,7 +17,7 @@ import math
 
 # Max number of sparsity ratio points (including baseline 0.0) to plot per (k,u) panel.
 # Set to None or a large number to disable.
-MAX_POINTS = 20
+MAX_POINTS = 50
 FORCE_ZERO_ORIGIN = False  # Use raw accuracy on y-axis (no delta)
 NORMALIZE_BASELINE = True   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
 
@@ -35,8 +35,7 @@ ANNOTATION_ROTATION = 90  # vertical to save horizontal space
 ANNOTATION_Y_OFFSET = 4   # points upward shift
 ANNOTATE_CATEGORY_INDEX = 0  # which category series to anchor annotations on
 
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
-"unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
+BASE_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/0.01_sp_2e-06_0.05_granular"
 # BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/llama2-7b-chat-hf/"
 # "unstructured/wanda_2_set_difference_utility_weightonly/Addition:6/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/")
 OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/figures/"

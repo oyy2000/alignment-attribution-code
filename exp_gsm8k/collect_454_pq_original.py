@@ -14,12 +14,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 # --- CONFIG ---
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/"
+            "unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/"
+            "eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular")
+K_OPTIONS = [0.17] 
+U_OPTIONS = [0.15] 
+OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/pq_wildcard_u_sweep_3"
 
 # Max number of sparsity ratio points (including baseline 0.0) to plot per (k,u) panel.
 # Set to None or a large number to disable.
 MAX_POINTS = 20
 FORCE_ZERO_ORIGIN = False  # Use raw accuracy on y-axis (no delta)
-NORMALIZE_BASELINE = False   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
+NORMALIZE_BASELINE = True   # When True, insert a baseline point at x=0 with y=1 (accuracy normalized by baseline)
 
 # Figure sizing controls (avoid overly wide x dimension)
 FIG_MIN_WIDTH = 6
@@ -27,19 +33,8 @@ FIG_MAX_WIDTH = 12   # clamp maximum width
 FIG_WIDTH_PER_LABEL = 0.2  # previous was 0.7, now narrower
 TICK_THIN_THRESHOLD_1 = 25  # if labels exceed this, thin every 2
 TICK_THIN_THRESHOLD_2 = 40  # if exceed this, thin every 3
-dataset = "GSM8K"
-# Original single BASE_DIR pointed to eval_all but actual data lives under eval_selected_samples.
-# We'll keep a default then auto-discover if empty.
-DEFAULT_BASE_DIR = (
-    f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular"
-)
 
-# pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.003464_direct,cot0shot_selected_samples_prompt_cot0shot.jsonl
-# /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/wanda_2_set_difference_utility_weightonly/set_difference_Addition:6/eval_selected_samples/prompt_direct,cot0shot/add_template_True/step_0.01_sp_2e-07_k_0.01/pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.003464_direct,cot0shot_selected_samples_prompt_cot0shot.jsonl
-OUTPUT_DIR = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/figures/"
-BASE_DIR = DEFAULT_BASE_DIR  # may be overridden by auto-discovery
-K_OPTIONS = [0.17] 
-U_OPTIONS = [0.15] 
+# OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/scripts/figures/pq_wildcard_u_sweep_sp_2e-06"
 
 ORIG_COT4_FILE = (
     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
@@ -70,14 +65,13 @@ def extract_sample_info(data: List[Dict]) -> Dict[str, Dict]:
             }
     return sample_info
 
-def match_samples_by_id(data1: List[Dict], data2: List[Dict]) -> Dict[str, str]:
-    # Directly match by id
-    id_set1 = set(item.get('id', '') for item in data1)
+def match_samples_by_question(data1: List[Dict], data2: List[Dict]) -> Dict[str, str]:
+    q_to_id1 = {item.get('question', ''): item.get('id', '') for item in data1}
     matches = {}
     for item in data2:
-        sid = item.get('id', '')
-        if sid in id_set1:
-            matches[sid] = sid
+        q = item.get('question', '')
+        if q in q_to_id1:
+            matches[q_to_id1[q]] = item.get('id', '')
     return matches
 
 # --- Categorization ---
@@ -183,61 +177,25 @@ def parse_pqku_from_dir(dir_path: str) -> Optional[Dict[str, float]]:
     p, q, k, u = m.groups()
     return {"p": float(p), "q": float(q), "k": float(k), "u": float(u)}
 
-def _candidate_base_dirs() -> List[str]:
-    """Return a list of plausible base directories to search for pq_* folders.
-    We include both eval_all and eval_selected_samples variants as observed in filesystem.
-    """
-    prefixes = [
-        f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_3_set_difference_cot0shot/eval_all/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/",
-        # f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/{dataset}/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/GSM8K/eval_selected_samples/prompt_direct,cot0shot/step_0.01_sp_2e-07_k_0.01/",
-    ]
-    # de-duplicate while preserving order
-    seen = set()
-    out = []
-    for p in prefixes:
-        if p not in seen and os.path.isdir(p):
-            out.append(p)
-            seen.add(p)
-    return out
-
 def discover_sparsity_dirs(base_dir: str) -> Dict[float, Dict]:
-    """Return {sparsity_ratio: {dir, p,q,k,u}}. Auto-fallback to alternate base dirs if empty."""
-    def _scan(bdir: str) -> Dict[float, Dict]:
-        mapping: Dict[float, Dict] = {}
-        k_dirs = glob.glob(os.path.join(bdir, FILE_NAME))
-        for d in k_dirs:
-            files = glob.glob(os.path.join(d, "*.jsonl"))
-            if not files:
-                continue
-            fname = os.path.basename(files[0])
-            m = re.search(r"(?:gsm8k|addition|LOGIQA)_bottom_([0-9.eE+-]+)_", fname, flags=re.IGNORECASE)
-            if not m:
-                continue
-            try:
-                ratio = float(m.group(1))
-            except ValueError:
-                continue
-            if ratio <= 0:
-                continue
-            meta = parse_pqku_from_dir(d) or {"p": None, "q": None, "k": None, "u": None}
-            meta.update({"dir": d})
-            mapping[ratio] = meta
-        return mapping
-
-    mapping = _scan(base_dir)
-    if mapping:
-        return dict(sorted(mapping.items()))
-    # fallback search
-    for alt in _candidate_base_dirs():
-        if alt == base_dir:
+    """Return {sparsity_ratio: {dir, p,q,k,u}}."""
+    mapping: Dict[float, Dict] = {}
+    k_dirs = glob.glob(os.path.join(base_dir, FILE_NAME))
+    for d in k_dirs:
+        files = glob.glob(os.path.join(d, "*.jsonl"))
+        if not files:
             continue
-        mapping = _scan(alt)
-        if mapping:
-            global BASE_DIR
-            BASE_DIR = alt  # update global so later calls reuse
-            print(f"[Auto-Discover] Switched BASE_DIR to {BASE_DIR} (found {len(mapping)} dirs)")
-            return dict(sorted(mapping.items()))
-    return {}
+        m = re.search(r"gsm8k_bottom_([0-9.]+)_", os.path.basename(files[0]))
+        if not m:
+            continue
+        ratio = float(m.group(1))
+        if ratio <= 0:
+            continue
+        
+        meta = parse_pqku_from_dir(d) or {"p": None, "q": None, "k": None, "u": None}
+        meta.update({"dir": d})
+        mapping[ratio] = meta
+    return dict(sorted(mapping.items()))
 
 # --- Collection ---
 def collect_all_results_with_meta():
@@ -246,11 +204,7 @@ def collect_all_results_with_meta():
     dir_data = load_jsonl(ORIG_DIRECT_FILE)
     cot4_info = extract_sample_info(cot4_data)
     dir_info = extract_sample_info(dir_data)
-    matches = match_samples_by_id(cot4_data, dir_data)
-
-    print(f"[DEBUG] Baseline cot4_data: {len(cot4_data)}, dir_data: {len(dir_data)}")
-    print(f"[DEBUG] Baseline cot4_info: {len(cot4_info)}, dir_info: {len(dir_info)}")
-    print(f"[DEBUG] matches: {len(matches)}")
+    matches = match_samples_by_question(cot4_data, dir_data)
 
     d_s_c_s, _, d_f_c_s, _ = categorize_samples(cot4_info, dir_info, matches)
     category_samples = {
