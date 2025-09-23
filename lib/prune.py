@@ -114,22 +114,35 @@ def prepare_calibration_input(model, dataloader, device, nsamples):
 
         def forward(self, inp, **kwargs):
             inps.append(inp)
-            attention_mask.append(kwargs["attention_mask"])
-            position_ids.append(kwargs["position_ids"])
-            # inps[cache['i']] = inp
-            # cache['i'] += 1
-            # cache['attention_mask'] = kwargs['attention_mask']
-            # cache['position_ids'] = kwargs['position_ids']
+            # ★修改点：用 .get，防止 key 不存在；允许 None 暂存，之后统一补齐
+            attention_mask.append(kwargs.get("attention_mask", None))
+            position_ids.append(kwargs.get("position_ids", None))
             raise ValueError
 
     layers[0] = Catcher(layers[0])
     for batch in dataloader:
         try:
             tars.append(batch[1])
-            model(batch[0].to(device))
+            am  = batch[2] if len(batch) > 2 else None
+            pid = batch[3] if len(batch) > 3 else None
+            model(batch[0].to(device),
+                attention_mask=(am.to(device) if am is not None else None),
+                position_ids=(pid.to(device) if pid is not None else None))
         except ValueError:
             pass
     layers[0] = layers[0].module
+
+    for j in range(len(inps)):
+        L = inps[j].shape[1]
+        if attention_mask[j] is None:
+            attention_mask[j] = torch.ones((1, L), dtype=torch.long, device=device)
+        else:
+            attention_mask[j] = attention_mask[j].to(device)
+
+        if position_ids[j] is None:
+            position_ids[j] = torch.arange(L, dtype=torch.long, device=device).unsqueeze(0)
+        else:
+            position_ids[j] = position_ids[j].to(device)
 
     outs = [None for _ in range(nsamples)]
     model.config.use_cache = use_cache
@@ -267,12 +280,14 @@ def prune_wanda(
     print(f"loading calibration data {prune_data}")
     
     dataloader, _ = get_loaders(
+        args,
         prune_data,
         nsamples=args.nsamples,
         seed=args.seed,
         seqlen=model.seqlen,
         tokenizer=tokenizer,
         disentangle=args.disentangle,
+        prompt=args.prune_prompt
     )
     # dataloader, _ = get_loaders("c4",nsamples=args.nsamples,seed=args.seed,seqlen=model.seqlen,tokenizer=tokenizer)
     print("dataset loading complete")
@@ -337,8 +352,8 @@ def prune_wanda(
             with torch.no_grad():
                 outs[j] = layer(
                     inps[j].unsqueeze(0),
-                    attention_mask=attention_mask[j],
-                    position_ids=position_ids[j],
+                    # attention_mask=attention_mask[j],
+                    # position_ids=position_ids[j],
                 )[0]
 
             for h in handles:
@@ -401,10 +416,10 @@ def prune_wanda(
                             )
                             if not os.path.exists(save_folder):
                                 os.makedirs(save_folder)
-                            target_file = os.path.join(
-                                save_folder,
-                                f"W_metric_layer_{i}_name_{name}_{prune_data}_weight_only.pkl",
-                            )
+                            # target_file = os.path.join(
+                            #     save_folder,
+                            #     f"W_metric_layer_{i}_name_{name}_{prune_data}_weight_only.pkl",
+                            # )
                     with open(target_file, "wb") as f:
                         print(
                             "Writing W_metric in layer {} and name {} with {} to the file".format(
@@ -628,8 +643,8 @@ def prune_wanda(
             with torch.no_grad():
                 outs[j] = layer(
                     inps[j].unsqueeze(0),
-                    attention_mask=attention_mask[j],
-                    position_ids=position_ids[j],
+                    # attention_mask=attention_mask[j],
+                    # position_ids=position_ids[j],
                 )[0].squeeze(0)
         inps, outs = outs, inps
 
@@ -665,6 +680,7 @@ def prune_wanda_decouple_activations(
     # load prune_data
     print(f"loading calibration data {prune_data}")
     dataloader, dataloader_extra = get_loaders(
+        args,
         prune_data,
         nsamples=args.nsamples,
         seed=args.seed,
@@ -1151,6 +1167,7 @@ def prune_wanda_decouple_activation_norms(
     # load prune_data
     print(f"loading calibration data {prune_data}")
     dataloader, _ = get_loaders(
+        args,
         prune_data,
         nsamples=args.nsamples,
         seed=args.seed,
@@ -1161,6 +1178,7 @@ def prune_wanda_decouple_activation_norms(
     print("dataset loading complete")
     print(f"loading extra calibration data {prune_data_extra}")
     dataloader_extra, _ = get_loaders(
+        args,
         prune_data_extra,
         nsamples=args.nsamples,
         seed=args.seed,
@@ -1625,6 +1643,38 @@ def _load_flap_score_single_GPU(model_tag: str, metric: str, layer_idx: int, par
 
     dtype = torch.float16 if use_fp16 else torch.float32
     return torch.load(fpath, map_location=device).to(dtype=dtype)
+
+def _load_wanda_score_single_GPU(args, metric: str, layer_idx: int, param_name: str,
+                device: torch.device, use_fp16: bool = False):
+    METRIC_TO_PATH = {
+        "cot0shot": "cot0shot",
+        "cot0shot_goldreason": "cot0shot_goldreason",
+        "direct": "direct",
+        "cot4shot": "cot4shot",
+        "utility": "alpaca_cleaned_no_safety",
+    }
+    METRIC_TO_NAME = {
+        "cot0shot": "GSM8K",
+        "cot0shot_goldreason": "GSM8K",
+        "direct": "GSM8K",
+        "cot4shot": "GSM8K",
+        "utility": "alpaca_cleaned_no_safety",
+    }
+    path = METRIC_TO_PATH[metric]
+    name = METRIC_TO_NAME[metric]
+    if "wanda" in args.prune_method:
+        prune_method_ori = "wanda"
+        score = "wanda_score"
+
+        base  = f"{args.out_dir}/eval_{args.dataset}/{args.model}/{args.sparsity_type}/{prune_method_ori}_weightonly/prune_prompt_{path}/prune_data_model_{args.model}/{score}/{args.prune_data}_weight_only_disentangle"
+        fname = f"W_metric_layer_{layer_idx}_name_{param_name}_{name}_weight_only_disentangle_torch.pt"
+        fpath = os.path.join(base, fname)
+        if not os.path.exists(fpath):
+            raise FileNotFoundError(f"未找到分数文件: {fpath}")
+
+        dtype = torch.float16 if use_fp16 else torch.float32
+        return torch.load(fpath, map_location=device).to(dtype=dtype)
+    
 
 def _load_score_single_GPU(args, metric: str, layer_idx: int, param_name: str,
                 device: torch.device, use_fp16: bool = False):
@@ -2160,7 +2210,171 @@ def prune_wanda_3_set_difference_utility(
         print(
             f"[SUMMARY] 前三层(0,1,2) sparsity = {[f'{s:.8f}' for s in first3_sparsities]} AVG = {avg_sparsity_first3:.8f}"
         )
+    
 
+
+def prune_wanda_234_set_difference(
+    args,
+    model,
+    tokenizer,
+    model_base=None,
+    device=torch.device("cuda:0"),
+    prune_n=0,
+    prune_m=0,
+    prune_data="align_short",
+    p=0.5,                # cot0shot     top-p 百分比
+    k=0.5,                # direct       top-k 百分比
+    q=0.5,                # cot0shot_gr  top-q 百分比
+    u=0.5,                # utility      top-u 百分比
+):
+    number_of_sets = args.number_of_sets
+    use_cache = model.config.use_cache
+    model.config.use_cache = False
+    save_sparsity_path = None
+    if args.save_sparsity:
+        save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
+        if not os.path.exists(os.path.dirname(save_sparsity_path)):
+            os.makedirs(os.path.dirname(save_sparsity_path))
+    layers = model.model.layers
+    if args.use_diff or args.recover_from_base:
+        assert model_base is not None
+        layers_base = model_base.model.layers
+
+    p_metrics, q_metrics, k_metrics, u_metrics = "cot0shot", "cot0shot_goldreason", "direct", "utility"
+    if number_of_sets == 2:
+        print(f"🌱 2-Set pruning - p={p}, k={k}: {p_metrics} - {k_metrics}")
+    elif number_of_sets == 3:
+        print(f"🌱 3-Set pruning - p={p}, k={k},  u={u}: {p_metrics} - {k_metrics} - {u_metrics}")
+    elif number_of_sets == 4:
+        print(f"🌱 4-Set pruning - q={q}, u={u}, p={p}, k={k}: {p_metrics} n {q_metrics} - {k_metrics} - {u_metrics}")
+    # === 定义每种情形需要的 key 以及 top 方向 ===
+    # largest=True 表示取“大的”分数（和你原逻辑一致：p/q 取大，k/u 取小）
+    needed_keys_by_n = {
+        2: ["p", "k"],
+        3: ["p", "k", "u"],
+        4: ["p", "k", "q", "u"],
+    }
+    frac_map   = {"p": p,    "q": q,    "k": k,     "u": u}
+    metric_map = {"p": p_metrics, "q": q_metrics, "k": k_metrics, "u": u_metrics}
+
+    
+    # keep sparsity threshold for first 3 layers
+    first3_sparsities = []  # 收集第 0/1/2 层每层的 sparsity
+    for i, layer in enumerate(layers):
+        subset = find_layers(layer)
+        if args.use_diff or args.recover_from_base:
+            subset_base = find_layers(layers_base[i])
+
+        for name in subset:
+            print(f"  -> layer {i:<2}  {name}")
+
+            dev = subset[name].weight.device          # 该层所在 GPU
+            W_p = W_k = W_q = W_u = None
+            top_p = top_k = top_q = top_u = 0
+
+            Ws = {}
+            for key in needed_keys_by_n[number_of_sets]:
+                metrics_name = metric_map[key]
+                Ws[key] = _load_wanda_score_single_GPU(args, metrics_name, i, name, dev, use_fp16=True)
+
+            # 用 p 的元素数作为参考（与原实现相同）
+            num_total = Ws["p"].numel() if "p" in Ws else next(iter(Ws.values())).numel()
+
+             # 计算 top_*，并赋值到同名变量，保证变量名不变
+            if "p" in Ws:
+                top_p = int(frac_map["p"] * num_total)
+                W_p = Ws["p"]
+            if "k" in Ws:
+                top_k = int(frac_map["k"] * num_total)
+                W_k = Ws["k"]
+            if "q" in Ws:
+                top_q = int(frac_map["q"] * num_total)
+                W_q = Ws["q"]
+            if "u" in Ws:
+                top_u = int(frac_map["u"] * num_total)
+                W_u = Ws["u"]
+
+             # ---- 统一的 topk -> idx_* 计算（只对存在的键做）----
+            idx_p = idx_k = idx_q = idx_u = None
+            def _top_indices(tensor, k_top, largest_flag):
+                return torch.topk(tensor.flatten(), k_top, largest=largest_flag)[1].unique() if k_top > 0 else tensor.new_empty((0,), dtype=torch.long)
+            largest_map = {"p": True, "q": True, "k": True, "u": True}
+            if W_p is not None:
+                idx_p = _top_indices(W_p, top_p, largest_map["p"])
+            if W_k is not None:
+                idx_k = _top_indices(W_k, top_k, largest_map["k"])
+            if W_q is not None:
+                idx_q = _top_indices(W_q, top_q, largest_map["q"])
+            if W_u is not None:
+                idx_u = _top_indices(W_u, top_u, largest_map["u"])
+
+            # ---- 差集/交集规则的最小分支 ----
+            if number_of_sets == 2:
+                # p \ k
+                prune_set = idx_p[~torch.isin(idx_p, idx_k)]
+            elif number_of_sets == 3:
+                # (p \ k) \ u
+                diff_pk   = idx_p[~torch.isin(idx_p, idx_k)]
+                prune_set = diff_pk[~torch.isin(diff_pk, idx_u)]
+            elif number_of_sets == 4:
+                # (p ∩ q) \ k \ u
+                inter_pq  = idx_p[torch.isin(idx_p, idx_q)]
+                diff_pqk  = inter_pq[~torch.isin(inter_pq, idx_k)]
+                prune_set = diff_pqk[~torch.isin(diff_pqk, idx_u)]
+            else:
+                raise ValueError("number_of_sets must be 2, 3, or 4")
+
+            if prune_set.numel() == 0:
+                # 清理并继续
+                for key in list(Ws.keys()):
+                    del Ws[key]
+                del prune_set
+                torch.cuda.empty_cache()
+                continue
+            sparsity = prune_set.numel() / num_total
+            if i < 3:
+                first3_sparsities.append(sparsity)
+            # ---- 生成布尔 Mask 并置零 / 回滚 ----
+            W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
+            dim1 = subset[name].weight.size(1)
+            rows = prune_set // dim1
+            cols = prune_set %  dim1
+            W_mask[rows, cols] = True
+
+            if args.recover_from_base:
+                subset[name].weight.data[W_mask] = subset_base[name].weight.data[W_mask]
+            else:
+                subset[name].weight.data[W_mask] = 0.0
+        
+            for key in list(Ws.keys()):
+                del Ws[key]
+            del W_p, W_k, W_q, W_u, W_mask, prune_set
+            torch.cuda.empty_cache()
+
+ # 在完成第 2 层（索引 2）后，计算前三层平均 sparsity
+        if i == 2:
+            avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities) if first3_sparsities else 0.0
+            print(
+                f"[First3 Avg] layers 0-2 sparsities = {[f'{s:.8f}' for s in first3_sparsities]} => avg = {avg_sparsity_first3:.8f}; threshold = {args.sparsity_threshold:.8f}"
+            )
+            if avg_sparsity_first3 < args.sparsity_threshold:
+                print(f"⚠️ 前三层平均 sparsity {avg_sparsity_first3:.8f} < threshold {args.sparsity_threshold:.8f}, 提前返回")
+                return False
+            if save_sparsity_path:
+                with open(save_sparsity_path, "a") as f:
+                    print(
+                        f"First3_layers_sparsity={','.join(f'{s:.8f}' for s in first3_sparsities)} AVG_first3={avg_sparsity_first3:.8f}",
+                        file=f,
+                    )
+
+    model.config.use_cache = use_cache
+    torch.cuda.empty_cache()
+    # 函数结束时再次打印前三层汇总（若已计算）
+    if first3_sparsities:
+        avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities)
+        print(
+            f"[SUMMARY] 前三层(0,1,2) sparsity = {[f'{s:.8f}' for s in first3_sparsities]} AVG = {avg_sparsity_first3:.8f}"
+        )
 
 def prune_wanda_3_set_difference(
     args,
@@ -2422,6 +2636,7 @@ def prune_sparsegpt(args, model, tokenizer, dev, prune_n=0, prune_m=0):
     ## SparseGPT code available at: https://github.com/IST-DASLab/sparsegpt/tree/f5c25005a61f96a0933ca2f95705a963585aafaa
     print("Starting ...")
     dataloader, _ = get_loaders(
+        args,
         "wikitext2",
         nsamples=args.nsamples,
         seed=args.seed,
@@ -2541,6 +2756,7 @@ def prune_ablate(args, model, tokenizer, dev, prune_n=0, prune_m=0):
     ## SparseGPT code available at: https://github.com/IST-DASLab/sparsegpt/tree/f5c25005a61f96a0933ca2f95705a963585aafaa
     print("Starting ...")
     dataloader, _ = get_loaders(
+        args,
         "wikitext2",
         nsamples=args.nsamples,
         seed=args.seed,

@@ -1,0 +1,282 @@
+[
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 7.1e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_7.1e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000166 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000166/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000288 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000288/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000442 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000442/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00064 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00064/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000899 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000899/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00124 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00124/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.0017 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.0017/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.002319 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.002319/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003156 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003156/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00429 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00429/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.005811 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.005811/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.007832 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.007832/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.010473 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.010473/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.013844 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.013844/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.018018 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.018018/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.023031 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.023031/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.028855 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.028855/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.035404 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.035404/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.042584 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.042584/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 1e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_1e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 1.7e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_1.7e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 2.7e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_2.7e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 3.8e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_3.8e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 5.1e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_5.1e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 6.6e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_6.6e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 8.5e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_8.5e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000106 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000106/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00013 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00013/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000158 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000158/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000191 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000191/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000227 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000227/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000267 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000267/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000313 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000313/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000365 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000365/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000421 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000421/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000484 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000484/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000554 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000554/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003201 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003201/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003567 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003567/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003973 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003973/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.004935 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.004935/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.005507 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.005507/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.006151 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.006151/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.006881 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.006881/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 2e-06 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_2e-06/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 4e-06 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_4e-06/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 6e-06 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_6e-06/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 9e-06 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_9e-06/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 1.2e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_1.2e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 1.7e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_1.7e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 2.3e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_2.3e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 2.9e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_2.9e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 3.8e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_3.8e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 4.8e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_4.8e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 6e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_6e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 7.4e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_7.4e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 9e-05 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_9e-05/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000109 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000109/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00013 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00013/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000154 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000154/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000181 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000181/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.000212 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.000212/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.00167 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.00167/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.001899 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.001899/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.002158 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.002158/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.002785 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.002785/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003163 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003163/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.003592 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.003592/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --prune_method random --sparsity_ratio 0.004079 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_4/eval_selected_samples/prompt_direct,cot0shot/sparsity_ratio_0.004079/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  }
+]

@@ -50,6 +50,56 @@ def _truncate_at_marker(text: str, markers=None) -> str:
     truncated = text[: last_match.start()].rstrip()
     return truncated
 
+def get_GSM8K_new(args, nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="direct"):
+    
+    data_file = f'../data/GSM8K_eval_build/{args.model}/calibration_datasets/calibration_{prompt}_shared_120.jsonl'
+    print("loading calibration data from ", data_file)
+    if data_file.endswith('.jsonl'):
+        with open(data_file, 'r') as fin:
+            items = [json.loads(line) for line in fin]
+    else:
+        with open(data_file, 'r') as fin:
+            items = json.load(fin)  
+
+    # 设置随机种子
+    random.seed(seed)
+    sampled_items = random.sample(items, nsamples)
+
+    trainloader = []
+
+    for item in sampled_items:
+        input_text = item['input']
+        output_text = item['output']
+        # else:
+            # raise ValueError(f"Unsupported prompt type: {prompt}")
+
+        # tokenizer encode
+        input_enc = tokenizer(input_text, return_tensors="pt", truncation=True, max_length=seqlen)
+        output_enc = tokenizer(output_text, return_tensors="pt", truncation=True, max_length=seqlen)
+
+        # 拼接并构造target
+        inp = torch.cat((input_enc.input_ids, output_enc.input_ids[:, 1:]), dim=1)
+        tar = inp.clone()
+
+        input_len = input_enc.input_ids.shape[1]
+        tar[:, :input_len] = -100  # mask掉输入部分，只监督输出
+        
+          # ★ 新增：attention_mask 与 position_ids
+        am  = torch.ones_like(inp, dtype=torch.long)  # (1, L)
+        pid = torch.arange(inp.shape[1], dtype=torch.long).unsqueeze(0)  # (1, L)
+
+        # ★ 兜底：如果拼接长度超出 seqlen，再统一截断，保持四者形状一致
+        if inp.size(1) > seqlen:
+            inp  = inp[:, :seqlen]
+            tar  = tar[:, :seqlen]
+            am   = am[:, :seqlen]
+            pid  = pid[:, :seqlen]
+
+        trainloader.append((inp, tar, am, pid))
+        # trainloader.append((inp, tar))
+
+    return trainloader, None
+
 def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8K_direct", truncate_answer_of_cot=False):
     if prompt == "GSM8K_direct":
         # data_file = f'../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json'
@@ -114,8 +164,19 @@ def get_GSM8K(nsamples, seed, seqlen, tokenizer, disentangle=False, prompt="GSM8
         input_len = input_enc.input_ids.shape[1]
         tar[:, :input_len] = -100  # mask掉输入部分，只监督输出
         
-        
-        trainloader.append((inp, tar))
+          # ★ 新增：attention_mask 与 position_ids
+        am  = torch.ones_like(inp, dtype=torch.long)  # (1, L)
+        pid = torch.arange(inp.shape[1], dtype=torch.long).unsqueeze(0)  # (1, L)
+
+        # ★ 兜底：如果拼接长度超出 seqlen，再统一截断，保持四者形状一致
+        if inp.size(1) > seqlen:
+            inp  = inp[:, :seqlen]
+            tar  = tar[:, :seqlen]
+            am   = am[:, :seqlen]
+            pid  = pid[:, :seqlen]
+
+        trainloader.append((inp, tar, am, pid))
+        # trainloader.append((inp, tar))
 
     return trainloader, None
 
@@ -272,8 +333,10 @@ def get_alpaca(nsamples, seed, seqlen, tokenizer, disentangle=False, dataset="al
 
 # Function to select the appropriate loader based on dataset name
 def get_loaders(
-    name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, disentangle=False, prompt="direct"
+    args, name, nsamples=128, seed=0, seqlen=2048, tokenizer=None, disentangle=False, prompt="direct"
 ):
+    if name == "GSM8K":
+        return get_GSM8K_new(args, nsamples, seed, seqlen, tokenizer, disentangle, prompt=prompt)
     if name == "Addition:6_cot0shot":
         return get_addition(nsamples, seed, seqlen, tokenizer, disentangle, prompt="Addition:6_cot0shot")
     if name == "Addition:6_direct":

@@ -1,0 +1,2 @@
+id,final_pred,gold,final_correct,process_has_error,process_wrong_but_answer_correct,wrong_steps_json
+test_GSM8K_Q33,35,35,True,False,False,[]

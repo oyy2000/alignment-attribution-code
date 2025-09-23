@@ -1,636 +1,141 @@
-{
- "cells": [
-  {
-   "cell_type": "markdown",
-   "id": "e2ca74ce",
-   "metadata": {},
-   "source": [
-    "# select correct samples from gsm8k"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "3a0dd6d6",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# 给前1319行样例文件id添加test, 后面所有的id添加train\n",
-    "import json\n",
-    "# jsonl_file = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/cot0shot/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "jsonl_file = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/direct/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "\n",
-    "modified_lines = []\n",
-    "with open(jsonl_file, \"r\") as file:\n",
-    "    for i, line in enumerate(file):\n",
-    "        entry = json.loads(line.strip())\n",
-    "        if i < 1319:\n",
-    "            entry[\"id\"] = \"test_\" + entry[\"id\"]\n",
-    "        else:\n",
-    "            entry[\"id\"] = \"train_\" + entry[\"id\"]\n",
-    "        modified_lines.append(entry)\n",
-    "\n",
-    "# Write the modified data back to the file\n",
-    "with open(jsonl_file, \"w\") as file:\n",
-    "    for entry in modified_lines:\n",
-    "        file.write(json.dumps(entry) + \"\\n\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "0f8aeffc",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "3027\n",
-      "Calibration (direct): 120\n",
-      "Calibration (cot0shot): 120\n",
-      "Eval saved: direct 452, cot0shot 452\n"
-     ]
+import json
+import os
+from typing import Dict, List, Tuple
+
+# ==== 配置部分 ====
+# ORIG_COT0_FILE = (
+#     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular/pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.001101_direct,cot0shot_selected_samples_prompt_cot0shot.jsonl"
+# )
+# ORIG_DIRECT_FILE = (
+#     "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular/pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.001101_direct,cot0shot_selected_samples_prompt_direct.jsonl"
+# )
+ORIG_COT0_FILE = (
+"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl"
+)
+ORIG_DIRECT_FILE = (
+  "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_direct.jsonl"
+)
+
+JUDGE_FILE = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/exp_gsm8k/full_gsm8k_cot_judgments.jsonl"
+AFTER_PRUNE_COT0_FILE = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular/pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.001101_direct,cot0shot_selected_samples_prompt_cot0shot.jsonl"
+AFTER_PRUNE_DIRECT_FILE = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/llama2-7b-chat-hf/unstructured/wanda_3_set_difference_utility_weightonly/wanda_4_set_difference_cot0shot/eval_selected_samples/prompt_direct,cot0shot/pure_pq_0.01_granular/pq_0.1_0.1_k_0.17_u_0.15/gsm8k_bottom_0.001101_direct,cot0shot_selected_samples_prompt_direct.jsonl"
+# =================
+
+def load_jsonl_by_id(path: str) -> Dict[str, dict]:
+    """读取 JSONL，返回 {id: obj}"""
+    data = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            obj = json.loads(line)
+            sid = str(obj.get("id"))
+            if sid:
+                data[sid] = obj
+    return data
+
+
+def match_ids(dict1: Dict[str, dict], dict2: Dict[str, dict]) -> List[str]:
+    """以 id 直接取交集"""
+    return list(set(dict1.keys()) & set(dict2.keys()))
+
+
+def categorize_samples(
+    cot_info: Dict[str, dict],
+    direct_info: Dict[str, dict],
+    common_ids: List[str],
+) -> Tuple[List[str], List[str]]:
+    """
+    返回两个类别的 id 列表：
+      d_s_c_s: direct 成功 & cot 成功
+      d_f_c_s: direct 失败 & cot 成功
+    """
+    d_s_c_s, d_f_c_s = [], []
+    for sid in common_ids:
+        cot_ok = bool(cot_info.get(sid, {}).get("correct", False))
+        dir_ok = bool(direct_info.get(sid, {}).get("correct", False))
+        if cot_ok and dir_ok:
+            d_s_c_s.append(sid)
+        elif cot_ok and (not dir_ok):
+            d_f_c_s.append(sid)
+    return d_s_c_s, d_f_c_s
+
+
+def load_judge_true_ids(path: str) -> set:
+    """
+    从评分类文件里筛出 process_wrong_but_answer_correct == True 的样本 id 集合
+    """
+    judge_true = set()
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            obj = json.loads(line)
+            if obj.get("process_wrong_but_answer_correct") is True:
+                sid = str(obj.get("id"))
+                if sid:
+                    judge_true.add(sid)
+    return judge_true
+
+
+def summarize_categories(categories: Dict[str, List[str]], judge_true_ids: set) -> Dict[str, dict]:
+    """
+    对每个类别统计与 judge_true_ids 的交集数量（不抽样）
+    """
+    summary = {}
+    for name, id_list in categories.items():
+        hit = [sid for sid in id_list if sid in judge_true_ids]
+        summary[name] = {
+            "total_in_category": len(id_list),
+            "process_wrong_but_answer_correct_true": len(hit),
+        }
+    return summary
+
+
+def main():
+    # 1) 读入原始数据
+    direct_by_id = load_jsonl_by_id(ORIG_DIRECT_FILE)
+    cot0_by_id = load_jsonl_by_id(ORIG_COT0_FILE)
+
+    # 2) 匹配共同 id
+    common_ids = match_ids(cot0_by_id, direct_by_id)
+    print(f"[Info] Matched samples by id: {len(common_ids)}")
+
+    # 3) 分类（只保留你需要的两类）
+    d_s_c_s, d_f_c_s = categorize_samples(cot0_by_id, direct_by_id, common_ids)
+
+    category_samples = {
+        "direct_success_cot_success": d_s_c_s,
+        "direct_fail_cot_success": d_f_c_s,
     }
-   ],
-   "source": [
-    "import json\n",
-    "import random\n",
-    "\n",
-    "jsonl_file_direct = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/direct/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "jsonl_file_cot0shot = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/cot0shot/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "jsonl_file_ids = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_dataset_with_conversation_template.jsonl\"\n",
-    "correct_ids = []\n",
-    "direct_by_id, cot0shot_by_id = {}, {}\n",
-    "\n",
-    "# read direct\n",
-    "with open(jsonl_file_direct, \"r\") as f_direct:\n",
-    "    for raw in f_direct:\n",
-    "        obj = json.loads(raw.strip())\n",
-    "        direct_by_id[obj[\"id\"]] = obj\n",
-    "        if obj.get(\"correct\"):\n",
-    "            correct_ids.append(obj[\"id\"])\n",
-    "\n",
-    "# read cot0shot\n",
-    "with open(jsonl_file_cot0shot, \"r\") as f_cot:\n",
-    "    for raw in f_cot:\n",
-    "        obj = json.loads(raw.strip())\n",
-    "        cot0shot_by_id[obj[\"id\"]] = obj\n",
-    "        if obj.get(\"correct\"):\n",
-    "            correct_ids.append(obj[\"id\"])\n",
-    "\n",
-    "print(len(correct_ids))\n",
-    "\n",
-    "id_eval = \n",
-    "\n",
-    "# Build helper sets\n",
-    "direct_correct_ids_set = {qid for qid, rec in direct_by_id.items() if rec.get(\"correct\")}\n",
-    "cot0shot_correct_ids_set = {qid for qid, rec in cot0shot_by_id.items() if rec.get(\"correct\")}\n",
-    "\n",
-    "# 1) Calibration datasets (120 random correct samples from each file)\n",
-    "random.seed(42)\n",
-    "calibration_direct_ids = random.sample(list(direct_correct_ids_set), min(120, len(direct_correct_ids_set)))\n",
-    "calibration_cot0shot_ids = random.sample(list(cot0shot_correct_ids_set), min(120, len(cot0shot_correct_ids_set)))\n",
-    "\n",
-    "calibration_direct = [direct_by_id[qid] for qid in calibration_direct_ids]\n",
-    "calibration_cot0shot = [cot0shot_by_id[qid] for qid in calibration_cot0shot_ids]\n",
-    "\n",
-    "print(f\"Calibration (direct): {len(calibration_direct)}\")\n",
-    "print(f\"Calibration (cot0shot): {len(calibration_cot0shot)}\")\n",
-    "\n",
-    "# 2) Eval dataset components\n",
-    "direct_correct_cot_correct_samples = [\n",
-    "    qid for qid in (direct_correct_ids_set & cot0shot_correct_ids_set)\n",
-    "]\n",
-    "cot0shot_correct_direct_wrong_samples = [\n",
-    "    qid for qid in cot0shot_correct_ids_set - direct_correct_ids_set\n",
-    "]\n",
-    "\n",
-    "calib_union_ids = set(calibration_direct_ids) | set(calibration_cot0shot_ids)\n",
-    "\n",
-    "both_correct_eval_pool = [qid for qid in direct_correct_cot_correct_samples if qid not in calib_union_ids]\n",
-    "cot_correct_direct_wrong_eval_pool = [qid for qid in cot0shot_correct_direct_wrong_samples if qid not in calib_union_ids]\n",
-    "\n",
-    "random.seed(42)\n",
-    "selected_direct_correct_cot_correct = random.sample(both_correct_eval_pool, min(300, len(both_correct_eval_pool)))\n",
-    "selected_cot0shot_correct_direct_wrong = random.sample(cot_correct_direct_wrong_eval_pool, min(300, len(cot_correct_direct_wrong_eval_pool)))\n",
-    "\n",
-    "# Final eval IDs\n",
-    "eval_ids = selected_direct_correct_cot_correct + selected_cot0shot_correct_direct_wrong\n",
-    "\n",
-    "# --- 写出 direct.jsonl 和 cot0shot.jsonl ---\n",
-    "eval_direct = []\n",
-    "eval_cot0shot = []\n",
-    "for qid in eval_ids:\n",
-    "    if qid in direct_by_id:\n",
-    "        rec_direct = dict(direct_by_id[qid])\n",
-    "        rec_direct[\"sample_type\"] = \"both_correct\" if qid in selected_direct_correct_cot_correct else \"cot0shot_correct_direct_wrong\"\n",
-    "        eval_direct.append(rec_direct)\n",
-    "    if qid in cot0shot_by_id:\n",
-    "        rec_cot = dict(cot0shot_by_id[qid])\n",
-    "        rec_cot[\"sample_type\"] = \"both_correct\" if qid in selected_direct_correct_cot_correct else \"cot0shot_correct_direct_wrong\"\n",
-    "        eval_cot0shot.append(rec_cot)\n",
-    "\n",
-    "with open(\"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_direct.jsonl\", \"w\") as f_out:\n",
-    "    for rec in eval_direct:\n",
-    "        f_out.write(json.dumps(rec) + \"\\n\")\n",
-    "\n",
-    "with open(\"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_cot0shot.jsonl\", \"w\") as f_out:\n",
-    "    for rec in eval_cot0shot:\n",
-    "        f_out.write(json.dumps(rec) + \"\\n\")\n",
-    "\n",
-    "print(f\"Eval saved: direct {len(eval_direct)}, cot0shot {len(eval_cot0shot)}\")\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 12,
-   "id": "87aa2a36",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "cot4shot correct: 708\n",
-      "cot0shot_goldreason correct: 7471\n",
-      "Intersection (valid for calibration): 644\n",
-      "✅ Saved:\n",
-      "- calibration_cot4shot_120.jsonl (120)\n",
-      "- calibration_cot0shot_goldreason_120.jsonl (120)\n",
-      "Shared calibration IDs: 120\n"
-     ]
+
+    # 4) 读入评分类文件（只取 process_wrong_but_answer_correct == True）
+    judge_true_ids = load_judge_true_ids(JUDGE_FILE)
+    print(f"[Info] Judge TRUE ids (process_wrong_but_answer_correct): {len(judge_true_ids)}")
+
+    # 5) 仅统计（不抽样）
+    summary = summarize_categories(category_samples, judge_true_ids)
+
+    # 6) 打印摘要
+    print("\n===== Summary =====")
+    for name, stats in summary.items():
+        print(
+            f"{name:>28}: total={stats['total_in_category']:4d} | "
+            f"process_wrong_but_answer_correct_true={stats['process_wrong_but_answer_correct_true']:4d}"
+        )
+
+    # 7) 输出每个类别命中 judge 条件的完整 id 列表
+    out_all = os.path.splitext(JUDGE_FILE)[0] + "_per_category_hits.json"
+    hits_dict = {
+        name: [sid for sid in ids if sid in judge_true_ids]
+        for name, ids in category_samples.items()
     }
-   ],
-   "source": [
-    "import json, random, os\n",
-    "\n",
-    "# 路径\n",
-    "jsonl_file_cot4shot = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/cot4shot/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "jsonl_file_cot0shot_goldreason = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/llama2-7b-chat-hf/cot0shot_goldreason/eval_all_all/0/gsm8k_bottom_0.000000_GSM8K_cot0shot.jsonl\"\n",
-    "\n",
-    "# load\n",
-    "def load_jsonl(path):\n",
-    "    data = []\n",
-    "    with open(path, \"r\") as f:\n",
-    "        for line in f:\n",
-    "            obj = json.loads(line.strip())\n",
-    "            data.append(obj)\n",
-    "    return {obj[\"id\"]: obj for obj in data}\n",
-    "\n",
-    "cot4shot_by_id = load_jsonl(jsonl_file_cot4shot)\n",
-    "cot0shot_goldreason_by_id = load_jsonl(jsonl_file_cot0shot_goldreason)\n",
-    "\n",
-    "# 正确样本 id 集合（取两个文件的交集，以保证 ID 在两边都有）\n",
-    "cot4shot_correct_ids = {qid for qid, rec in cot4shot_by_id.items() if rec.get(\"correct\")}\n",
-    "cot0shot_goldreason_correct_ids = {qid for qid, rec in cot0shot_goldreason_by_id.items() if rec.get(\"correct\")}\n",
-    "valid_ids = cot4shot_correct_ids & cot0shot_goldreason_correct_ids\n",
-    "\n",
-    "print(f\"cot4shot correct: {len(cot4shot_correct_ids)}\")\n",
-    "print(f\"cot0shot_goldreason correct: {len(cot0shot_goldreason_correct_ids)}\")\n",
-    "print(f\"Intersection (valid for calibration): {len(valid_ids)}\")\n",
-    "\n",
-    "# 随机选择120个 ID\n",
-    "random.seed(42)\n",
-    "calibration_cot0shot_ids = random.sample(list(valid_ids), min(120, len(valid_ids)))\n",
-    "\n",
-    "# 在两个文件中取相同 ID\n",
-    "calibration_from_cot4shot = [cot4shot_by_id[qid] for qid in calibration_cot0shot_ids]\n",
-    "calibration_from_cot0shot_goldreason = [cot0shot_goldreason_by_id[qid] for qid in calibration_cot0shot_ids]\n",
-    "\n",
-    "# 保存\n",
-    "out_dir = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build\"\n",
-    "os.makedirs(out_dir, exist_ok=True)\n",
-    "\n",
-    "def save_jsonl(path, rows):\n",
-    "    with open(path, \"w\") as f:\n",
-    "        for rec in rows:\n",
-    "            f.write(json.dumps(rec, ensure_ascii=False) + \"\\n\")\n",
-    "\n",
-    "save_jsonl(os.path.join(out_dir, \"calibration_cot4shot_120.jsonl\"), calibration_from_cot4shot)\n",
-    "save_jsonl(os.path.join(out_dir, \"calibration_cot0shot_goldreason_120.jsonl\"), calibration_from_cot0shot_goldreason)\n",
-    "\n",
-    "print(\"✅ Saved:\")\n",
-    "print(f\"- calibration_cot4shot_120.jsonl ({len(calibration_from_cot4shot)})\")\n",
-    "print(f\"- calibration_cot0shot_goldreason_120.jsonl ({len(calibration_from_cot0shot_goldreason)})\")\n",
-    "print(f\"Shared calibration IDs: {len(calibration_cot0shot_ids)}\")\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 10,
-   "id": "52111cfe",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "✅ Files saved:\n",
-      "- Calibration direct: /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_direct_120_with_conversation_template.jsonl (120)\n",
-      "- Calibration cot0shot: /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/calibration_cot0shot_120_with_conversation_template.jsonl (120)\n",
-      "- Eval dataset: /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build/eval_dataset.jsonl (454)\n"
-     ]
-    }
-   ],
-   "source": [
-    "import os\n",
-    "\n",
-    "out_dir = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K_eval_build\"\n",
-    "os.makedirs(out_dir, exist_ok=True)\n",
-    "\n",
-    "# 保存函数\n",
-    "def save_jsonl(path, rows):\n",
-    "    with open(path, \"w\") as f:\n",
-    "        for rec in rows:\n",
-    "            f.write(json.dumps(rec, ensure_ascii=False) + \"\\n\")\n",
-    "\n",
-    "# 保存 calibration\n",
-    "calib_direct_path = os.path.join(out_dir, \"calibration_direct_120_with_conversation_template.jsonl\")\n",
-    "calib_cot_path = os.path.join(out_dir, \"calibration_cot0shot_120_with_conversation_template.jsonl\")\n",
-    "save_jsonl(calib_direct_path, calibration_direct)\n",
-    "save_jsonl(calib_cot_path, calibration_cot0shot)\n",
-    "\n",
-    "# 保存 eval dataset\n",
-    "eval_path = os.path.join(out_dir, \"eval_dataset.jsonl\")\n",
-    "save_jsonl(eval_path, eval_dataset)\n",
-    "\n",
-    "print(\"✅ Files saved:\")\n",
-    "print(f\"- Calibration direct: {calib_direct_path} ({len(calibration_direct)})\")\n",
-    "print(f\"- Calibration cot0shot: {calib_cot_path} ({len(calibration_cot0shot)})\")\n",
-    "print(f\"- Eval dataset: {eval_path} ({len(eval_dataset)})\")\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b142cb58",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Calibration set questions: 120\n",
-      "Original combined_selected_samples_600: 600\n",
-      "Removed due to overlap: 14\n",
-      "Remaining after deduplication: 586\n",
-      "去重后的文件已保存到: /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600_no_overlap_with_calibration.jsonl\n"
-     ]
-    }
-   ],
-   "source": [
-    "# 将两个文件中重复的问题去掉，生成一个新的文件\n",
-    "\n",
-    "import json\n",
-    "\n",
-    "file1 = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600.jsonl\"\n",
-    "file2 = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/output/calibration_set_cot_120.json\"\n",
-    "output_file = \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600_no_overlap_with_calibration.jsonl\"\n",
-    "\n",
-    "# 1. 读取calibration_set_cot_120.json中的所有question\n",
-    "with open(file2, \"r\") as f:\n",
-    "    calibration_data = json.load(f)\n",
-    "calibration_questions = set()\n",
-    "if isinstance(calibration_data, list):\n",
-    "    for entry in calibration_data:\n",
-    "        q = entry.get(\"question\")\n",
-    "        if q is not None:\n",
-    "            calibration_questions.add(q)\n",
-    "elif isinstance(calibration_data, dict):\n",
-    "    for entry in calibration_data.values():\n",
-    "        q = entry.get(\"question\")\n",
-    "        if q is not None:\n",
-    "            calibration_questions.add(q)\n",
-    "\n",
-    "print(f\"Calibration set questions: {len(calibration_questions)}\")\n",
-    "\n",
-    "# 2. 读取combined_selected_samples_600.jsonl，去除与calibration_questions重复的question\n",
-    "filtered_entries = []\n",
-    "removed_count = 0\n",
-    "with open(file1, \"r\") as f:\n",
-    "    for line in f:\n",
-    "        if line.strip():\n",
-    "            entry = json.loads(line)\n",
-    "            q = entry.get(\"question\")\n",
-    "            if q is not None and q not in calibration_questions:\n",
-    "                filtered_entries.append(entry)\n",
-    "            else:\n",
-    "                removed_count += 1\n",
-    "\n",
-    "print(f\"Original combined_selected_samples_600: {len(filtered_entries) + removed_count}\")\n",
-    "print(f\"Removed due to overlap: {removed_count}\")\n",
-    "print(f\"Remaining after deduplication: {len(filtered_entries)}\")\n",
-    "\n",
-    "# 3. 保存去重后的新文件\n",
-    "with open(output_file, \"w\") as f:\n",
-    "    for entry in filtered_entries:\n",
-    "        f.write(json.dumps(entry, ensure_ascii=False) + \"\\n\")\n",
-    "\n",
-    "print(f\"去重后的文件已保存到: {output_file}\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 2,
-   "id": "a52b00fc",
-   "metadata": {},
-   "outputs": [
-    {
-     "ename": "NameError",
-     "evalue": "name 'correct_ids' is not defined",
-     "output_type": "error",
-     "traceback": [
-      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
-      "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
-      "Cell \u001b[0;32mIn[2], line 3\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[38;5;66;03m# 检查correct_ids中有没有重复的\u001b[39;00m\n\u001b[1;32m      2\u001b[0m \u001b[38;5;66;03m# Check for duplicates in correct_ids\u001b[39;00m\n\u001b[0;32m----> 3\u001b[0m unique_ids \u001b[38;5;241m=\u001b[39m \u001b[38;5;28mset\u001b[39m(\u001b[43mcorrect_ids\u001b[49m)\n\u001b[1;32m      5\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mTotal correct_ids: \u001b[39m\u001b[38;5;132;01m{\u001b[39;00m\u001b[38;5;28mlen\u001b[39m(correct_ids)\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m\"\u001b[39m)\n\u001b[1;32m      6\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mUnique correct_ids: \u001b[39m\u001b[38;5;132;01m{\u001b[39;00m\u001b[38;5;28mlen\u001b[39m(unique_ids)\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m\"\u001b[39m)\n",
-      "\u001b[0;31mNameError\u001b[0m: name 'correct_ids' is not defined"
-     ]
-    }
-   ],
-   "source": [
-    "# 检查correct_ids中有没有重复的\n",
-    "# Check for duplicates in correct_ids\n",
-    "unique_ids = set(correct_ids)\n",
-    "\n",
-    "print(f\"Total correct_ids: {len(correct_ids)}\")\n",
-    "print(f\"Unique correct_ids: {len(unique_ids)}\")\n",
-    "print(f\"Duplicates found: {len(correct_ids) - len(unique_ids)}\")\n",
-    "\n",
-    "if len(correct_ids) != len(unique_ids):\n",
-    "    # Find and display duplicates\n",
-    "    from collections import Counter\n",
-    "    id_counts = Counter(correct_ids)\n",
-    "    duplicates = {id_val: count for id_val, count in id_counts.items() if count > 1}\n",
-    "    print(f\"Duplicate IDs: {duplicates}\")\n",
-    "else:\n",
-    "    print(\"No duplicates found in correct_ids\")\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "a525f8ad",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# 检查这个文件中有没有重复的ids\n",
-    "import json\n",
-    "\n",
-    "\n",
-    "# Load JSONL file (one JSON object per line)\n",
-    "data = []\n",
-    "with open(\"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/combined_selected_samples_600.jsonl\", \"r\") as f:\n",
-    "    for line in f:\n",
-    "        if line.strip():  # Skip empty lines\n",
-    "            data.append(json.loads(line))\n",
-    "\n",
-    "# 检查这个文件中有没有重复的ids\n",
-    "ids = [entry[\"id\"] for entry in data]\n",
-    "unique_ids = set(ids)\n",
-    "\n",
-    "print(f\"Total ids: {len(ids)}\")\n",
-    "print(f\"Unique ids: {len(unique_ids)}\")\n",
-    "print(f\"Duplicates found: {len(ids) - len(unique_ids)}\")\n",
-    "\n",
-    "if len(ids) != len(unique_ids):\n",
-    "    # Find and display duplicates\n",
-    "    from collections import Counter\n",
-    "    id_counts = Counter(ids)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "687399a4",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "len(cot4shot_correct_direct_wrong_samples)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "8944fb90",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import json\n",
-    "import pandas as pd\n",
-    "import random\n",
-    "random.seed(42)\n",
-    "# Load the two JSON files\n",
-    "file_direct = \"../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json\"\n",
-    "file_cot = \"../data/GSM8K/output/output.GSM8K.cot0shot.math_teacher.llama2-7b-chat.json\"\n",
-    "\n",
-    "with open(file_direct, \"r\") as f:\n",
-    "    data_direct = json.load(f)\n",
-    "\n",
-    "with open(file_cot, \"r\") as f:\n",
-    "    data_cot = json.load(f)\n",
-    "\n",
-    "# Convert to dictionaries indexed by question ID for easy comparison\n",
-    "dict_direct = {entry[\"id\"]: entry for entry in data_direct}\n",
-    "dict_cot = {entry[\"id\"]: entry for entry in data_cot}\n",
-    "\n",
-    "# 1. Find the calibration set: CoT result is True and Direct result is False\n",
-    "calibration_set = []\n",
-    "for qid in dict_direct:\n",
-    "    if qid in dict_cot:\n",
-    "        if dict_cot[qid].get(\"cot0shot.math teacher_result\") and not dict_direct[qid].get(\"direct.math teacher_result\"):\n",
-    "            calibration_set.append(qid)\n",
-    "\n",
-    "# 2. Question IDs of the calibration set\n",
-    "calibration_ids = calibration_set\n",
-    "\n",
-    "# 3. choose these calibration_ids samples from these two files and save them\n",
-    "calibration_data_cot = [dict_cot[qid] for qid in calibration_ids]   \n",
-    "# with open(\"../data/GSM8K/output/calibration_set_cot.json\", \"w\") as f:\n",
-    "    # json.dump(calibration_data_cot, f, indent=4)\n",
-    "\n",
-    "direct_true_ids = [qid for qid, entry in dict_direct.items() if entry.get(\"direct.math teacher_result\") is True]\n",
-    "direct_true_samples = [dict_direct[qid] for qid in direct_true_ids]\n",
-    "\n",
-    "# 4. Calibration set of direct should be all direct.math teacher_resul true samples plus some other samples\n",
-    "# find the true samples in direct\n",
-    "num_extra = 120 - len(direct_true_ids)  # number of extra samples needed\n",
-    "calibration_data_direct = [dict_direct[qid] for qid in calibration_ids]\n",
-    "calibration_candidates = [entry for entry in calibration_data_direct if entry[\"id\"] not in direct_true_ids]\n",
-    "extra_samples = random.sample(calibration_candidates, min(num_extra, len(calibration_candidates)))\n",
-    "\n",
-    "direct_calibration_samples = direct_true_samples + extra_samples\n",
-    "\n",
-    "# with open(\"../data/GSM8K/output/calibration_set_direct_mixed.json\", \"w\") as f:\n",
-    "#     json.dump(direct_calibration_samples, f, indent=4)\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "6278b8b7",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "len(cot4shot_correct_direct_wrong_samples)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "3adfc57d",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import json, random, re, os\n",
-    "from pathlib import Path\n",
-    "\n",
-    "# ---------- ① 读入两份结果 ---------- #\n",
-    "file_direct = \"../data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json\"\n",
-    "file_cot    = \"../data/GSM8K/output/output.GSM8K.cot0shot.math_teacher.llama2-7b-chat.json\"\n",
-    "\n",
-    "with open(file_direct) as f:\n",
-    "    data_direct = json.load(f)\n",
-    "with open(file_cot) as f:\n",
-    "    data_cot = json.load(f)\n",
-    "\n",
-    "dict_direct = {e[\"id\"]: e for e in data_direct}\n",
-    "dict_cot    = {e[\"id\"]: e for e in data_cot}\n",
-    "\n",
-    "# ---------- ② 校准集 ID（两份文件共有部分） ---------- #\n",
-    "all_calibration_set = [qid for qid in dict_direct if qid in dict_cot]\n",
-    "\n",
-    "# 提取其中的数字部分 → {15, 42, …}\n",
-    "exclude_ids_digit = {\n",
-    "    int(qid.replace(\"GSM8K_Q\", \"\"))\n",
-    "    for qid in all_calibration_set\n",
-    "}\n",
-    "\n",
-    "\n",
-    "# ---------- ③ 构造 held-out ID 列表 ---------- #\n",
-    "TOTAL = 1319                       # GSM8K 总样本数\n",
-    "K     = 500                        # 目标 held-out 数量\n",
-    "random.seed(42)                    # 可复现\n",
-    "\n",
-    "all_digits      = set(range(1, TOTAL + 1))\n",
-    "candidate_ids   = list(all_digits - exclude_ids_digit)\n",
-    "heldout_digits  = random.sample(candidate_ids, K)\n",
-    "# ---------- ④ 构造 held-out 样本 ---------- #\n",
-    "heldout_records = []\n",
-    "for digit in heldout_digits:\n",
-    "    qid = f\"GSM8K_Q{digit}\"\n",
-    "    record = {\n",
-    "        \"id\": qid,\n",
-    "    }\n",
-    "    heldout_records.append(record)\n",
-    "\n",
-    "# ---------- ⑤ 写入 JSONL ---------- #\n",
-    "data_file = Path(\n",
-    "    \"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/heldout_500.jsonl\"\n",
-    ")\n",
-    "data_file.parent.mkdir(parents=True, exist_ok=True)\n",
-    "\n",
-    "with open(data_file, \"w\") as f:\n",
-    "    for rec in heldout_records:\n",
-    "        f.write(json.dumps(rec, ensure_ascii=False) + \"\\n\")\n",
-    "\n",
-    "print(f\"已保存到 {data_file}\")\n"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "id": "2300402b",
-   "metadata": {},
-   "source": []
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "ecd604e3",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "len(heldout_digits)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "fea3e307",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "len(direct_true_samples)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "056de0cf",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "len(calibration_ids)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "bee10739",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "\n",
-    "# # 3. randomly choose 100 samples not in the calibration set as the evaluation set\n",
-    "# /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/data/GSM8K/test.jsonl\n",
-    "evaluation_ids = [qid for qid in dict_direct if qid not in calibration_ids][:100]\n",
-    "\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "044f6701",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# 1. find the difference sets of these two files as the calibration set\n",
-    "\"cot0shot.math teacher_result\": true while \"direct.math teacher_result\": false\n",
-    "# 2. the question id of the calibration sets\n",
-    "# 3. find 100 sample set except the calibration set as the evaluation set"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "816d3f0b",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "alignment-attribution-code/data/GSM8K/output/output.GSM8K.direct.math_teacher.llama2-7b-chat.json \n",
-    "alignment-attribution-code/data/GSM8K/output/output.GSM8K.cot0shot.math_teacher.llama2-7b-chat.json"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.9.18"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+    with open(out_all, "w", encoding="utf-8") as f:
+        json.dump(hits_dict, f, ensure_ascii=False, indent=2)
+    print(f"[Info] Saved per-category hit ids to: {out_all}")
+
+
+if __name__ == "__main__":
+    main()

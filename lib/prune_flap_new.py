@@ -102,101 +102,90 @@ def prune_flap(
     layers = model.model.layers
     print("prune every linear layer (FLAP style)")
 
-    # We'll gather per-layer metrics for self_attn.o_proj (head proxy) and mlp.down_proj (neuron proxy)
-    for i in range(len(layers)):
-        layer = layers[i]
-        subset = find_layers(layer)
-
-        # focus only on target projection layers; skip others
-        target_names = []
+    # 1) Collect target modules across all layers (index, name, module)
+    targets = []
+    for i, layer in enumerate(layers):
+        subset = find_layers(layer)  # your helper returning a dict of modules
         if 'self_attn.o_proj' in subset:
-            target_names.append('self_attn.o_proj')
+            targets.append((i, 'self_attn.o_proj', subset['self_attn.o_proj']))
         if 'mlp.down_proj' in subset:
-            target_names.append('mlp.down_proj')
-        if not target_names:
+            targets.append((i, 'mlp.down_proj', subset['mlp.down_proj']))
+
+    # 2) One wrapper per target module to store stats
+    wrappers = {(i, name): FlapStatWrapper(mod) for (i, name, mod) in targets}
+
+    # 3) Define the hook factory
+    def make_hook(key):
+        # key is (layer_idx, name)
+        def _hook(module, inp, out):
+            # Maintain your original signature; tar is unused here
+            wrappers[key].add_batch(inp[0].data, out.data, tar=None)
+        return _hook
+
+    # 4) For each sample, attach hooks to ALL targets, run ONE top-level forward
+    for j in range(args.nsamples):
+        handles = []
+        for key, mod in [(k, m) for (k, m) in zip(wrappers.keys(), [t[2] for t in targets])]:
+            handles.append(mod.register_forward_hook(make_hook(key)))
+
+        with torch.no_grad():
+            # Use top-level forward so each model builds its own mask/rope correctly
+            _ = model(
+                inputs_embeds=inps[j].unsqueeze(0),        # (1, T, H) from wanda_prepare_calib
+                attention_mask=attention_mask[j],          # whatever wanda_prepare_calib returned
+                position_ids=position_ids[j],              # ditto
+                use_cache=False
+            )
+
+        for h in handles:
+            h.remove()
+
+    # 5) Compute metrics and prune weights (no per-layer forward calls needed)
+    for (i, name, mod) in targets:
+        print(f"  -> layer {i:<2}  {name}")
+        metric = _compute_flap_metric(metric_name, wrappers[(i, name)], mod)
+
+        if getattr(args, 'dump_flap_score', False):
+            import os, pickle
+            variant_tag = metric_name.lower()
+            subdir = f"flap_score/{prune_data}_{variant_tag}{'_disentangle' if getattr(args, 'disentangle', False) else ''}"
+            save_folder = os.path.join(args.save, subdir)
+            os.makedirs(save_folder, exist_ok=True)
+            target_file = os.path.join(save_folder, f"flap_metric_layer_{i}_name_{name}_{prune_data}_{variant_tag}.pkl")
+            with open(target_file, 'wb') as f:
+                pickle.dump(metric.cpu(), f)
+            torch.save(metric.cpu(), target_file.replace('.pkl', '_torch.pt'))
+            print(f"[FLAP] Saved metric layer {i} {name} to {target_file}")
             continue
 
-        wrapped = {name: FlapStatWrapper(subset[name]) for name in target_names}
-
-        def add_batch(name, tar):
-            def hook(_, inp, out):
-                wrapped[name].add_batch(inp[0].data, out.data, tar)
-            return hook
-
-        for j in range(args.nsamples):
-            handles = []
-            for name in wrapped:
-                handles.append(subset[name].register_forward_hook(add_batch(name, tars[j])))
-            with torch.no_grad():
-                outs[j] = layer(
-                    inps[j].unsqueeze(0),
-                    attention_mask=attention_mask[j],
-                    position_ids=position_ids[j],
-                )[0]
-            for h in handles:
-                h.remove()
-
-        # Compute metrics (and optionally prune)
-        for name in target_names:
-            print(f"  -> layer {i:<2}  {name}")
-            lin = subset[name]
-            metric = _compute_flap_metric(metric_name, wrapped[name], lin)
-            # Dump score logic
-            if getattr(args, 'dump_flap_score', False):
-                import os, pickle
-                # folder naming similar style to wanda
-                variant_tag = metric_name.lower()
-                if getattr(args, 'disentangle', False):
-                    subdir = f"flap_score/{prune_data}_{variant_tag}_disentangle"
-                else:
-                    subdir = f"flap_score/{prune_data}_{variant_tag}"
-                save_folder = os.path.join(args.save, subdir)
-                if not os.path.exists(save_folder):
-                    os.makedirs(save_folder, exist_ok=True)
-                target_file = os.path.join(
-                    save_folder,
-                    f"flap_metric_layer_{i}_name_{name}_{prune_data}_{variant_tag}.pkl",
-                )
-                with open(target_file, 'wb') as f:
-                    pickle.dump(metric.cpu(), f)
-                # also torch.save
-                torch.save(metric.cpu(), target_file.replace('.pkl', '_torch.pt'))
-                print(f"[FLAP] Saved metric layer {i} {name} to {target_file}")
-                # Skip pruning if only dumping
-                continue
-            # For o_proj treat contiguous head blocks of size 128 like original FLAP; for mlp we prune individual neurons
-            if name == 'self_attn.o_proj':
-                # metric over input features; convert to head scores by reshaping
-                try:
-                    metric_heads = metric.reshape(-1, 128).mean(dim=1)
-                except Exception:
-                    metric_heads = metric  # fallback
-                k_keep = max(1, int(metric_heads.numel() * (1 - args.sparsity_ratio)))
-                keep_idx = torch.topk(metric_heads, k_keep).indices
-                mask_heads = torch.zeros_like(metric_heads, dtype=torch.bool)
-                mask_heads[keep_idx] = True
-                expand_mask = mask_heads.repeat_interleave(128)
-                # zero pruned columns (input features) in q,k,v handled indirectly by zeroing o_proj rows? Here zero rows of o_proj weight not columns.
-                # We'll zero rows (output neurons) mapped by head blocks for simplicity.
-                # Map expand_mask length to out_features if possible
-                if lin.weight.data.shape[0] == expand_mask.numel():
-                    row_mask = ~expand_mask.to(lin.weight.device)
-                    lin.weight.data[row_mask] = 0
-                else:
-                    # fallback: prune smallest individual input features
-                    flat_metric = metric
-                    k_feat = max(1, int(flat_metric.numel() * (1 - args.sparsity_ratio)))
-                    top_feat = torch.topk(flat_metric, k_feat).indices
-                    feat_mask = torch.ones_like(flat_metric, dtype=torch.bool)
-                    feat_mask[top_feat] = False
-                    lin.weight.data[:, feat_mask] = 0
-            elif name == 'mlp.down_proj':
-                neuron_metric = metric  # size in_features
-                k_keep = max(1, int(neuron_metric.numel() * (1 - args.sparsity_ratio)))
-                keep_idx = torch.topk(neuron_metric, k_keep).indices
-                prune_mask = torch.ones_like(neuron_metric, dtype=torch.bool)
-                prune_mask[keep_idx] = False
-                lin.weight.data[:, prune_mask] = 0
+        # === pruning policy (unchanged, just using `mod` instead of `lin`) ===
+        if name == 'self_attn.o_proj':
+            try:
+                metric_heads = metric.reshape(-1, 128).mean(dim=1)
+            except Exception:
+                metric_heads = metric
+            k_keep = max(1, int(metric_heads.numel() * (1 - args.sparsity_ratio)))
+            keep_idx = torch.topk(metric_heads, k_keep).indices
+            mask_heads = torch.zeros_like(metric_heads, dtype=torch.bool)
+            mask_heads[keep_idx] = True
+            expand_mask = mask_heads.repeat_interleave(128)
+            if mod.weight.data.shape[0] == expand_mask.numel():
+                row_mask = ~expand_mask.to(mod.weight.device)
+                mod.weight.data[row_mask] = 0
+            else:
+                flat_metric = metric
+                k_feat = max(1, int(flat_metric.numel() * (1 - args.sparsity_ratio)))
+                top_feat = torch.topk(flat_metric, k_feat).indices
+                feat_mask = torch.ones_like(flat_metric, dtype=torch.bool)
+                feat_mask[top_feat] = False
+                mod.weight.data[:, feat_mask] = 0
+        elif name == 'mlp.down_proj':
+            neuron_metric = metric
+            k_keep = max(1, int(neuron_metric.numel() * (1 - args.sparsity_ratio)))
+            keep_idx = torch.topk(neuron_metric, k_keep).indices
+            prune_mask = torch.ones_like(neuron_metric, dtype=torch.bool)
+            prune_mask[keep_idx] = False
+            mod.weight.data[:, prune_mask] = 0
 
         # swap buffers like wanda to propagate
         for j in range(args.nsamples):
@@ -210,3 +199,161 @@ def prune_flap(
 
     model.config.use_cache = use_cache
     torch.cuda.empty_cache()
+
+# def prune_flap_llama2(
+#     args,
+#     model,
+#     tokenizer,
+#     model_base=None,  # unused; kept for signature similarity
+#     device=torch.device("cuda:0"),
+#     prune_n=0,
+#     prune_m=0,
+#     prune_data=None,
+# ):
+#     """Wanda-style FLAP pruning: collect per-layer input stats then prune heads (q,k,v family via o_proj proxy) and MLP neurons.
+#     Currently only masks (zeros) selected rows consistent with sparsity_ratio per layer.
+#     """
+#     if prune_data is None:
+#         prune_data = getattr(args, 'prune_data', 'wikitext')
+#     if not hasattr(args, 'metrics'):
+#         args.metrics = 'IFV'
+#     metric_name = args.metrics
+#     if not hasattr(args, 'disentangle'):
+#         args.disentangle = True
+
+#     use_cache = model.config.use_cache
+#     model.config.use_cache = False
+#     print(f"loading calibration data {prune_data} (FLAP)")
+#     dataloader, _ = get_loaders(
+#         prune_data,
+#         nsamples=args.nsamples,
+#         seed=args.seed,
+#         seqlen=model.seqlen,
+#         tokenizer=tokenizer,
+#         disentangle=args.disentangle,
+#     )
+#     print("dataset loading complete (FLAP)")
+
+#     with torch.no_grad():
+#         inps, outs, tars, attention_mask, position_ids = wanda_prepare_calib(
+#             model, dataloader, device, args.nsamples
+#         )
+#     if not args.disentangle:
+#         tars = [torch.zeros_like(tar) for tar in tars]
+
+#     inps = [inp.squeeze(0).to(device) for inp in inps]
+#     tars = [tar.squeeze(0).to(device) for tar in tars]
+#     attention_mask = [am.to(device) for am in attention_mask]
+#     position_ids = [pids.to(device) for pids in position_ids]
+
+#     layers = model.model.layers
+#     print("prune every linear layer (FLAP style)")
+
+#     # We'll gather per-layer metrics for self_attn.o_proj (head proxy) and mlp.down_proj (neuron proxy)
+#     for i in range(len(layers)):
+#         layer = layers[i]
+#         subset = find_layers(layer)
+
+#         # focus only on target projection layers; skip others
+#         target_names = []
+#         if 'self_attn.o_proj' in subset:
+#             target_names.append('self_attn.o_proj')
+#         if 'mlp.down_proj' in subset:
+#             target_names.append('mlp.down_proj')
+#         if not target_names:
+#             continue
+
+#         wrapped = {name: FlapStatWrapper(subset[name]) for name in target_names}
+
+#         def add_batch(name, tar):
+#             def hook(_, inp, out):
+#                 wrapped[name].add_batch(inp[0].data, out.data, tar)
+#             return hook
+
+#         for j in range(args.nsamples):
+#             handles = []
+#             for name in wrapped:
+#                 handles.append(subset[name].register_forward_hook(add_batch(name, tars[j])))
+#             with torch.no_grad():
+#                 outs[j] = layer(
+#                     inps[j].unsqueeze(0),
+#                     attention_mask=attention_mask[j],
+#                     position_ids=position_ids[j],
+#                 )[0]
+#             for h in handles:
+#                 h.remove()
+
+#         # Compute metrics (and optionally prune)
+#         for name in target_names:
+#             print(f"  -> layer {i:<2}  {name}")
+#             lin = subset[name]
+#             metric = _compute_flap_metric(metric_name, wrapped[name], lin)
+#             # Dump score logic
+#             if getattr(args, 'dump_flap_score', False):
+#                 import os, pickle
+#                 # folder naming similar style to wanda
+#                 variant_tag = metric_name.lower()
+#                 if getattr(args, 'disentangle', False):
+#                     subdir = f"flap_score/{prune_data}_{variant_tag}_disentangle"
+#                 else:
+#                     subdir = f"flap_score/{prune_data}_{variant_tag}"
+#                 save_folder = os.path.join(args.save, subdir)
+#                 if not os.path.exists(save_folder):
+#                     os.makedirs(save_folder, exist_ok=True)
+#                 target_file = os.path.join(
+#                     save_folder,
+#                     f"flap_metric_layer_{i}_name_{name}_{prune_data}_{variant_tag}.pkl",
+#                 )
+#                 with open(target_file, 'wb') as f:
+#                     pickle.dump(metric.cpu(), f)
+#                 # also torch.save
+#                 torch.save(metric.cpu(), target_file.replace('.pkl', '_torch.pt'))
+#                 print(f"[FLAP] Saved metric layer {i} {name} to {target_file}")
+#                 # Skip pruning if only dumping
+#                 continue
+#             # For o_proj treat contiguous head blocks of size 128 like original FLAP; for mlp we prune individual neurons
+#             if name == 'self_attn.o_proj':
+#                 # metric over input features; convert to head scores by reshaping
+#                 try:
+#                     metric_heads = metric.reshape(-1, 128).mean(dim=1)
+#                 except Exception:
+#                     metric_heads = metric  # fallback
+#                 k_keep = max(1, int(metric_heads.numel() * (1 - args.sparsity_ratio)))
+#                 keep_idx = torch.topk(metric_heads, k_keep).indices
+#                 mask_heads = torch.zeros_like(metric_heads, dtype=torch.bool)
+#                 mask_heads[keep_idx] = True
+#                 expand_mask = mask_heads.repeat_interleave(128)
+#                 # zero pruned columns (input features) in q,k,v handled indirectly by zeroing o_proj rows? Here zero rows of o_proj weight not columns.
+#                 # We'll zero rows (output neurons) mapped by head blocks for simplicity.
+#                 # Map expand_mask length to out_features if possible
+#                 if lin.weight.data.shape[0] == expand_mask.numel():
+#                     row_mask = ~expand_mask.to(lin.weight.device)
+#                     lin.weight.data[row_mask] = 0
+#                 else:
+#                     # fallback: prune smallest individual input features
+#                     flat_metric = metric
+#                     k_feat = max(1, int(flat_metric.numel() * (1 - args.sparsity_ratio)))
+#                     top_feat = torch.topk(flat_metric, k_feat).indices
+#                     feat_mask = torch.ones_like(flat_metric, dtype=torch.bool)
+#                     feat_mask[top_feat] = False
+#                     lin.weight.data[:, feat_mask] = 0
+#             elif name == 'mlp.down_proj':
+#                 neuron_metric = metric  # size in_features
+#                 k_keep = max(1, int(neuron_metric.numel() * (1 - args.sparsity_ratio)))
+#                 keep_idx = torch.topk(neuron_metric, k_keep).indices
+#                 prune_mask = torch.ones_like(neuron_metric, dtype=torch.bool)
+#                 prune_mask[keep_idx] = False
+#                 lin.weight.data[:, prune_mask] = 0
+
+#         # swap buffers like wanda to propagate
+#         for j in range(args.nsamples):
+#             with torch.no_grad():
+#                 outs[j] = layer(
+#                     inps[j].unsqueeze(0),
+#                     attention_mask=attention_mask[j],
+#                     position_ids=position_ids[j],
+#                 )[0].squeeze(0)
+#         inps, outs = outs, inps
+
+#     model.config.use_cache = use_cache
+#     torch.cuda.empty_cache()

@@ -1031,7 +1031,7 @@ def eval_gsm8k_selected_samples(
     random.seed(args.seed)
     np.random.seed(args.seed)
     # 2) 提取所有 id（去掉可能为空的）
-    data_file = f"../data/GSM8K_eval_build/eval_dataset_with_conversation_template.jsonl"
+    data_file = f"../data/GSM8K_eval_build/{args.model}/eval_datasets/selected_samples.jsonl"
     with open(data_file, "r") as fin:
         samples = [json.loads(line) for line in fin if "id" in json.loads(line)]
     ids = [s["id"] for s in samples if "id" in s and s["id"]]

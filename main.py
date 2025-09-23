@@ -27,7 +27,8 @@ from lib.prune import (
     prune_wanda_3_set_difference,
     prune_wanda_3_set_difference_utility,
     prune_wanda_2_set_difference_utility,
-    prune_wanda_4_set_difference_cot4shot
+    prune_wanda_4_set_difference_cot4shot,
+    prune_wanda_234_set_difference
 )
 from lib.prune_flap_new import prune_flap  # minimal import for flap
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
@@ -112,6 +113,7 @@ def main(args=None):
             choices=["unstructured", "4:8", "2:4", "structured"],
             default="unstructured",
         )
+
         parser.add_argument(
             "--prune_method",
             type=str,
@@ -119,6 +121,7 @@ def main(args=None):
                 "random",
                 "magnitude",
                 "wanda",
+                "wanda_234_set_difference",
                 "sparsegpt",
                 "attention_head",
                 "ablate_mag_seq",
@@ -135,6 +138,7 @@ def main(args=None):
                 "wanda_4_set_difference_cot4shot",
                 "wanda_2_set_difference_utility",
                 "flap_4_set_difference",
+                "flap"
             ],
         )
         parser.add_argument(
@@ -154,8 +158,8 @@ def main(args=None):
                 "GSM8K_direct",
                 "GSM8K_cot0shot",
                 "GSM8K_direct_120",
-                "GSM8K_cot0shot_120",
                 "GSM8K_cot0shot_goldreason",
+                "GSM8K_cot0shot_120",
                 "GSM8K_cot4shot_120",
                 "GSM8K_cot0shot_120_truncated",
                 "GSM8K_cot4shot_120_truncated",
@@ -163,6 +167,7 @@ def main(args=None):
                 "none",
                 "Addition:6_cot0shot",
                 "Addition:6_direct",
+                "GSM8K",
             ],
             default="alpaca_cleaned_no_safety",
         )
@@ -235,6 +240,13 @@ def main(args=None):
             help="whether to only prune the layer with lower jaccard index",
         )
         parser.add_argument(
+            "--prune_prompt",
+            type=str,
+            default=None,
+            help="whether to only prune the prompt part of the model",
+        )
+
+        parser.add_argument(
             "--save_sparsity",
             action="store_true",
             help="whether to save the sparsity ratio"
@@ -255,7 +267,12 @@ def main(args=None):
             action="store_true",
             help="whether to decouple the align and misalign when computing the wanda score",
         )
-
+        parser.add_argument(
+            "--number_of_sets",
+            type=int,
+            default=4,
+            help="Number of sets for the pruning method",
+        )
         # low rank
         parser.add_argument("--rank", type=int, default=10)
         parser.add_argument("--niter", type=int, default=20)
@@ -422,8 +439,22 @@ def main(args=None):
             prune_ablate(
                 args, model, tokenizer, device, prune_n=prune_n, prune_m=prune_m
             )
+        elif args.prune_method == "wanda_234_set_difference":
+            success_prune = prune_wanda_234_set_difference(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                q=args.q,
+                k=args.k,
+            )
         elif args.prune_method == "wanda_3_set_difference":
-            prune_wanda_3_set_difference(
+            success_prune = prune_wanda_3_set_difference(
                 args,
                 model,
                 tokenizer,
@@ -633,7 +664,7 @@ def main(args=None):
             dtype="float16",
             max_model_len=8192,
         )
-        print(f"Evaluating GSM8K {prune_data} with {args.model}")
+        print(f"Evaluating {prune_data} with {args.model}")
         if args.eval_type == "calibration":
             acc_summary = eval_gsm8k_calibration(
                 args,

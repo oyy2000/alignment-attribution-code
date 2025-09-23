@@ -1,0 +1,18 @@
+[
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Qwen2.5-7B-Instruct/unstructured/flap_weightonly/prune_prompt_direct/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method flap --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 64 --dump_flap_score ",
+    "result": "running"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Qwen2.5-7B-Instruct/unstructured/flap_weightonly/prune_prompt_cot0shot/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method flap --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 64 --dump_flap_score ",
+    "result": "running"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Qwen2.5-7B-Instruct/unstructured/flap_weightonly/prune_prompt_cot0shot_goldreason/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method flap --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 64 --dump_flap_score ",
+    "result": "running"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Qwen2.5-7B-Instruct/unstructured/flap_weightonly/prune_prompt_cot4shot/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method flap --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 64 --dump_flap_score ",
+    "result": "running"
+  }
+]

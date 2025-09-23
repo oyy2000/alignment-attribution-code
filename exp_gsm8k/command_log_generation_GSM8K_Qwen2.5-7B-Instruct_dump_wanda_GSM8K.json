@@ -1,0 +1,10 @@
+[
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/wanda_weightonly/prune_prompt_cot0shot/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --dataset GSM8K --prune_prompt cot0shot --eval_type select_samples --sparsity_type unstructured --prune_method wanda --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 8 --dump_wanda_score ",
+    "result": "running"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/wanda_weightonly/prune_prompt_cot0shot_goldreason/prune_data_model_Qwen2.5-7B-Instruct --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --dataset GSM8K --prune_prompt cot0shot_goldreason --eval_type select_samples --sparsity_type unstructured --prune_method wanda --prune_data GSM8K --sparsity_ratio 0.5 --batch_size 8 --dump_wanda_score ",
+    "result": "running"
+  }
+]

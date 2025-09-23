@@ -1,0 +1,14 @@
+[
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/wanda_weightonly/prune_GSM8K_cot0shot_goldreason/ --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method wanda --prune_data GSM8K_cot0shot_goldreason --sparsity_ratio 0.5 --batch_size 64 --dump_wanda_score ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/wanda_weightonly/prune_GSM8K_cot0shot_120/ --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method wanda --prune_data GSM8K_cot0shot_120 --sparsity_ratio 0.5 --batch_size 64 --dump_wanda_score ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model Qwen2.5-7B-Instruct --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/Qwen2.5-7B-Instruct/unstructured/wanda_weightonly/prune_GSM8K_direct_120/ --nsamples 120 --out_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out --eval_gsm8k --dataset GSM8K --eval_type select_samples --sparsity_type unstructured --prune_method wanda --prune_data GSM8K_direct_120 --sparsity_ratio 0.5 --batch_size 64 --dump_wanda_score ",
+    "result": "success"
+  }
+]
