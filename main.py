@@ -28,7 +28,8 @@ from lib.prune import (
     prune_wanda_3_set_difference_utility,
     prune_wanda_2_set_difference_utility,
     prune_wanda_4_set_difference_cot4shot,
-    prune_wanda_234_set_difference
+    prune_wanda_234_set_difference,
+    prune_wanda_ratio_diff
 )
 from lib.prune_flap_new import prune_flap  # minimal import for flap
 from lib.model_wrapper import prune_wanda_v2, prune_wandg
@@ -138,7 +139,8 @@ def main(args=None):
                 "wanda_4_set_difference_cot4shot",
                 "wanda_2_set_difference_utility",
                 "flap_4_set_difference",
-                "flap"
+                "flap",
+                "wanda_ratio_diff"
             ],
         )
         parser.add_argument(
@@ -453,6 +455,20 @@ def main(args=None):
                 q=args.q,
                 k=args.k,
             )
+        elif args.prune_method == "wanda_ratio_diff":
+            success_prune = prune_wanda_ratio_diff(
+                args,
+                model,
+                tokenizer,
+                model_base,
+                device,
+                prune_n=prune_n,
+                prune_m=prune_m,
+                prune_data=args.prune_data,
+                p=args.p,
+                q=args.q,
+                k=args.k,
+            )
         elif args.prune_method == "wanda_3_set_difference":
             success_prune = prune_wanda_3_set_difference(
                 args,
@@ -658,12 +674,20 @@ def main(args=None):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        vllm_model = LLM(
+        
+        if args.model == "llama2-7b-chat-hf":
+            vllm_model = LLM(
             model=pruned_path,
             tokenizer=modeltype2path[args.model],
             dtype="float16",
-            max_model_len=8192,
         )
+        else:
+            vllm_model = LLM(
+                model=pruned_path,
+                tokenizer=modeltype2path[args.model],
+                dtype="float16",
+                max_model_len=8192,
+            )
         print(f"Evaluating {prune_data} with {args.model}")
         if args.eval_type == "calibration":
             acc_summary = eval_gsm8k_calibration(

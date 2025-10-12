@@ -35,7 +35,7 @@ ANNOTATION_ROTATION = 90  # vertical to save horizontal space
 ANNOTATION_Y_OFFSET = 4   # points upward shift
 ANNOTATE_CATEGORY_INDEX = 0  # which category series to anchor annotations on
 
-BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_3/eval_selected_samples/prompt_direct,cot0shot")
+BASE_DIR = ("/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/GSM8K/Qwen2.5-7B-Instruct/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot")
 OUTPUT_DIR = "/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/Addition:6/figures/"
 K_OPTIONS = [0.90] 
 U_OPTIONS = [0.90] 

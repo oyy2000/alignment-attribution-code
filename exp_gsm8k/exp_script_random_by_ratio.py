@@ -5,7 +5,8 @@ import threading
 import subprocess
 from multiprocessing import Queue
 import argparse
-
+import re
+import glob
 TIME_OUT = 18000  # 5 hours
 
 # ===== 原配置中保留可改的常量（会在 main() 中用 args 覆盖） =====
@@ -55,74 +56,58 @@ def sanitize_for_path(s: str):
     # 处理包含 "/" 的 huggingface 名称，避免当成子目录
     return s.replace("/", "_")
 
-model = "Qwen2.5-7B-Instruct"#"Qwen2.5-7B-Instruct" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B, Qwen2.5-7B-Instruct, mistral-7B-Instruct, llama2-7b-chat-hf
+
+sparsity_type = "unstructured"
+suffix = "weightonly"
+
+PQKU_RE = re.compile(r"pq_([0-9.]+)_([0-9.]+)_k_([0-9.]+)_u_([0-9.]+)")
+
+
+prune_method_options = ["random"]
+prompt_methods = ["direct,cot0shot"]
+eval_dataset = "GSM8K"
+nsamples = 600
+eval_type = "selected_samples"
+
+model = "llama2-7b-chat-hf" #"Qwen2.5-7B-Instruct" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B, Qwen2.5-7B-Instruct, mistral-7B-Instruct, llama2-7b-chat-hf
 model_for_path = sanitize_for_path(model)
 eval_dataset = "GSM8K"
 eval_type = "selected_samples"
-add_template_flag = False
+add_template_flag = True
 nsamples = 120
 prompt_methods_list = ["direct,cot0shot"] # 可以改成字符串，自动 split
 sparsity_type = "unstructured"
 suffix = "weightonly"
-prune_method = "wanda_234_set_difference"
-number_of_sets_options = [2, 3, 4]  # [1, 2, 3, 4]
+number_of_sets_options = [2]  # [1, 2, 3, 4]
 prune_data="GSM8K"
 prune_prompt_options = ["cot0shot", "cot0shot_goldreason", "alpaca_cleaned_no_safety", "direct"] #, "cot0shot", "cot0shot_goldreason", "cot4shot"]  # "GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
+sparsity_ratio_options =  [0.000001, 0.000002, 0.000003, 0.000005, 0.00001, 0.00002, 0.00003, 0.00005, 0.0001]  # 0.00001 -> 0.0001
 
-p=0.01
-q=0.01 
-k=0.01
-u=0.01
-pq_options = [round(0.01 * i, 2) for i in range(1, 21)]   # 0.01 → 0.10
-k_options = [0.4]
-u_options = [0.4]
-sparsity_threshold=0.0000002
-set_difference_data="GSM8K"
-
-def build_command(
-    prompt_method="direct",
-    p=0.01,
-    q=0.01,
-    k=0.01,
-    u=0.01,
-    number_of_sets=3,
-):
+def build_command(number_of_sets, sparsity_ratio, prune_method, prompt_method):
     use_template = True if add_template_flag else False
     save_dir = (
-        f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-        f"out/eval_{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/sets_{number_of_sets}/"
-        f"set_difference_data_{set_difference_data}/eval_{eval_type}/"
-        f"prompt_{prompt_method}/add_template_{use_template}/step_0.01_sp_{sparsity_threshold}/pq_{p}_{q}_k_{k}_u_{u}/"
+        f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_{eval_dataset}/{model}/"
+        f"{sparsity_type}/{prune_method}_{suffix}/sets_{number_of_sets}/eval_{eval_type}/prompt_{prompt_method}/"
+        f"add_template_{use_template}/sparsity_ratio_{sparsity_ratio}/"
     )
     out_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out"
+
     command = (
         f"python ../main.py "
         f"--model {model} "
+        f"--prune_method {prune_method} "
+        f"--sparsity_ratio {sparsity_ratio} "
+        f"--sparsity_type {sparsity_type} "
         f"--save {save_dir} "
         f"--nsamples {nsamples} "
-        f"--out_dir {out_dir} "
         f"--eval_gsm8k "
         f"--dataset {eval_dataset} "
         f"--eval_type {eval_type} "
-        f"--sparsity_type {sparsity_type} "
-        f"--prune_method {prune_method} "
-        f"--number_of_sets {number_of_sets} "
-        f"--prune_data {prune_data} "
-        f"--sparsity_ratio 0.5 "
-        f"--batch_size 64 "
-        # f"--dump_wanda_score " 
-        f"--set_difference_data {set_difference_data} "
         f"--prompt_method {prompt_method} "
-        f"--save_sparsity "  # Save sparsity ratio
-        f"--sparsity_threshold {sparsity_threshold} "
         f"--cache_dir {out_dir}/../llm_weights "
-        f"--p {p} "
-        f"--q {q} "
-        f"--k {k} "
-        f"--u {u} "
     )
+  
     return command
-
 
 
 def initialize_log(log_file,commands):
@@ -247,28 +232,17 @@ def main():
     MONITOR_POLL_SEC = args.monitor_poll_sec
 
     # 基于参数生成日志文件名
-    log_file = f"command_log_generation_{eval_dataset}_{model_for_path}_set_{number_of_sets_options}_{prune_method}_{prompt_methods_list}_{pq_options}.json"
+    log_file = f"command_log_generation_{eval_dataset}_{model_for_path}_set_{number_of_sets_options}_random_{prompt_methods_list}_sparsity_ratio_options_{sparsity_ratio_options}.json"
     
     
     # Generate all commands
     commands = []
-    for prompt_method in prompt_methods_list:
-        for p in pq_options:
-            q = p
-            for k in k_options:
-                for u in u_options:
-                    for number_of_sets in number_of_sets_options:
+    for set_number in number_of_sets_options:
+            for sparsity_ratio in sparsity_ratio_options:
+                for prune_method in prune_method_options:
+                    for prompt_method in prompt_methods:
+                        commands.append(build_command(set_number, sparsity_ratio, prune_method, prompt_method))
 
-                        commands.append(    
-                            build_command(
-                                prompt_method=prompt_method,
-                                p=p,
-                                q=q,
-                                k=k,
-                                u=u,
-                                number_of_sets=number_of_sets,
-                            )
-                        )
 
     initialize_log(log_file, commands)
     pending = load_pending_or_failed_tasks(log_file)

@@ -55,29 +55,29 @@ def sanitize_for_path(s: str):
     # 处理包含 "/" 的 huggingface 名称，避免当成子目录
     return s.replace("/", "_")
 
-model = "Qwen2.5-7B-Instruct"#"Qwen2.5-7B-Instruct" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B, Qwen2.5-7B-Instruct, mistral-7B-Instruct, llama2-7b-chat-hf
-model_for_path = sanitize_for_path(model)
 eval_dataset = "GSM8K"
 eval_type = "selected_samples"
-add_template_flag = False
+add_template_flag = True
 nsamples = 120
 prompt_methods_list = ["direct,cot0shot"] # 可以改成字符串，自动 split
 sparsity_type = "unstructured"
 suffix = "weightonly"
-prune_method = "wanda_234_set_difference"
-number_of_sets_options = [2, 3, 4]  # [1, 2, 3, 4]
+number_of_sets_options = [2]
 prune_data="GSM8K"
-prune_prompt_options = ["cot0shot", "cot0shot_goldreason", "alpaca_cleaned_no_safety", "direct"] #, "cot0shot", "cot0shot_goldreason", "cot4shot"]  # "GSM8K_cot0shot_goldreason_truncated" "alpaca_cleaned_no_safety" #"GSM8K_cot4shot_120"
-
-p=0.01
+prune_method_options = ["wanda_ratio_diff", "random"]  # "random", "magnitude", "wanda", "wanda_ratio_diff"
+model_options = ["llama2-7b-chat-hf", "Qwen2.5-7B-Instruct"]
+add_template_flag_options = [True, False]
+p=0.01 
 q=0.01 
 k=0.01
 u=0.01
-pq_options = [round(0.01 * i, 2) for i in range(1, 21)]   # 0.01 → 0.10
-k_options = [0.4]
-u_options = [0.4]
+pq_options = [0.01]   # 0.01 → 0.10
+k_options = [0.17]
+u_options = [0.15]
 sparsity_threshold=0.0000002
 set_difference_data="GSM8K"
+sparsity_ratio_options = [0.000001, 0.000002, 0.000003, 0.000005, 0.00001, 0.00002, 0.00003, 0.00005, 0.0001]  # 0.00001 -> 0.0001
+ #[0.00001, 0.0001, 0.001]
 
 def build_command(
     prompt_method="direct",
@@ -85,15 +85,27 @@ def build_command(
     q=0.01,
     k=0.01,
     u=0.01,
-    number_of_sets=3,
+    number_of_sets=2,
+    sparsity_ratio=0.01,
+    add_template_flag=True,
+    prune_method="random",
+    model="llama2-7b-chat-hf" # "Qwen2.5-7B-Instruct" # deepseek-ai/DeepSeek-R1-Distill-Llama-8B, Qwen2.5-7B-Instruct, mistral-7B-Instruct, llama2-7b-chat-hf
 ):
     use_template = True if add_template_flag else False
-    save_dir = (
-        f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
-        f"out/eval_{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/sets_{number_of_sets}/"
-        f"set_difference_data_{set_difference_data}/eval_{eval_type}/"
-        f"prompt_{prompt_method}/add_template_{use_template}/step_0.01_sp_{sparsity_threshold}/pq_{p}_{q}_k_{k}_u_{u}/"
-    )
+    if prune_method == "wanda_ratio_diff":
+        save_dir = (
+            f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/"
+            f"out/eval_{eval_dataset}/{model}/{sparsity_type}/{prune_method}_{suffix}/sets_{number_of_sets}/"
+            f"set_difference_data_{set_difference_data}/eval_{eval_type}/"
+            f"prompt_{prompt_method}/add_template_{use_template}/sparsity_ratio_{sparsity_ratio}/"
+        )
+    else:
+        save_dir = (
+            f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_{eval_dataset}/{model}/"
+            f"{sparsity_type}/{prune_method}_{suffix}/sets_{number_of_sets}/eval_{eval_type}/prompt_{prompt_method}/"
+            f"add_template_{use_template}/sparsity_ratio_{sparsity_ratio}/"
+        )
+
     out_dir = f"/common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out"
     command = (
         f"python ../main.py "
@@ -108,7 +120,7 @@ def build_command(
         f"--prune_method {prune_method} "
         f"--number_of_sets {number_of_sets} "
         f"--prune_data {prune_data} "
-        f"--sparsity_ratio 0.5 "
+        f"--sparsity_ratio {sparsity_ratio} "
         f"--batch_size 64 "
         # f"--dump_wanda_score " 
         f"--set_difference_data {set_difference_data} "
@@ -247,7 +259,7 @@ def main():
     MONITOR_POLL_SEC = args.monitor_poll_sec
 
     # 基于参数生成日志文件名
-    log_file = f"command_log_generation_{eval_dataset}_{model_for_path}_set_{number_of_sets_options}_{prune_method}_{prompt_methods_list}_{pq_options}.json"
+    log_file = f"command_log_generation_{eval_dataset}_{model_options}_set_{number_of_sets_options}_{prune_method_options}_{prompt_methods_list}_{sparsity_ratio_options}.json"
     
     
     # Generate all commands
@@ -258,17 +270,24 @@ def main():
             for k in k_options:
                 for u in u_options:
                     for number_of_sets in number_of_sets_options:
-
-                        commands.append(    
-                            build_command(
-                                prompt_method=prompt_method,
-                                p=p,
-                                q=q,
-                                k=k,
-                                u=u,
-                                number_of_sets=number_of_sets,
-                            )
-                        )
+                        for sparsity_ratio in sparsity_ratio_options:
+                            for add_template_flag in add_template_flag_options:
+                                    for prune_method in prune_method_options:
+                                        for model in model_options:
+                                            commands.append(    
+                                                build_command(
+                                                    prompt_method=prompt_method,
+                                                    p=p,
+                                                    q=q,
+                                                    k=k,
+                                                    u=u,
+                                                    sparsity_ratio=sparsity_ratio,  
+                                                    number_of_sets=number_of_sets,
+                                                    add_template_flag=add_template_flag,
+                                                    prune_method=prune_method,
+                                                    model=model 
+                                                )
+                                            )
 
     initialize_log(log_file, commands)
     pending = load_pending_or_failed_tasks(log_file)

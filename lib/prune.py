@@ -1662,6 +1662,15 @@ def _load_wanda_score_single_GPU(args, metric: str, layer_idx: int, param_name: 
     }
     path = METRIC_TO_PATH[metric]
     name = METRIC_TO_NAME[metric]
+    METRIC_TO_NAME_llama2 = {
+        "cot0shot": "GSM8K_cot0shot_120",
+        "cot0shot_goldreason": "GSM8K_cot0shot_goldreason",
+        "direct": "GSM8K_direct_120",
+        "cot4shot": "GSM8K_cot4shot_120",
+        "utility": "alpaca_cleaned_no_safety",
+    }
+    if args.model == "llama2-7b-chat-hf":
+        name = METRIC_TO_NAME_llama2[metric]
     if "wanda" in args.prune_method:
         prune_method_ori = "wanda"
         score = "wanda_score"
@@ -2211,6 +2220,172 @@ def prune_wanda_3_set_difference_utility(
             f"[SUMMARY] 前三层(0,1,2) sparsity = {[f'{s:.8f}' for s in first3_sparsities]} AVG = {avg_sparsity_first3:.8f}"
         )
     
+def prune_wanda_ratio_diff(
+    args,
+    model,
+    tokenizer,
+    model_base=None,
+    device=torch.device("cuda:0"),
+    prune_n=0,
+    prune_m=0,
+    prune_data="align_short",
+    p=0.5,                # cot0shot     top-p 百分比（用于取 q/u 辅助集合时仍保留）
+    k=0.5,                # direct       top-k 百分比（仅用于加载、非主驱动）
+    q=0.5,                # cot0shot_gr  top-q 百分比（仅 4-sets 需要）
+    u=0.5,                # utility      top-u 百分比（3/4-sets 用于排除）
+):
+    number_of_sets = args.number_of_sets
+    use_cache = model.config.use_cache
+    model.config.use_cache = False
+    save_sparsity_path = None
+    sparsity_ratio = args.sparsity_ratio
+    if args.save_sparsity:
+        save_sparsity_path = os.path.join(args.save, f"sparsity_{args.sparsity_ratio:.6f}.txt")
+        os.makedirs(os.path.dirname(save_sparsity_path), exist_ok=True)
+
+    layers = model.model.layers
+    if args.use_diff or args.recover_from_base:
+        assert model_base is not None
+        layers_base = model_base.model.layers
+
+    p_metrics, q_metrics, k_metrics, u_metrics = "cot0shot", "cot0shot_goldreason", "direct", "utility"
+    if number_of_sets == 2:
+        print(f"🌱 2-Set pruning (ratio) - p={p}, k={k}: contributor = p/k，选取最高分；目标稀疏率 = {sparsity_ratio}")
+
+    # 需要加载哪些打分张量
+    needed_keys_by_n = {
+        2: ["p", "k"],
+        3: ["p", "k", "u"],
+        4: ["p", "k", "q", "u"],
+    }
+    frac_map   = {"p": p, "q": q, "k": k, "u": u}  # 仅用于构造 q/u 的 top 集
+    metric_map = {"p": p_metrics, "q": q_metrics, "k": k_metrics, "u": u_metrics}
+
+    # 记录前三层稀疏度
+    first3_sparsities = []
+
+    eps = 1e-8  # 防止除零/NaN
+
+    for i, layer in enumerate(layers):
+        subset = find_layers(layer)
+        if args.use_diff or args.recover_from_base:
+            subset_base = find_layers(layers_base[i])
+
+        for name in subset:
+            print(f"  -> layer {i:<2}  {name}")
+            dev = subset[name].weight.device
+
+            # ---- 加载本层所需的 Wanda 分数张量 ----
+            Ws = {}
+            for key in needed_keys_by_n[number_of_sets]:
+                metrics_name = metric_map[key]
+                Ws[key] = _load_wanda_score_single_GPU(args, metrics_name, i, name, dev, use_fp16=True)
+
+            # 以 p 的元素数为总数基准
+            num_total = Ws["p"].numel() if "p" in Ws else next(iter(Ws.values())).numel()
+            # 本层基于“比例”的目标 prune 数
+            top_ratio = int(max(0, min(1, sparsity_ratio)) * num_total)
+
+            # ---- 仅当有 p 与 k 时，计算 contributor score = p/k ----
+            if "p" not in Ws or "k" not in Ws or top_ratio == 0:
+                # 资源清理并跳过
+                for key in list(Ws.keys()):
+                    del Ws[key]
+                torch.cuda.empty_cache()
+                continue
+
+            W_p = Ws["p"].flatten()
+            W_k = Ws["k"].flatten()
+
+            # 可选：对分数进行非负/截断，避免异常值的影响（按需开启）
+            # W_p = torch.clamp(W_p, min=0)
+            # W_k = torch.clamp(W_k, min=0)
+
+            score = W_p / (W_k + eps)
+
+            # ---- 3/4 组时仍保留对 u（排除）与 q（可选交集）的约束 ----
+            idx_u = None
+            idx_q = None
+            if number_of_sets in (3, 4) and "u" in Ws:
+                top_u = int(frac_map["u"] * num_total)
+                if top_u > 0:
+                    idx_u = torch.topk(Ws["u"].flatten(), top_u, largest=True)[1].unique()
+            if number_of_sets == 4 and "q" in Ws:
+                top_q = int(frac_map["q"] * num_total)
+                if top_q > 0:
+                    idx_q = torch.topk(Ws["q"].flatten(), top_q, largest=True)[1].unique()
+
+            # 先取基于 ratio 的 Top-K（largest=True）
+            idx_ratio_top = torch.topk(score, top_ratio, largest=True)[1].unique()
+
+            # 应用集合约束：
+            prune_set = idx_ratio_top
+            if number_of_sets == 3 and idx_u is not None:
+                # 去掉 utility 顶部
+                prune_set = prune_set[~torch.isin(prune_set, idx_u)]
+            elif number_of_sets == 4:
+                # （可选策略）先与 q 顶部取交、再去掉 u 顶部
+                if idx_q is not None:
+                    prune_set = prune_set[torch.isin(prune_set, idx_q)]
+                if idx_u is not None:
+                    prune_set = prune_set[~torch.isin(prune_set, idx_u)]
+
+            if prune_set.numel() == 0:
+                for key in list(Ws.keys()):
+                    del Ws[key]
+                del prune_set
+                torch.cuda.empty_cache()
+                continue
+
+            # 稀疏率统计
+            sparsity = prune_set.numel() / num_total
+            if i < 3:
+                first3_sparsities.append(sparsity)
+
+            # ---- 生成布尔 Mask 并置零 / 回滚 ----
+            W_mask = torch.zeros_like(subset[name].weight, dtype=torch.bool, device=subset[name].weight.device)
+            dim1 = subset[name].weight.size(1)
+            rows = prune_set // dim1
+            cols = prune_set %  dim1
+            W_mask[rows, cols] = True
+
+            if args.recover_from_base:
+                subset[name].weight.data[W_mask] = subset_base[name].weight.data[W_mask]
+            else:
+                subset[name].weight.data[W_mask] = 0.0
+
+            # 清理
+            for key in list(Ws.keys()):
+                del Ws[key]
+            del W_p, W_k, W_mask, prune_set, score
+            torch.cuda.empty_cache()
+
+        # ---- 完成第 2 层后，检查前三层平均稀疏率 ----
+        if i == 2:
+            avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities) if first3_sparsities else 0.0
+            print(
+                f"[First3 Avg] layers 0-2 sparsities = {[f'{s:.8f}' for s in first3_sparsities]} "
+                f"=> avg = {avg_sparsity_first3:.8f}; threshold = {args.sparsity_threshold:.8f}"
+            )
+            if avg_sparsity_first3 < args.sparsity_threshold:
+                print(f"⚠️ 前三层平均 sparsity {avg_sparsity_first3:.8f} < threshold {args.sparsity_threshold:.8f}，提前返回")
+                model.config.use_cache = use_cache
+                torch.cuda.empty_cache()
+                return False
+            if save_sparsity_path:
+                with open(save_sparsity_path, "a") as f:
+                    print(
+                        f"First3_layers_sparsity={','.join(f'{s:.8f}' for s in first3_sparsities)} "
+                        f"AVG_first3={avg_sparsity_first3:.8f}",
+                        file=f,
+                    )
+
+    model.config.use_cache = use_cache
+    torch.cuda.empty_cache()
+
+    if first3_sparsities:
+        avg_sparsity_first3 = sum(first3_sparsities) / len(first3_sparsities)
+        print(f"[SUMMARY] 前三层(0,1,2) sparsity = {[f'{s:.8f}' for s in first3_sparsities]} AVG = {avg_sparsity_first3:.8f}")
 
 
 def prune_wanda_234_set_difference(

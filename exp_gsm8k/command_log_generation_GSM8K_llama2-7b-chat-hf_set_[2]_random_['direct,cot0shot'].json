@@ -1,0 +1,42 @@
+[
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.01 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.01/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.04 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.04/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.07 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.07/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.1 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.1/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.13 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.13/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.16 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.16/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.19 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.19/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.22 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.22/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.25 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.25/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  },
+  {
+    "command": "python ../main.py --model llama2-7b-chat-hf --prune_method random --sparsity_ratio 0.28 --sparsity_type unstructured --save /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/eval_GSM8K/llama2-7b-chat-hf/unstructured/random_weightonly/sets_2/eval_selected_samples/prompt_direct,cot0shot/add_template_True/sparsity_ratio_0.28/ --nsamples 120 --eval_gsm8k --dataset GSM8K --eval_type selected_samples --prompt_method direct,cot0shot --cache_dir /common/users/sl2148/Public/yang_ouyang/alignment-attribution-code/out/../llm_weights ",
+    "result": "success"
+  }
+]
